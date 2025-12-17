@@ -47,5 +47,5 @@ next-env.d.ts
 *.md
 !README.md
 
-# Scripts (optional - uncomment if you don't want to commit scripts)
-# scripts/
+# Scripts with sensitive data
+scripts/run-supabase-schema.js
