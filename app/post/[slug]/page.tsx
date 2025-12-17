@@ -58,6 +58,9 @@ async function getPost(slug: string): Promise<Post | null> {
   }
 }
 
+// Revalidate every 60 seconds to show fresh content from Sanity
+export const revalidate = 60;
+
 export default async function BlogPostPage({
   params,
 }: {

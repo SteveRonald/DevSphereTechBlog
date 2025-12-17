@@ -17,6 +17,9 @@ async function getSnippets(): Promise<Post[]> {
   }
 }
 
+// Revalidate every 60 seconds to show fresh content from Sanity
+export const revalidate = 60;
+
 export default async function SnippetsPage() {
   const posts = await getSnippets();
 
