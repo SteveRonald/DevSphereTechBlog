@@ -124,6 +124,21 @@ export default function AuthPage() {
           if (!profileResponse.ok) {
             console.error("Profile creation failed, but user account created");
           }
+
+          // Send registration notification email to admin
+          try {
+            await fetch("/api/users/notify-registration", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: data.user.email,
+                userId: data.user.id,
+              }),
+            });
+          } catch (notifyError) {
+            // Don't fail registration if notification fails
+            console.error("Failed to send registration notification:", notifyError);
+          }
         } catch (profileError) {
           console.error("Error creating profile:", profileError);
           // Don't fail registration if profile creation fails
