@@ -124,3 +124,4 @@ export function PostCard({ post, featured = false }: PostCardProps) {
   );
 }
 
+

@@ -43,9 +43,12 @@ next-env.d.ts
 .replit
 .local
 
-# All markdown documentation files
-*.md
-!README.md
-
 # Scripts with sensitive data
 scripts/run-supabase-schema.js
+
+# Documentation files
+README.md
+VERCEL_DEPLOYMENT.md
+CONTENT_CREATION_GUIDE.md
+DEPLOYMENT_READINESS_CHECKLIST.md
+VERCEL_ENV_VARIABLES.txt

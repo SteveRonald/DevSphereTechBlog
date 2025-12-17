@@ -27,7 +27,7 @@ export function createServerClient() {
           }
         },
       },
-    }
+    } as any
   );
 }
 

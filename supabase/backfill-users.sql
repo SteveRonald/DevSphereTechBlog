@@ -28,3 +28,4 @@ SELECT
   (SELECT COUNT(*) FROM auth.users) as auth_users_count,
   (SELECT COUNT(*) FROM user_profiles) as profiles_count;
 
+
