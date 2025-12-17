@@ -83,11 +83,11 @@ export default async function BlogPostPage({
         <div className="container max-w-7xl mx-auto px-4 md:px-6 py-10">
           <div className="max-w-5xl mx-auto">
             <Badge className="mb-4">{categoryTitle}</Badge>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-tight">
               {post.title}
             </h1>
             
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 border-y border-border/50">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 py-4 border-y border-border/50">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-10 w-10 border border-border">
                   {authorImageUrl && <AvatarImage src={authorImageUrl} />}

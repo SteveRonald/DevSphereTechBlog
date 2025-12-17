@@ -54,6 +54,21 @@ export default function AuthPage() {
         } catch (profileError) {
           console.error("Error creating profile:", profileError);
         }
+
+        // Send sign-in notification email to user
+        try {
+          await fetch("/api/auth/notify-signin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: data.user.email,
+              userId: data.user.id,
+            }),
+          });
+        } catch (notifyError) {
+          // Don't fail sign-in if notification fails
+          console.error("Failed to send sign-in notification:", notifyError);
+        }
       }
 
       toast({
@@ -188,7 +203,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="container flex items-center justify-center min-h-[calc(100vh-200px)] py-12">
+    <div className="container flex items-center justify-center min-h-[calc(100vh-200px)] py-8 md:py-12 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Welcome</CardTitle>

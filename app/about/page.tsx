@@ -95,12 +95,12 @@ export default function About() {
               <Target className="h-3 w-3 mr-2" />
               About Us
             </Badge>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight">
               <span className="bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
                 About CodeCraft Academy
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
               We are a community of developers dedicated to mastering modern tech skills through practical tutorials and in-depth reviews.
             </p>
           </div>
@@ -132,7 +132,7 @@ export default function About() {
             <section className="space-y-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-1 w-12 bg-primary"></div>
-                <h2 className="text-4xl font-bold tracking-tight">Our Mission</h2>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Our Mission</h2>
               </div>
               <div className="prose prose-slate dark:prose-invert max-w-none space-y-6">
                 <p className="text-lg text-muted-foreground leading-relaxed">
@@ -148,7 +148,7 @@ export default function About() {
             <section className="space-y-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-1 w-12 bg-primary"></div>
-                <h2 className="text-4xl font-bold tracking-tight">What We Cover</h2>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">What We Cover</h2>
               </div>
               <div className="grid md:grid-cols-2 gap-6">
                 {topics.map((topic) => {
@@ -178,7 +178,7 @@ export default function About() {
             <section className="space-y-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-1 w-12 bg-primary"></div>
-                <h2 className="text-4xl font-bold tracking-tight">Our Values</h2>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Our Values</h2>
               </div>
               <div className="grid md:grid-cols-3 gap-6">
                 {values.map((value) => {
@@ -206,7 +206,7 @@ export default function About() {
             <section className="space-y-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-1 w-12 bg-primary"></div>
-                <h2 className="text-4xl font-bold tracking-tight">Meet the Team</h2>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Meet the Team</h2>
               </div>
               <div className="grid md:grid-cols-2 gap-8">
                 {team.map((member) => (
@@ -236,6 +236,7 @@ export default function About() {
                             href={member.social.twitter} 
                             target="_blank" 
                             rel="noopener noreferrer" 
+                            aria-label={`${member.name} on Twitter`}
                             className="p-3 rounded-full hover:bg-accent transition-colors border border-border hover:border-primary"
                           >
                             <Twitter className="h-5 w-5" />
@@ -244,6 +245,7 @@ export default function About() {
                             href={member.social.github} 
                             target="_blank" 
                             rel="noopener noreferrer" 
+                            aria-label={`${member.name} on GitHub`}
                             className="p-3 rounded-full hover:bg-accent transition-colors border border-border hover:border-primary"
                           >
                             <Github className="h-5 w-5" />
@@ -252,6 +254,7 @@ export default function About() {
                             href={member.social.linkedin} 
                             target="_blank" 
                             rel="noopener noreferrer" 
+                            aria-label={`${member.name} on LinkedIn`}
                             className="p-3 rounded-full hover:bg-accent transition-colors border border-border hover:border-primary"
                           >
                             <Linkedin className="h-5 w-5" />

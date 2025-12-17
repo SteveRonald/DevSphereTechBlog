@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   Search, 
   Menu, 
   Moon, 
   Sun, 
   Github, 
-  Twitter 
+  Twitter,
+  Shield,
+  LogOut
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
@@ -17,6 +20,8 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { SearchDialog } from "@/components/search/SearchDialog";
+import { createClient } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,10 +30,40 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const isStudio = pathname?.startsWith("/studio");
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Check if user is admin when in studio
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!isStudio || !user || authLoading) {
+        setIsAdmin(null);
+        return;
+      }
+
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("user_profiles")
+          .select("is_admin")
+          .eq("id", user.id)
+          .single();
+
+        setIsAdmin(data?.is_admin === true);
+      } catch (error) {
+        setIsAdmin(false);
+      }
+    };
+
+    if (isStudio && user) {
+      checkAdmin();
+    }
+  }, [isStudio, user, authLoading]);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -40,6 +75,12 @@ export function Navbar() {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   const navLinks = [
     { name: "Tutorials", href: "/tutorials" },
@@ -77,6 +118,9 @@ export function Navbar() {
               {link.name}
             </Link>
           ))}
+          {isStudio && (
+            <span className="text-sm font-medium text-primary">• CMS Studio</span>
+          )}
         </div>
 
         <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
@@ -98,7 +142,36 @@ export function Navbar() {
           <nav className="flex items-center gap-1 md:gap-2">
             {!authLoading && (
               <>
-                {user ? (
+                {isStudio && isAdmin === true ? (
+                  <>
+                    <Badge variant="default" className="bg-primary hidden sm:inline-flex">
+                      <Shield className="h-3 w-3 mr-1" />
+                      <span className="hidden md:inline">Admin: {user?.email}</span>
+                      <span className="md:hidden">Admin</span>
+                    </Badge>
+                    <Badge variant="default" className="bg-primary sm:hidden">
+                      <Shield className="h-3 w-3" />
+                    </Badge>
+                    <UserMenu />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSignOut}
+                      className="gap-2 hidden sm:flex"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span className="hidden md:inline">Sign Out</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleSignOut}
+                      className="sm:hidden"
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : user ? (
                   <UserMenu />
                 ) : (
                   <>
@@ -156,20 +229,29 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
+            {isStudio && (
+              <div className="py-2 text-base font-medium text-primary">
+                • CMS Studio
+              </div>
+            )}
             <div className="border-t border-border pt-4 mt-4">
               {user ? (
                 <div className="space-y-2">
                   <div className="px-2 py-2 text-sm">
                     <p className="font-medium">{user.email}</p>
+                    {isStudio && isAdmin === true && (
+                      <Badge variant="default" className="mt-2 bg-primary">
+                        <Shield className="h-3 w-3 mr-1" />
+                        Admin
+                      </Badge>
+                    )}
                   </div>
                   <Button 
                     variant="outline" 
                     className="w-full" 
                     onClick={async () => {
                       setIsOpen(false);
-                      const supabase = await import("@/lib/supabase").then(m => m.createClient());
-                      await supabase.auth.signOut();
-                      window.location.href = "/";
+                      await handleSignOut();
                     }}
                   >
                     Sign Out
@@ -189,4 +271,3 @@ export function Navbar() {
     </nav>
   );
 }
-

@@ -25,6 +25,20 @@ export async function POST(request: Request) {
       );
     }
 
+    // Sanitize input to prevent XSS (basic sanitization)
+    const sanitize = (str: string) => {
+      return str
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#x27;")
+        .replace(/\//g, "&#x2F;");
+    };
+
+    const sanitizedName = sanitize(name);
+    const sanitizedSubject = sanitize(subject);
+    const sanitizedMessage = sanitize(message);
+
     // Send email using Resend
     const { data, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || "CodeCraft Academy <onboarding@resend.dev>",
@@ -37,13 +51,13 @@ export async function POST(request: Request) {
             New Contact Form Submission
           </h2>
           <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Name:</strong> ${sanitizedName}</p>
             <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Subject:</strong> ${subject}</p>
+            <p><strong>Subject:</strong> ${sanitizedSubject}</p>
           </div>
           <div style="background: #fff; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
             <h3 style="color: #333; margin-top: 0;">Message:</h3>
-            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${message}</p>
+            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${sanitizedMessage}</p>
           </div>
           <p style="color: #999; font-size: 12px; margin-top: 20px;">
             This email was sent from the CodeCraft Academy contact form.
@@ -53,12 +67,12 @@ export async function POST(request: Request) {
       text: `
 New Contact Form Submission
 
-Name: ${name}
+Name: ${sanitizedName}
 Email: ${email}
-Subject: ${subject}
+Subject: ${sanitizedSubject}
 
 Message:
-${message}
+${sanitizedMessage}
       `,
     });
 

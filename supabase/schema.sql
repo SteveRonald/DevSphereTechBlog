@@ -54,6 +54,9 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   bio TEXT,
   avatar_url TEXT,
   is_admin BOOLEAN DEFAULT FALSE,
+  last_device TEXT, -- Last device used
+  last_ip TEXT, -- Last IP address
+  last_signin_at TIMESTAMP WITH TIME ZONE, -- Last sign-in time
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(email)

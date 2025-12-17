@@ -5,14 +5,13 @@ import config from "@/sanity/sanity.config";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Shield, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Shield, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
 export default function StudioPage() {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
@@ -23,17 +22,20 @@ export default function StudioPage() {
   }, []);
 
   useEffect(() => {
-    if (mounted && !loading && !user) {
+    if (mounted && !authLoading && !user) {
       router.push("/auth?redirect=/studio");
     }
-  }, [user, loading, router, mounted]);
+  }, [user, authLoading, router, mounted]);
 
   useEffect(() => {
     const checkAdmin = async () => {
-      if (!user) {
-        setCheckingAdmin(false);
+      if (!user || authLoading) {
+        setCheckingAdmin(true);
         return;
       }
+
+      // Wait a bit to ensure user profile is loaded
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       try {
         const supabase = createClient();
@@ -43,9 +45,26 @@ export default function StudioPage() {
           .eq("id", user.id)
           .single();
 
-        if (error && error.code !== "PGRST116") {
-          console.error("Error checking admin status:", error);
-          setIsAdmin(false);
+        if (error) {
+          // If profile doesn't exist yet, wait and retry once
+          if (error.code === "PGRST116") {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const retry = await supabase
+              .from("user_profiles")
+              .select("is_admin")
+              .eq("id", user.id)
+              .single();
+            
+            if (retry.error && retry.error.code !== "PGRST116") {
+              console.error("Error checking admin status:", retry.error);
+              setIsAdmin(false);
+            } else {
+              setIsAdmin(retry.data?.is_admin === true);
+            }
+          } else {
+            console.error("Error checking admin status:", error);
+            setIsAdmin(false);
+          }
         } else {
           setIsAdmin(data?.is_admin === true);
         }
@@ -57,23 +76,19 @@ export default function StudioPage() {
       }
     };
 
-    if (mounted && user) {
+    if (mounted && user && !authLoading) {
       checkAdmin();
+    } else if (mounted && !user && !authLoading) {
+      setCheckingAdmin(false);
     }
-  }, [user, mounted]);
+  }, [user, mounted, authLoading]);
 
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/");
-  };
-
-  if (loading || !mounted || checkingAdmin) {
+  if (!mounted || authLoading || checkingAdmin) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">Checking access...</p>
         </div>
       </div>
     );
@@ -111,10 +126,13 @@ export default function StudioPage() {
               </Button>
               <Button
                 variant="outline"
-                onClick={handleSignOut}
+                onClick={async () => {
+                  const supabase = createClient();
+                  await supabase.auth.signOut();
+                  router.push("/");
+                }}
                 className="flex-1"
               >
-                <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
               </Button>
             </div>
@@ -124,23 +142,21 @@ export default function StudioPage() {
     );
   }
 
-  return (
-    <div className="relative">
-      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
-        <Badge variant="default" className="bg-primary">
-          <Shield className="h-3 w-3 mr-1" />
-          Admin: {user.email}
-        </Badge>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleSignOut}
-          className="gap-2"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </Button>
+  // Only show studio if admin check is complete and user is admin
+  if (isAdmin !== true) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Verifying access...</p>
+        </div>
       </div>
+    );
+  }
+
+  // Render studio below navbar
+  return (
+    <div style={{ height: "calc(100vh - 64px)", width: "100%" }}>
       <NextStudio config={config} />
     </div>
   );

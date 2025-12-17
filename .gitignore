@@ -43,16 +43,9 @@ next-env.d.ts
 .replit
 .local
 
-# Guide and documentation files (not needed in repo)
-ADMIN_SETUP.md
-CONTENT_CREATION_GUIDE.md
-EMAIL_SETUP_GUIDE.md
-POSTS_AND_CATEGORIES_GUIDE.md
-QUICK_EMAIL_SETUP.md
-LAYOUT_IMPROVEMENTS.md
-IMPROVEMENTS_SUMMARY.md
-EMAIL_CONFIRMATION_AND_PASSWORDS.md
-WELCOME_MESSAGE_REVIEW.md
+# All markdown documentation files
+*.md
+!README.md
 
 # Scripts (optional - uncomment if you don't want to commit scripts)
 # scripts/
