@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
     const validCurrency = currency;
 
     // Email is required for USD (bank transfers)
-    // For KES (mobile money), Paystack collects phone number, but we still need email for API
-    // Use placeholder if not provided for KES
+    // For KES (mobile money), Paystack requires email in API but uses phone number for payment
+    // Generate a valid email format for KES if not provided
     let emailToUse = email;
     if (!emailToUse) {
       if (validCurrency === "USD") {
@@ -32,8 +32,10 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      // For KES, use placeholder email (Paystack will use phone number for mobile money)
-      emailToUse = `mobile-${Date.now()}@donation.placeholder`;
+      // For KES mobile money, Paystack API requires email but it's not used for payment
+      // Use a valid email format - Paystack will collect phone number on their payment page
+      // Format: mobile-{timestamp}@paystack.local (valid format that Paystack accepts)
+      emailToUse = `mobile-${Date.now()}@paystack.local`;
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
