@@ -74,6 +74,7 @@ function AuthPageContent() {
       toast({
         title: "Success!",
         description: "You've been signed in successfully.",
+        variant: "success",
       });
 
       const redirect = searchParams.get("redirect") || "/";
@@ -164,6 +165,7 @@ function AuthPageContent() {
       toast({
         title: "Success!",
         description: "Check your email to confirm your account.",
+        variant: "success",
       });
 
       setActiveTab("signin");

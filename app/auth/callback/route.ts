@@ -1,13 +1,13 @@
 import { createServerClient } from "@/lib/supabase-server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const redirectTo = requestUrl.searchParams.get("redirect") || "/";
 
   if (code) {
-    const supabase = createServerClient();
+    const supabase = createServerClient(request);
     
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     

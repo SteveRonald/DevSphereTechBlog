@@ -22,6 +22,7 @@ import { UserMenu } from "@/components/auth/UserMenu";
 import { SearchDialog } from "@/components/search/SearchDialog";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { BlogDropdown } from "@/components/navigation/BlogDropdown";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -107,6 +108,7 @@ export function Navbar() {
         </Link>
 
         <div className="hidden md:flex md:gap-x-6 lg:gap-x-8">
+          <BlogDropdown />
           {navLinks.map((link) => (
             <Link 
               key={link.href} 
@@ -138,6 +140,17 @@ export function Navbar() {
               </kbd>
             </Button>
           </div>
+          
+          {/* Mobile Search Icon Button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-9 w-9 md:hidden"
+            onClick={() => setSearchOpen(true)}
+          >
+            <Search className="h-4 w-4" />
+            <span className="sr-only">Search</span>
+          </Button>
           
           <nav className="flex items-center gap-1 md:gap-2">
             {!authLoading && (
@@ -219,6 +232,25 @@ export function Navbar() {
       {isOpen && (
         <div className="md:hidden border-b border-border bg-background">
           <div className="space-y-1 px-4 py-4">
+            {/* Mobile Search Button */}
+            <Button 
+              variant="outline" 
+              className="w-full justify-start mb-4"
+              onClick={() => {
+                setSearchOpen(true);
+                setIsOpen(false);
+              }}
+            >
+              <Search className="mr-2 h-4 w-4" />
+              Search...
+            </Button>
+            <Link 
+              href="/blog"
+              className="block py-2 text-base font-medium text-foreground hover:text-primary"
+              onClick={() => setIsOpen(false)}
+            >
+              Blog
+            </Link>
             {navLinks.map((link) => (
               <Link 
                 key={link.href} 

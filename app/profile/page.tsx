@@ -96,6 +96,7 @@ export default function ProfilePage() {
       toast({
         title: "Success!",
         description: "Your profile has been updated.",
+        variant: "success",
       });
     } catch (error: any) {
       toast({

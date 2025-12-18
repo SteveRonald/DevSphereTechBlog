@@ -62,7 +62,7 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
 
   const handleSelect = (slug: string) => {
     if (slug) {
-      router.push(`/post/${slug}`);
+      router.push(`/blog/${slug}`);
       onOpenChange(false);
     }
   };

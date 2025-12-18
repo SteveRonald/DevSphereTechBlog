@@ -4,12 +4,15 @@ import { Sidebar } from "@/components/blog/Sidebar";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { sanityClient } from "@/lib/sanity";
-import { featuredPostsQuery, recentPostsQuery } from "@/lib/sanity.queries";
+import { featuredPostsQuery, recentPostsQuery, categoriesQuery } from "@/lib/sanity.queries";
 import type { Post } from "@/components/blog/PostCard";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PageLoading } from "@/components/ui/loading";
 import Link from "next/link";
+import { FilteredPosts } from "@/components/home/FilteredPosts";
+import { Testimonials } from "@/components/home/Testimonials";
+import { WhyChooseUs } from "@/components/home/WhyChooseUs";
 
 async function getFeaturedPosts(): Promise<Post[]> {
   try {
@@ -31,17 +34,28 @@ async function getRecentPosts(): Promise<Post[]> {
   }
 }
 
+async function getCategories() {
+  try {
+    const categories = await sanityClient.fetch(categoriesQuery);
+    return categories || [];
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
+}
+
 // Revalidate every 60 seconds to show fresh content from Sanity
 export const revalidate = 60;
 
 export default async function Home() {
-  const [featuredPosts, recentPosts] = await Promise.all([
+  const [featuredPosts, recentPosts, categories] = await Promise.all([
     getFeaturedPosts(),
     getRecentPosts(),
+    getCategories(),
   ]);
 
   const featuredPost = featuredPosts[0];
-  const otherRecentPosts = recentPosts.slice(0, 5);
+  const latestPosts = recentPosts.slice(0, 9);
 
   return (
     <>
@@ -83,42 +97,42 @@ export default async function Home() {
       </section>
 
       {/* Main Content Area */}
-      <section className="container max-w-7xl mx-auto px-4 md:px-6 pb-20">
+      <section className="container max-w-7xl mx-auto px-4 md:px-6 pb-12 md:pb-20">
         
         {/* Featured Post */}
         {featuredPost && (
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold tracking-tight">Featured Article</h2>
+          <div className="mb-8 md:mb-12">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <h2 className="text-xl md:text-2xl font-bold tracking-tight">Featured Article</h2>
             </div>
             <PostCard post={featuredPost} featured={true} />
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
           {/* Main Feed */}
-          <div className="lg:col-span-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold tracking-tight">Latest Posts</h2>
-              <Button variant="ghost" className="text-primary hover:text-primary/80" asChild>
-                <Link href="/tutorials">View all</Link>
+          <div className="lg:col-span-8" id="categories">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 md:mb-6">
+              <h2 className="text-xl md:text-2xl font-bold tracking-tight">Latest Posts</h2>
+              <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80" asChild>
+                <Link href="/blog">View all</Link>
               </Button>
             </div>
             
-            {otherRecentPosts.length > 0 ? (
-              <div className="grid md:grid-cols-2 gap-6">
-                {otherRecentPosts.map((post) => (
-                  <PostCard key={post._id} post={post} />
-                ))}
-              </div>
+            {latestPosts.length > 0 ? (
+              <Suspense fallback={<PageLoading />}>
+                <FilteredPosts posts={latestPosts} categories={categories} />
+              </Suspense>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <p>No posts yet. Check back soon!</p>
               </div>
             )}
 
-            <div className="mt-10 flex justify-center">
-              <Button variant="outline" size="lg" className="w-full md:w-auto">Load More Articles</Button>
+            <div className="mt-8 md:mt-10 flex justify-center">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto" asChild>
+                <Link href="/blog">View All Posts</Link>
+              </Button>
             </div>
           </div>
 
@@ -128,6 +142,12 @@ export default async function Home() {
           </aside>
         </div>
       </section>
+
+      {/* Why Choose Us Section */}
+      <WhyChooseUs />
+
+      {/* Testimonials Section */}
+      <Testimonials />
     </>
   );
 }

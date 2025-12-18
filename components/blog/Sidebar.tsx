@@ -52,7 +52,7 @@ export async function Sidebar() {
               categories.map((cat: any) => (
                 <Link
                   key={cat._id}
-                  href={`/category/${cat.slug.current}`}
+                  href={`/blog/category/${cat.slug.current}`}
                   className="flex items-center justify-between py-2 text-sm hover:text-primary cursor-pointer group transition-colors"
                 >
                   <span className="font-medium">{cat.title}</span>

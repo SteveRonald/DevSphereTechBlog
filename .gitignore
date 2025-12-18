@@ -44,11 +44,12 @@ next-env.d.ts
 .local
 
 # Scripts with sensitive data
+scripts/
 scripts/run-supabase-schema.js
 
+# Supabase database files
+supabase/
+
 # Documentation files
-README.md
-VERCEL_DEPLOYMENT.md
-CONTENT_CREATION_GUIDE.md
-DEPLOYMENT_READINESS_CHECKLIST.md
+*.md
 VERCEL_ENV_VARIABLES.txt

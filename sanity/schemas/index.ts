@@ -5,3 +5,5 @@ import author from "./author";
 export const schemaTypes = [post, category, author];
 
 
+
+

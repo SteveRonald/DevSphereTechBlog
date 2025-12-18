@@ -51,6 +51,7 @@ export default function ContactPage() {
       toast({
         title: "Success!",
         description: "Your message has been sent successfully. We'll get back to you within 3 hours.",
+        variant: "success",
       });
     } catch (error: any) {
       toast({

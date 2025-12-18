@@ -6,10 +6,12 @@ import { Sidebar } from "@/components/blog/Sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Share2, MessageSquare, ThumbsUp, Bookmark } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
+import { PostActions } from "@/components/blog/PostActions";
 import Image from "next/image";
 import { format } from "date-fns";
 import { PortableText, type PortableTextBlock } from "@portabletext/react";
+import { portableTextComponents } from "@/components/blog/PortableTextComponents";
 
 interface Post {
   _id: string;
@@ -138,7 +140,7 @@ export default async function BlogPostPage({
               prose-a:text-primary prose-a:no-underline hover:prose-a:underline
               prose-img:rounded-lg prose-pre:bg-muted prose-pre:text-foreground
               prose-p:leading-relaxed prose-li:leading-relaxed">
-              <PortableText value={post.body} />
+              <PortableText value={post.body} components={portableTextComponents} />
             </div>
             
             {/* Tags & Share */}
@@ -151,20 +153,7 @@ export default async function BlogPostPage({
                 </div>
               )}
               
-              <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <ThumbsUp className="h-4 w-4" /> 42
-                </Button>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <MessageSquare className="h-4 w-4" /> 8
-                </Button>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <Bookmark className="h-4 w-4" /> Save
-                </Button>
-                <Button variant="ghost" size="icon">
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </div>
+              <PostActions postSlug={post.slug.current} />
             </div>
 
             {/* Author Bio Box */}

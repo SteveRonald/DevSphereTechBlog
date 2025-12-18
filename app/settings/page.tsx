@@ -94,6 +94,7 @@ export default function SettingsPage() {
       toast({
         title: "Success!",
         description: "Your preferences have been saved.",
+        variant: "success",
       });
     } catch (error: any) {
       toast({

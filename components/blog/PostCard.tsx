@@ -47,7 +47,7 @@ export function PostCard({ post, featured = false }: PostCardProps) {
 
   if (featured) {
     return (
-      <Link href={`/post/${post.slug.current}`}>
+      <Link href={`/blog/${post.slug.current}`}>
         <div className="group relative overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer h-full">
           <div className="grid md:grid-cols-5 gap-0 h-full">
             <div className="md:col-span-3 relative h-64 md:h-full overflow-hidden">
@@ -86,7 +86,7 @@ export function PostCard({ post, featured = false }: PostCardProps) {
   }
 
   return (
-    <Link href={`/post/${post.slug.current}`}>
+    <Link href={`/blog/${post.slug.current}`}>
       <Card className="group overflow-hidden border-border h-full flex flex-col cursor-pointer transition-all hover:shadow-md hover:-translate-y-1">
         <div className="relative aspect-video overflow-hidden bg-muted">
           <Image 
@@ -123,5 +123,6 @@ export function PostCard({ post, featured = false }: PostCardProps) {
     </Link>
   );
 }
+
 
 

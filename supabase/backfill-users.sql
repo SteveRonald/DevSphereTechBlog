@@ -29,3 +29,5 @@ SELECT
   (SELECT COUNT(*) FROM user_profiles) as profiles_count;
 
 
+
+

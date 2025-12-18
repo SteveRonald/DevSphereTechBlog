@@ -102,6 +102,7 @@ export function NewsletterForm() {
       toast({
         title: "Success!",
         description: "You've been subscribed to our newsletter.",
+        variant: "success",
       });
       setEmail("");
     } catch (error: any) {

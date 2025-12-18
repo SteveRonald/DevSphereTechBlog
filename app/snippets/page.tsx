@@ -38,12 +38,12 @@ export default async function SnippetsPage() {
         </div>
       </div>
 
-      <div className="container max-w-7xl mx-auto px-4 md:px-6 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="container max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
           <div className="lg:col-span-8">
             {posts.length > 0 ? (
               <>
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
                   {posts.map((post) => (
                     <PostCard key={post._id} post={post} />
                   ))}
