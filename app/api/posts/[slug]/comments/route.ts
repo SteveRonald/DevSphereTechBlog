@@ -25,8 +25,18 @@ export async function GET(
       .order("created_at", { ascending: true });
 
     // Fetch user profiles separately
+    interface CommentRow {
+      id: string;
+      content: string;
+      parent_id: string | null;
+      created_at: string;
+      updated_at: string;
+      is_edited: boolean;
+      user_id: string | null;
+    }
+    
     const commentsWithProfiles = await Promise.all(
-      (comments || []).map(async (comment) => {
+      (comments || []).map(async (comment: CommentRow) => {
         if (!comment.user_id) {
           return {
             ...comment,
