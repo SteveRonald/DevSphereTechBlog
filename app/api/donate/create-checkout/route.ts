@@ -34,8 +34,15 @@ export async function POST(request: NextRequest) {
       }
       // For KES mobile money, Paystack API requires email but it's not used for payment
       // Use a valid email format - Paystack will collect phone number on their payment page
-      // Format: mobile-{timestamp}@paystack.local (valid format that Paystack accepts)
-      emailToUse = `mobile-${Date.now()}@paystack.local`;
+      // Try to use site domain, fallback to a valid format
+      try {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+        const siteDomain = new URL(siteUrl).hostname.replace('www.', '');
+        emailToUse = `mobile-${Date.now()}@${siteDomain}`;
+      } catch {
+        // Fallback to a valid email format if URL parsing fails
+        emailToUse = `mobile-${Date.now()}@example.com`;
+      }
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
