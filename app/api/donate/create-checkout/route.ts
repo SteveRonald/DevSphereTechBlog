@@ -12,6 +12,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate currency first
+    if (!currency || (currency !== "KES" && currency !== "USD")) {
+      return NextResponse.json(
+        { error: "Invalid currency. Please select KES or USD" },
+        { status: 400 }
+      );
+    }
+    const validCurrency = currency;
+
     // Email is required for USD (bank transfers)
     // For KES (mobile money), Paystack collects phone number, but we still need email for API
     // Use placeholder if not provided for KES
@@ -26,15 +35,6 @@ export async function POST(request: NextRequest) {
       // For KES, use placeholder email (Paystack will use phone number for mobile money)
       emailToUse = `mobile-${Date.now()}@donation.placeholder`;
     }
-
-    // Validate currency
-    if (!currency || (currency !== "KES" && currency !== "USD")) {
-      return NextResponse.json(
-        { error: "Invalid currency. Please select KES or USD" },
-        { status: 400 }
-      );
-    }
-    const validCurrency = currency;
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     
