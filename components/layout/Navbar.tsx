@@ -12,7 +12,8 @@ import {
   Github, 
   Twitter,
   Shield,
-  LogOut
+  LogOut,
+  Heart
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
@@ -141,6 +142,14 @@ export function Navbar() {
             </Button>
           </div>
           
+          {/* Support Us Button - Desktop */}
+          <Link href="/donate" className="hidden sm:block">
+            <Button variant="default" size="sm" className="gap-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-md hover:shadow-lg">
+              <Heart className="h-4 w-4 fill-white/20" />
+              <span className="hidden md:inline">Support Us</span>
+            </Button>
+          </Link>
+          
           {/* Mobile Search Icon Button */}
           <Button 
             variant="ghost" 
@@ -261,6 +270,20 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
+            <Link 
+              href="/donate"
+              onClick={() => setIsOpen(false)}
+              className="block"
+            >
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="w-full gap-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-md hover:shadow-lg justify-start"
+              >
+                <Heart className="h-4 w-4 fill-white/20" />
+                Support Us
+              </Button>
+            </Link>
             {isStudio && (
               <div className="py-2 text-base font-medium text-primary">
                 • CMS Studio
