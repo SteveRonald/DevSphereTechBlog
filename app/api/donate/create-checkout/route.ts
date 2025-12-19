@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
     const validCurrency = currency;
 
-    // Email is required for USD (bank transfers)
+    // Email is required for USD (card payments)
     // For KES (mobile money), Paystack requires email in API but uses phone number for payment
     // Generate a valid email format for KES if not provided
     let emailToUse = email;
@@ -83,7 +83,13 @@ export async function POST(request: NextRequest) {
               variable_name: "currency",
               value: validCurrency,
             },
+            {
+              display_name: "Brand",
+              variable_name: "brand",
+              value: "CodeCraft Academy",
+            },
           ],
+          cancel_action: `${siteUrl}/donate/cancel`,
         },
       }),
     });

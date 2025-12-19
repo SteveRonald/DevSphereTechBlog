@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
         });
 
     // Create email content
-    const subject = `📚 New Post: ${post.title}`;
+    const subject = `New Post: ${post.title} - CodeCraft Academy`;
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
                   <!-- Thank You Message -->
                   <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px; margin-bottom: 30px; text-align: center;">
                     <h2 style="color: #ffffff; margin: 0 0 10px 0; font-size: 28px;">
-                      Thank You for Subscribing! 🙏
+                      Thank You for Subscribing!
                     </h2>
                     <p style="color: #ffffff; margin: 0; font-size: 16px; opacity: 0.95;">
                       We're excited to share our latest content with you.
@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
     `;
 
     const textContent = `
-Thank You for Subscribing! 🙏
+Thank You for Subscribing!
 
 We're excited to share our latest content with you.
 
@@ -232,7 +232,7 @@ Unsubscribe: ${siteUrl}/newsletter/unsubscribe?email={{EMAIL}}
           if (resend) {
             try {
               const { data, error } = await resend.emails.send({
-                from: process.env.RESEND_FROM_EMAIL || "CodeCraft Academy <onboarding@resend.dev>",
+                from: process.env.RESEND_FROM_EMAIL || process.env.GMAIL_USER || "CodeCraft Academy <onboarding@resend.dev>",
                 to: email,
                 subject: subject,
                 html: personalizedHtml,

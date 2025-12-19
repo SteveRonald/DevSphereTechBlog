@@ -68,8 +68,8 @@ export async function POST(request: Request) {
 
     // Email content
     const subject = isNewDeviceOrLocation 
-      ? "🔐 New Sign-In from New Device/Location - CodeCraft Academy"
-      : "🔐 New Sign-In Detected - CodeCraft Academy";
+      ? "New Sign-In from New Device/Location - CodeCraft Academy"
+      : "New Sign-In Detected - CodeCraft Academy";
 
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
         </h2>
         <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4f46e5;">
           <p style="margin: 0; font-size: 18px; color: #1e40af;">
-            <strong>🔐 Someone just signed in to your account</strong>
+            <strong>Someone just signed in to your account</strong>
           </p>
         </div>
         <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
         ${isNewDeviceOrLocation ? `
         <div style="background: #fff3cd; padding: 20px; border: 2px solid #ffc107; border-radius: 8px; margin: 20px 0;">
           <p style="color: #856404; margin: 0 0 10px 0; font-size: 18px;">
-            <strong>⚠️ New Device or Location Detected!</strong>
+            <strong>New Device or Location Detected!</strong>
           </p>
           <p style="color: #666; margin: 0 0 15px 0;">
             We detected a sign-in from a ${isNewDevice ? 'new device' : ''}${isNewDevice && isNewLocation ? ' and ' : ''}${isNewLocation ? 'new location' : ''}. 
@@ -132,8 +132,8 @@ Time: ${new Date().toLocaleString()}
 Device: ${deviceInfo}${isNewDevice ? ' (NEW)' : ''}
 Location: ${ip}${isNewLocation ? ' (NEW)' : ''}
 
-${isNewDeviceOrLocation ? `
-⚠️ New Device or Location Detected!
+    ${isNewDeviceOrLocation ? `
+    New Device or Location Detected!
 We detected a sign-in from a ${isNewDevice ? 'new device' : ''}${isNewDevice && isNewLocation ? ' and ' : ''}${isNewLocation ? 'new location' : ''}. 
 For extra security, we strongly recommend enabling Two-Factor Authentication (2FA).
 Enable 2FA: ${process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com'}/settings
@@ -152,7 +152,7 @@ View Account: ${process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com'}/pr
     if (resend) {
       try {
         const { data, error } = await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || "CodeCraft Academy <onboarding@resend.dev>",
+          from: process.env.RESEND_FROM_EMAIL || process.env.GMAIL_USER || "CodeCraft Academy <onboarding@resend.dev>",
           to: email,
           subject: subject,
           html: htmlContent,

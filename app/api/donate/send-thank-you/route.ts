@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import { Resend } from "resend";
 import nodemailer from "nodemailer";
 
@@ -21,7 +20,7 @@ const createGmailTransporter = () => {
 // Create Resend client (primary)
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-// Send thank you email to donor
+// Send thank you email function (shared with webhook)
 async function sendThankYouEmail(
   donorEmail: string,
   amount: number,
@@ -29,12 +28,6 @@ async function sendThankYouEmail(
   reference: string,
   isRecurring: boolean
 ) {
-  // Skip if email is a placeholder (for KES mobile money without email)
-  if (donorEmail.includes("@paystack.local") || donorEmail.includes("@example.com") || donorEmail.includes("@donation.placeholder")) {
-    console.log("Skipping thank you email for placeholder email:", donorEmail);
-    return { sent: false, reason: "placeholder_email" };
-  }
-
   const currencySymbol = currency === "KES" ? "KES" : "$";
   const formattedAmount = currency === "KES" 
     ? `${currencySymbol} ${amount.toLocaleString()}` 
@@ -144,142 +137,86 @@ If you have any questions, please contact us at ${process.env.CONTACT_EMAIL || "
   return { sent: false, method: "none", reason: "no_email_service" };
 }
 
-/**
- * Paystack Webhook Handler
- * Verifies and processes payment notifications from Paystack
- * 
- * Set webhook URL in Paystack Dashboard:
- * Settings → API Keys & Webhooks → Add Webhook
- * URL: https://yourdomain.com/api/donate/webhook
- * Events: Select "charge.success" and "charge.failure"
- */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.text();
-    const signature = request.headers.get("x-paystack-signature");
+    const body = await request.json();
+    const { email, reference, amount, currency, isRecurring } = body;
 
-    if (!signature) {
+    // Validate required fields
+    if (!email || !email.includes("@")) {
       return NextResponse.json(
-        { error: "Missing signature" },
+        { error: "Valid email address is required" },
         { status: 400 }
       );
     }
 
-    // Verify webhook signature
-    const secret = process.env.PAYSTACK_SECRET_KEY || "";
-    const hash = crypto
-      .createHmac("sha512", secret)
-      .update(body)
-      .digest("hex");
-
-    if (hash !== signature) {
-      console.error("Invalid webhook signature");
+    if (!reference) {
       return NextResponse.json(
-        { error: "Invalid signature" },
-        { status: 401 }
+        { error: "Transaction reference is required" },
+        { status: 400 }
       );
     }
 
-    const event = JSON.parse(body);
-
-    // Handle different event types
-    switch (event.event) {
-      case "charge.success":
-        // Payment was successful
-        const payment = event.data;
-        const amount = payment.amount / 100; // Convert from kobo/cents
-        const currency = payment.currency || "KES";
-        const donorEmail = payment.customer?.email || payment.authorization?.email;
-        const isRecurring = payment.metadata?.custom_fields?.find((f: any) => f.variable_name === "donation_type")?.value === "recurring";
-        
-        console.log("Payment successful:", {
-          reference: payment.reference,
-          amount,
-          currency,
-          email: donorEmail,
-          isRecurring,
-          metadata: payment.metadata,
-        });
-
-        // Send thank you email ONLY if payment is successful AND email is available
-        // Check payment status to ensure it's actually successful
-        if (payment.status === "success" && donorEmail) {
-          try {
-            const emailResult = await sendThankYouEmail(
-              donorEmail,
-              amount,
-              currency,
-              payment.reference,
-              isRecurring
-            );
-            console.log("Thank you email result:", emailResult);
-          } catch (emailError) {
-            console.error("Error sending thank you email:", emailError);
-            // Don't fail the webhook if email fails
-          }
-        } else if (!donorEmail || donorEmail.includes("@paystack.local") || donorEmail.includes("@example.com")) {
-          console.log("No valid email available for thank you email (likely KES mobile money without email)");
-          // Mobile money users can provide email on success page
-        } else if (payment.status !== "success") {
-          console.log("Payment status is not success, skipping thank you email");
+    // Verify payment was successful by checking Paystack
+    try {
+      const paystackResponse = await fetch(
+        `https://api.paystack.co/transaction/verify/${reference}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          },
         }
+      );
 
-        // Here you can also:
-        // 1. Update your database
-        // 2. Update user subscription status (if recurring)
-        // 3. Send admin notifications
+      const paystackData = await paystackResponse.json();
 
-        return NextResponse.json({ 
-          received: true, 
-          event: "charge.success",
-          emailSent: !!donorEmail 
+      if (!paystackData.status || paystackData.data.status !== "success") {
+        return NextResponse.json(
+          { error: "Payment not found or not successful" },
+          { status: 400 }
+        );
+      }
+
+      // Use payment data from Paystack if not provided
+      const donationAmount = amount || paystackData.data.amount / 100;
+      const donationCurrency = currency || paystackData.data.currency || "KES";
+      const donationIsRecurring = isRecurring || 
+        paystackData.data.metadata?.custom_fields?.find((f: any) => f.variable_name === "donation_type")?.value === "recurring";
+
+      // Send thank you email
+      const emailResult = await sendThankYouEmail(
+        email,
+        donationAmount,
+        donationCurrency,
+        reference,
+        donationIsRecurring
+      );
+
+      if (emailResult.sent) {
+        return NextResponse.json({
+          success: true,
+          message: "Thank you email sent successfully!",
+          method: emailResult.method,
         });
-
-      case "charge.failure":
-        // Payment failed - DO NOT send thank you email
-        const failedPayment = event.data;
-        console.log("Payment failed:", {
-          reference: failedPayment.reference,
-          reason: failedPayment.gateway_response,
-        });
-
-        // No email sent for failed payments
-        return NextResponse.json({ 
-          received: true, 
-          event: "charge.failure",
-          emailSent: false,
-          reason: "Payment failed - no email sent"
-        });
-
-      case "subscription.create":
-        // Recurring donation subscription created
-        console.log("Subscription created:", event.data);
-        return NextResponse.json({ received: true, event: "subscription.create" });
-
-      case "subscription.disable":
-        // Recurring donation cancelled
-        console.log("Subscription cancelled:", event.data);
-        return NextResponse.json({ received: true, event: "subscription.disable" });
-
-      default:
-        console.log("Unhandled event:", event.event);
-        return NextResponse.json({ received: true, event: event.event });
+      } else {
+        return NextResponse.json(
+          { error: "Failed to send thank you email. Please try again later." },
+          { status: 500 }
+        );
+      }
+    } catch (verifyError: any) {
+      console.error("Error verifying payment:", verifyError);
+      return NextResponse.json(
+        { error: "Failed to verify payment. Please try again." },
+        { status: 500 }
+      );
     }
   } catch (error: any) {
-    console.error("Webhook error:", error);
+    console.error("Error sending thank you email:", error);
     return NextResponse.json(
-      { error: error.message || "Webhook processing failed" },
+      { error: error.message || "An error occurred" },
       { status: 500 }
     );
   }
-}
-
-// Allow GET for webhook verification/testing
-export async function GET() {
-  return NextResponse.json({
-    message: "Paystack webhook endpoint",
-    status: "active",
-    instructions: "Configure this URL in Paystack Dashboard: Settings → API Keys & Webhooks",
-  });
 }
 

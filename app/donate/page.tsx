@@ -205,7 +205,7 @@ export default function DonatePage() {
                     <Label htmlFor="usd" className="font-normal cursor-pointer flex-1">
                       <div>
                         <div className="font-medium">USD (US Dollars)</div>
-                        <div className="text-xs text-muted-foreground">Pay with Bank Transfer (All major banks supported)</div>
+                        <div className="text-xs text-muted-foreground">Pay with Visa card</div>
                       </div>
                     </Label>
                   </div>
@@ -359,7 +359,7 @@ export default function DonatePage() {
                   <>
                     <CreditCard className="h-4 w-4 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
                     <p className="text-xs text-center text-muted-foreground">
-                      Pay with Bank Transfer • All major banks supported • Email required for receipt
+                      Pay with Visa card • Email required for receipt
                     </p>
                   </>
                 )}
