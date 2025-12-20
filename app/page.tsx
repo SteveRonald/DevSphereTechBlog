@@ -70,22 +70,23 @@ export default async function Home() {
           <div className="mx-auto max-w-4xl space-y-4">
             <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary backdrop-blur-sm">
               <Sparkles className="mr-2 h-3.5 w-3.5" />
-              <span>New Learning Path: Full Stack AI Engineer</span>
+              <span>Start Your Journey Today with CodeCraft Academy</span>
             </div>
             <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
               Master Modern Tech with <br className="hidden sm:inline" />
               <span className="text-gradient">CodeCraft Academy</span>
             </h1>
-            <p className="mx-auto max-w-[700px] text-base text-muted-foreground mt-2">
-              <strong className="text-foreground">CodeCraft Academy</strong> - A web development blog and learning platform
-            </p>
             <p className="mx-auto max-w-[700px] text-lg text-muted-foreground md:text-xl">
-              <strong>CodeCraft Academy</strong> is a web development blog and learning platform that provides practical tutorials, in-depth reviews, and career advice for developers. 
+              <strong className="text-gradient font-bold text-2xl">CodeCraft Academy</strong> is a web development blog and learning platform that provides practical tutorials, in-depth reviews, and career advice for developers. 
               From React to AI, we cover what matters most to help you advance your tech career.
             </p>
-            <p className="mx-auto max-w-[700px] text-sm text-muted-foreground mt-2">
-              <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link> | <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
-            </p>
+            <div className="mx-auto max-w-[700px] mt-4 p-3 bg-muted/50 rounded-lg border border-border">
+              <div className="flex flex-wrap justify-center gap-3 text-sm">
+                <Link href="/privacy" className="text-primary hover:underline font-medium">Privacy Policy</Link>
+                <span className="text-muted-foreground">|</span>
+                <Link href="/terms" className="text-primary hover:underline font-medium">Terms of Service</Link>
+              </div>
+            </div>
             <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
               <Button size="lg" className="h-12 px-8 text-base" asChild>
                 <Link href="/tutorials">
@@ -159,7 +160,7 @@ export default async function Home() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary backdrop-blur-sm mb-4">
               <Sparkles className="mr-2 h-3.5 w-3.5" />
-              <span>Our Mission</span>
+              <span>About Us</span>
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
               About <span className="text-gradient">CodeCraft Academy</span>
