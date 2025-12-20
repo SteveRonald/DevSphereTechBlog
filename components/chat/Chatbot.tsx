@@ -10,6 +10,7 @@ import { VoiceInput } from "./VoiceInput";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 
@@ -24,6 +25,7 @@ interface Message {
 export function Chatbot() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const [sessionId, setSessionId] = useState(() => {
@@ -300,7 +302,7 @@ export function Chatbot() {
         const userMessage: Message = { 
           role: "user", 
           content: userMessageContent,
-          imageUrl: imagePreview // Store image URL to display in chat
+          imageUrl: imagePreview || undefined // Store image URL to display in chat
         };
         setMessages((prev) => [...prev, userMessage]);
 
@@ -831,7 +833,7 @@ export function Chatbot() {
               <div className="mb-2 space-y-2">
                 <div className="relative inline-block">
                   <img
-                    src={imagePreview}
+                    src={imagePreview || ""}
                     alt="Preview"
                     className="max-w-[200px] max-h-[200px] rounded-lg border"
                   />
@@ -965,32 +967,32 @@ export function Chatbot() {
                     : "Get unlimited access - Sign in or register"}
                 </p>
                 <div className="flex gap-2">
-                  <Link
-                    href="/auth"
+                  <Button
+                    variant="default"
+                    size="sm"
                     className="flex-1"
+                    onClick={() => {
+                      // Close chatbot and navigate to auth page
+                      setIsOpen(false);
+                      router.push("/auth");
+                    }}
                   >
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="w-full"
-                    >
-                      <LogIn className="h-3.5 w-3.5 mr-1.5" />
+                    <LogIn className="h-3.5 w-3.5 mr-1.5" />
                     Sign In
-                    </Button>
-                  </Link>
-                  <Link
-                    href="/auth"
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="flex-1"
+                    onClick={() => {
+                      // Close chatbot and navigate to auth page
+                      setIsOpen(false);
+                      router.push("/auth");
+                    }}
                   >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                    >
-                      <UserPlus className="h-3.5 w-3.5 mr-1.5" />
-                      Register
-                    </Button>
-                  </Link>
+                    <UserPlus className="h-3.5 w-3.5 mr-1.5" />
+                    Register
+                  </Button>
                 </div>
               </div>
             )}

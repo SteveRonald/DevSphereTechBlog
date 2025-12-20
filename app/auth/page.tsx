@@ -186,18 +186,31 @@ function AuthPageContent() {
     setLoading(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signInWithOAuth({
+      const redirectTo = searchParams.get("redirect") || "/";
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Google OAuth error:", error);
+        throw error;
+      }
+      
+      // Note: signInWithOAuth redirects the user, so we don't need to handle success here
+      // The loading state will be reset when the page redirects
     } catch (error: any) {
+      console.error("Google authentication error:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to authenticate with Google",
+        title: "Authentication Error",
+        description: error.message || "Failed to authenticate with Google. Please make sure Google OAuth is enabled in your Supabase project settings.",
         variant: "destructive",
       });
       setLoading(false);

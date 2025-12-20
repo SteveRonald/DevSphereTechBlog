@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
 
     // Group conversations by session_id
     const groupedConversations: Record<string, any[]> = {};
-    data?.forEach((conv) => {
+    data?.forEach((conv: any) => {
       if (!groupedConversations[conv.session_id]) {
         groupedConversations[conv.session_id] = [];
       }
