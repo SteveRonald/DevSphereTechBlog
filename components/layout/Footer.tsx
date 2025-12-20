@@ -19,15 +19,17 @@ export function Footer() {
               <li><Link href="/reviews" className="hover:text-primary transition-colors">Product Reviews</Link></li>
               <li><Link href="/snippets" className="hover:text-primary transition-colors">Code Snippets</Link></li>
               <li><Link href="/newsletter" className="hover:text-primary transition-colors">Newsletter</Link></li>
+              <li><Link href="/faq" className="hover:text-primary transition-colors">FAQ</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Legal</h4>
+            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Support</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
+              <li><Link href="/faq" className="hover:text-primary transition-colors">FAQ</Link></li>
+              <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
               <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
-              <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
             </ul>
           </div>
         </div>
