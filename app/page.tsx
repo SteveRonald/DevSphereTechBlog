@@ -76,6 +76,9 @@ export default async function Home() {
               Master Modern Tech with <br className="hidden sm:inline" />
               <span className="text-gradient">CodeCraft Academy</span>
             </h1>
+            <p className="mx-auto max-w-[700px] text-base text-muted-foreground mt-2">
+              <strong className="text-foreground">CodeCraft Academy</strong> - A web development blog and learning platform
+            </p>
             <p className="mx-auto max-w-[700px] text-lg text-muted-foreground md:text-xl">
               <strong>CodeCraft Academy</strong> is a web development blog and learning platform that provides practical tutorials, in-depth reviews, and career advice for developers. 
               From React to AI, we cover what matters most to help you advance your tech career.
