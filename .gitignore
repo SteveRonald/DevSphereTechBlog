@@ -48,6 +48,9 @@ scripts/*.js
 scripts/*.ts
 !scripts/*.config.js
 !scripts/*.config.ts
+scripts/add-device-tracking-fields.js
+scripts/add-unsubscribe-fields.js
+scripts/notify-subscribers.js
 
 # Supabase - ignore generated/migration files but keep schema SQL files
 supabase/.temp/
