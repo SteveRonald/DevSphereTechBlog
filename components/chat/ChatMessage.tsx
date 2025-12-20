@@ -50,8 +50,10 @@ export function ChatMessage({
 
   // Function to parse URLs and make them clickable
   const formatMessage = (text: string) => {
-    // Regex to match URLs (http:// or https:// followed by non-whitespace)
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    // Regex to match URLs (http:// or https:// followed by valid URL characters)
+    // Uses negative lookahead to exclude trailing punctuation that's not part of the URL
+    // Matches URL characters but stops before trailing . , ; : ! ? ) ] when followed by whitespace or end
+    const urlRegex = /(https?:\/\/[^\s]+?)(?=[.,;:!?)\]]*(?:\s|$))/g;
     const parts: Array<{ text: string; isUrl: boolean }> = [];
     let lastIndex = 0;
     let match;
@@ -62,8 +64,9 @@ export function ChatMessage({
       if (match.index > lastIndex) {
         parts.push({ text: text.substring(lastIndex, match.index), isUrl: false });
       }
-      // Add URL
-      parts.push({ text: match[0], isUrl: true });
+      // Add URL (already excludes trailing punctuation due to regex)
+      const url = match[1];
+      parts.push({ text: url, isUrl: true });
       lastIndex = urlRegex.lastIndex;
     }
     
