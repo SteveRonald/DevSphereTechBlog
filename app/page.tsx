@@ -77,7 +77,7 @@ export default async function Home() {
               <span className="text-gradient">CodeCraft Academy</span>
             </h1>
             <p className="mx-auto max-w-[700px] text-lg text-muted-foreground md:text-xl">
-              <strong className="text-gradient font-bold text-2xl">CodeCraft Academy</strong> is a web development blog and learning platform that provides practical tutorials, in-depth reviews, and career advice for developers. 
+              <strong className="text-foreground">CodeCraft Academy</strong> is a web development blog and learning platform that provides practical tutorials, in-depth reviews, and career advice for developers. 
               From React to AI, we cover what matters most to help you advance your tech career.
             </p>
             <div className="mx-auto max-w-[700px] mt-4 p-3 bg-muted/50 rounded-lg border border-border">
