@@ -4,25 +4,28 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { X, Send, Volume2, VolumeX, Loader2, LogIn, UserPlus } from "lucide-react";
+import { X, Send, Volume2, VolumeX, Loader2, LogIn, UserPlus, History, Plus, Trash2, Image as ImageIcon, XCircle } from "lucide-react";
 import { ChatMessage } from "./ChatMessage";
 import { VoiceInput } from "./VoiceInput";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
   conversationId?: string;
   rating?: number;
+  imageUrl?: string; // For displaying images in chat
 }
 
 export function Chatbot() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
-  const [sessionId] = useState(() => {
+  const [sessionId, setSessionId] = useState(() => {
     // Generate or retrieve session ID - use localStorage to persist across refreshes
     if (typeof window !== "undefined") {
       let id = localStorage.getItem("chat_session_id");
@@ -46,9 +49,33 @@ export function Chatbot() {
   const [chatCount, setChatCount] = useState(0);
   const [chatLimit, setChatLimit] = useState(10);
   const [isLimitReached, setIsLimitReached] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState<any[]>([]);
+  const [deletedSessions, setDeletedSessions] = useState<Set<string>>(() => {
+    // Load deleted sessions from localStorage to persist across refreshes
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("deleted_chat_sessions");
+      if (stored) {
+        try {
+          return new Set(JSON.parse(stored));
+        } catch {
+          return new Set();
+        }
+      }
+    }
+    return new Set();
+  });
+  const [imageUploadCount, setImageUploadCount] = useState(0);
+  const [imageUploadLimit, setImageUploadLimit] = useState<number | null>(null);
+  const [imageLimitReached, setImageLimitReached] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageDescription, setImageDescription] = useState<string>("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const welcomeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Show welcome popup after 2 seconds on first visit
   useEffect(() => {
@@ -74,14 +101,241 @@ export function Chatbot() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Reset limit when user logs in
+  // Reset limit when user logs in and load deleted sessions
   useEffect(() => {
     if (user) {
       setIsLimitReached(false);
       // Reset chat count display for logged-in users
       setChatCount(0);
+      // Load deleted sessions from localStorage
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("deleted_chat_sessions");
+        if (stored) {
+          try {
+            const deletedArray = JSON.parse(stored);
+            setDeletedSessions(new Set(deletedArray));
+          } catch {
+            // Ignore parse errors
+          }
+        }
+      }
+      // Load conversation history for logged-in users
+      loadConversationHistory();
     }
   }, [user]);
+
+  // Load conversation history for logged-in users
+  const loadConversationHistory = async () => {
+    if (!user) return;
+    
+    try {
+      // Get access token to send with request
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+      if (session?.access_token) {
+        headers["Authorization"] = `Bearer ${session.access_token}`;
+      }
+      
+      const response = await fetch("/api/chat/conversations", {
+        credentials: "include",
+        headers,
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Filter out deleted sessions (from both state and localStorage)
+        const filtered = data.sessions.filter((s: any) => !deletedSessions.has(s.sessionId));
+        setConversationHistory(filtered);
+      }
+    } catch (error) {
+      console.error("Error loading conversation history:", error);
+    }
+  };
+
+
+  // Start a new chat session
+  const startNewChat = () => {
+    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    localStorage.setItem("chat_session_id", newSessionId);
+    setSessionId(newSessionId);
+    setMessages([
+      {
+        role: "assistant",
+        content: "Hi! I'm your CodeCraft Academy assistant. How can I help you today?",
+      },
+    ]);
+    setInput("");
+    setShowHistory(false);
+  };
+
+  // Load a conversation from history
+  const loadConversation = (session: any) => {
+    const conversationMessages: Message[] = [];
+    session.conversations.forEach((conv: any) => {
+      conversationMessages.push({ role: "user" as const, content: conv.user_question });
+      conversationMessages.push({ 
+        role: "assistant" as const, 
+        content: conv.ai_response,
+        conversationId: conv.id 
+      });
+    });
+    setMessages([
+      {
+        role: "assistant",
+        content: "Hi! I'm your CodeCraft Academy assistant. How can I help you today?",
+      },
+      ...conversationMessages,
+    ]);
+    setShowHistory(false);
+  };
+
+  // Delete conversation (frontend only)
+  const deleteConversation = (deletedSessionId: string) => {
+    const newDeletedSessions = new Set([...deletedSessions, deletedSessionId]);
+    setDeletedSessions(newDeletedSessions);
+    // Persist to localStorage so it never shows again
+    if (typeof window !== "undefined") {
+      localStorage.setItem("deleted_chat_sessions", JSON.stringify(Array.from(newDeletedSessions)));
+    }
+    setConversationHistory((prev) => prev.filter((s) => s.sessionId !== deletedSessionId));
+    // If current session is deleted, start new chat
+    if (deletedSessionId === sessionId) {
+      startNewChat();
+    }
+  };
+
+  // Handle image selection - DISABLED: Coming soon
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    // Clear the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Handle image upload and analysis
+  const handleImageUpload = async () => {
+    if (!selectedImage) return;
+
+    setUploadingImage(true);
+    try {
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Image = reader.result as string;
+        
+        // Get access token to send with request
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+        if (session?.access_token) {
+          headers["Authorization"] = `Bearer ${session.access_token}`;
+        }
+        
+        // Send image to API for analysis
+        const response = await fetch("/api/chat/image", {
+          method: "POST",
+          credentials: "include",
+          headers,
+          body: JSON.stringify({
+            image: base64Image,
+            description: imageDescription.trim() || undefined, // Send description if provided
+            sessionId: sessionId,
+            imageType: selectedImage.type, // Send image MIME type
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          
+          // Handle daily limit reached
+          if (response.status === 429 && errorData.error === "daily_limit_reached") {
+            setImageLimitReached(true);
+            setImageUploadCount(errorData.count || 0);
+            setImageUploadLimit(errorData.limit || null);
+            const limitMessage: Message = {
+              role: "assistant",
+              content: errorData.message || "You've reached your daily image upload limit. You can still use text or voice input to continue chatting.",
+            };
+            setMessages((prev) => [...prev, limitMessage]);
+            // Clear image
+            setSelectedImage(null);
+            setImagePreview(null);
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+            setUploadingImage(false);
+            return;
+          }
+          
+          throw new Error(errorData.message || "Failed to analyze image");
+        }
+
+        const data = await response.json();
+        
+        // Update image upload count and limit
+        if (data.imageCount !== undefined && data.imageCount !== null) {
+          setImageUploadCount(data.imageCount);
+        }
+        if (data.imageLimit !== undefined && data.imageLimit !== null) {
+          setImageUploadLimit(data.imageLimit);
+          // Check if limit reached
+          if (data.imageCount >= data.imageLimit) {
+            setImageLimitReached(true);
+          } else {
+            setImageLimitReached(false);
+          }
+        }
+        
+        // Add user message with image and description
+        const userMessageContent = imageDescription.trim() 
+          ? imageDescription
+          : "Please analyze this image";
+        const userMessage: Message = { 
+          role: "user", 
+          content: userMessageContent,
+          imageUrl: imagePreview // Store image URL to display in chat
+        };
+        setMessages((prev) => [...prev, userMessage]);
+
+        // Add assistant response
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: data.response || "I've analyzed your image. How can I help you with it?",
+          conversationId: data.conversationId,
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+
+        // Reload conversation history for logged-in users after uploading image
+        if (user && data.conversationId) {
+          loadConversationHistory();
+        }
+
+        // Clear image and description
+        setSelectedImage(null);
+        setImagePreview(null);
+        setImageDescription("");
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      };
+      reader.readAsDataURL(selectedImage);
+    } catch (error: any) {
+      console.error("Error uploading image:", error);
+      const errorMessage: Message = {
+        role: "assistant",
+        content: error.message || "Sorry, I couldn't analyze the image. Please make sure it's related to our website content.",
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   // Check current chat limit on mount to sync with backend
   useEffect(() => {
@@ -167,11 +421,20 @@ export function Chatbot() {
         content: msg.content,
       }));
 
+      // Get access token to send with request
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+      if (session?.access_token) {
+        headers["Authorization"] = `Bearer ${session.access_token}`;
+      }
+
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        credentials: "include",
+        headers,
         body: JSON.stringify({
           message: textToSend,
           conversationHistory: conversationHistory.slice(0, -1), // Exclude current message
@@ -238,6 +501,12 @@ export function Chatbot() {
 
       setMessages((prev) => [...prev, assistantMessage]);
 
+      // Reload conversation history for logged-in users after sending a message
+      // This ensures new chats appear in history immediately
+      if (user && data.conversationId) {
+        loadConversationHistory();
+      }
+
       // Speak the response if voice is enabled
       if (voiceEnabled) {
         speak(assistantMessage.content);
@@ -255,10 +524,11 @@ export function Chatbot() {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    // Don't handle Enter if an image is selected (let image upload handle it)
+    if (e.key === "Enter" && !e.shiftKey && !selectedImage) {
       e.preventDefault();
       if (!isLimitReached || user) {
-        handleSend();
+      handleSend();
       }
     }
   };
@@ -384,7 +654,10 @@ export function Chatbot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-6 right-6 w-[90vw] max-w-md h-[600px] flex flex-col shadow-2xl z-50 border-2">
+        <Card className={cn(
+          "fixed bottom-6 right-6 h-[600px] flex flex-col shadow-2xl z-50 border-2",
+          user && showHistory ? "w-[90vw] max-w-2xl" : "w-[90vw] max-w-md"
+        )}>
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground rounded-t-lg">
             <div className="flex items-center gap-2">
@@ -392,6 +665,28 @@ export function Chatbot() {
               <h3 className="font-semibold">CodeCraft Assistant</h3>
             </div>
             <div className="flex items-center gap-2">
+              {user && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowHistory(!showHistory)}
+                    className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+                    title="Conversation history"
+                  >
+                    <History className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={startNewChat}
+                    className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+                    title="New chat"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -423,6 +718,67 @@ export function Chatbot() {
             </div>
           </div>
 
+          {/* Conversation History Sidebar */}
+          {user && showHistory && (
+            <div className="absolute left-0 top-0 bottom-0 w-64 bg-background border-r z-10 flex flex-col">
+              <div className="p-4 border-b">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold">Conversations</h4>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowHistory(false)}
+                    className="h-6 w-6"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={startNewChat}
+                  className="w-full"
+                >
+                  <Plus className="h-3 w-3 mr-2" />
+                  New Chat
+                </Button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-2">
+                {conversationHistory.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center p-4">
+                    No previous conversations
+                  </p>
+                ) : (
+                  conversationHistory.map((session) => (
+                    <div
+                      key={session.sessionId}
+                      className="p-3 mb-2 rounded-lg border hover:bg-muted cursor-pointer group relative"
+                      onClick={() => loadConversation(session)}
+                    >
+                      <p className="text-sm font-medium truncate mb-1">
+                        {session.preview}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(session.lastMessageAt).toLocaleDateString()}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteConversation(session.sessionId);
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Messages */}
           <div
             ref={chatContainerRef}
@@ -433,6 +789,7 @@ export function Chatbot() {
                 key={index} 
                 {...message} 
                 onRate={handleRate}
+                imageUrl={message.imageUrl}
               />
             ))}
             {isLoading && (
@@ -457,7 +814,102 @@ export function Chatbot() {
                 </p>
               </div>
             )}
+            {/* Image Upload Limit Warning for Logged-in Users */}
+            {user && imageUploadLimit !== null && (
+              <div className="mb-2 text-xs text-muted-foreground">
+                Images today: {imageUploadCount} / {imageUploadLimit}
+                {imageLimitReached && (
+                  <span className="ml-2 text-amber-600 dark:text-amber-400 font-medium">
+                    (Limit reached - text/voice still available)
+                  </span>
+                )}
+              </div>
+            )}
+            {/* Image Preview with Description Input - DISABLED: Coming soon */}
+            {false && imagePreview && (
+              <div className="mb-2 space-y-2">
+                <div className="relative inline-block">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="max-w-[200px] max-h-[200px] rounded-lg border"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-background border"
+                    onClick={() => {
+                      setSelectedImage(null);
+                      setImagePreview(null);
+                      setImageDescription("");
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = "";
+                      }
+                    }}
+                  >
+                    <XCircle className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Input
+                  value={imageDescription}
+                  onChange={(e) => setImageDescription(e.target.value)}
+                  placeholder="Describe the image or ask a question about it... (optional but helpful!)"
+                  className="text-sm"
+                  disabled={uploadingImage || isInputDisabled}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && selectedImage && !uploadingImage && !isInputDisabled) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleImageUpload();
+                    }
+                  }}
+                />
+              </div>
+            )}
             <div className="flex gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="hidden"
+                id="image-upload"
+                disabled={imageLimitReached && user ? true : isInputDisabled}
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  // Show "Coming soon" toast notification
+                  toast({
+                    title: "Coming Soon",
+                    description: "Image upload feature is coming soon! For now, please describe your question or issue in text, and I'll be happy to help.",
+                  });
+                }}
+                disabled={false}
+                title="Image upload - Coming soon"
+                className="h-8 w-8"
+              >
+                <ImageIcon className="h-4 w-4" />
+              </Button>
+              {/* Image send button - DISABLED: Coming soon */}
+              {false && selectedImage && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleImageUpload}
+                  disabled={uploadingImage || isInputDisabled}
+                >
+                  {uploadingImage ? (
+                    <>
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    "Send"
+                  )}
+                </Button>
+              )}
               <VoiceInput
                 onTranscript={handleVoiceTranscript}
                 disabled={isInputDisabled}
@@ -486,7 +938,7 @@ export function Chatbot() {
             <p className="text-xs text-muted-foreground mt-2 text-center">
               {!isLimitReached ? (
                 <>
-                  Ask me about blog posts, topics, donations, or anything about CodeCraft Academy
+              Ask me about blog posts, topics, donations, or anything about CodeCraft Academy
                   {!user && (
                     <span className="block mt-1.5 font-medium text-foreground">
                       Free chats: {chatCount} / {chatLimit} used
@@ -522,7 +974,7 @@ export function Chatbot() {
                       className="w-full"
                     >
                       <LogIn className="h-3.5 w-3.5 mr-1.5" />
-                      Sign In
+                    Sign In
                     </Button>
                   </Link>
                   <Link

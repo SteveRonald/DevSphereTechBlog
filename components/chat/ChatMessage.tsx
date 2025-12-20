@@ -5,6 +5,7 @@ import { Bot, User, ThumbsUp, ThumbsDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -13,6 +14,7 @@ interface ChatMessageProps {
   conversationId?: string;
   onRate?: (conversationId: string, rating: number) => void;
   rating?: number;
+  imageUrl?: string; // For displaying images in chat
 }
 
 export function ChatMessage({ 
@@ -21,13 +23,28 @@ export function ChatMessage({
   isTyping, 
   conversationId, 
   onRate,
-  rating 
+  rating,
+  imageUrl
 }: ChatMessageProps) {
   const isUser = role === "user";
+  const { toast } = useToast();
 
   const handleRate = (rate: number) => {
     if (conversationId && onRate) {
       onRate(conversationId, rate);
+      // Show feedback toast
+      if (rate === 5) {
+        toast({
+          title: "Thank you!",
+          description: "We're glad this response was helpful. Your feedback helps us improve!",
+          variant: "success",
+        });
+      } else if (rate === 1) {
+        toast({
+          title: "Thanks for your feedback",
+          description: "We're sorry this wasn't helpful. We'll use your feedback to improve our responses.",
+        });
+      }
     }
   };
 
@@ -133,8 +150,20 @@ export function ChatMessage({
               </span>
             </div>
           ) : (
-            <div className="whitespace-pre-wrap leading-6">
-              {formatMessage(content)}
+            <div className="space-y-2">
+              {/* Display image if present */}
+              {imageUrl && (
+                <div className="mb-2">
+                  <img
+                    src={imageUrl}
+                    alt="Uploaded image"
+                    className="max-w-full max-h-[300px] rounded-lg border border-border/50 object-contain"
+                  />
+                </div>
+              )}
+              <div className="whitespace-pre-wrap leading-6">
+                {formatMessage(content)}
+              </div>
             </div>
           )}
         </div>

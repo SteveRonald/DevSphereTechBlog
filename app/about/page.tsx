@@ -10,18 +10,18 @@ export default function About() {
       name:"Steve Ronald",
       role: "Founder & Lead Editor",
       bio: "10+ years of full-stack development experience. Passionate about teaching modern web technologies and helping developers level up their skills.",
-      avatar: "https://github.com/shadcn.png",
+      avatar: "https://github.com/SteveRonald.png",
       social: {
-        twitter: "https://twitter.com",
-        github: "https://github.com",
-        linkedin: "https://linkedin.com"
+        twitter: "https://twitter.com/Stevegmail98",
+        github: "https://github.com/SteveRonald",
+        linkedin: "https://www.linkedin.com/in/steve-ronald-432775255"
       }
     },
     {
-      name: "Diana  Odindo",
+      name: "Diana Odindo",
       role: "AI Specialist",
       bio: "Machine Learning engineer focused on making AI accessible to web developers. Expert in LLM integration and vector databases.",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1887&auto=format&fit=crop",
+      avatar: "https://api.dicebear.com/8.x/lorelei/svg?seed=DianaOdindo&flip=true&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf",
       social: {
         twitter: "https://twitter.com",
         github: "https://github.com",

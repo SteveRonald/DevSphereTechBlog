@@ -100,17 +100,17 @@ export async function Sidebar() {
         <CardContent>
           <div className="flex justify-center space-x-4">
             <Button variant="outline" size="icon" className="rounded-full hover:text-primary hover:border-primary" asChild>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+              <a href="https://twitter.com/Stevegmail98" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Twitter">
                 <Twitter className="h-4 w-4" />
               </a>
             </Button>
             <Button variant="outline" size="icon" className="rounded-full hover:text-primary hover:border-primary" asChild>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/SteveRonald" target="_blank" rel="noopener noreferrer" aria-label="Follow us on GitHub">
                 <Github className="h-4 w-4" />
               </a>
             </Button>
             <Button variant="outline" size="icon" className="rounded-full hover:text-primary hover:border-primary" asChild>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+              <a href="https://www.linkedin.com/in/steve-ronald-432775255" target="_blank" rel="noopener noreferrer" aria-label="Follow us on LinkedIn">
                 <Linkedin className="h-4 w-4" />
               </a>
             </Button>

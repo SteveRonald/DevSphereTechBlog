@@ -41,7 +41,12 @@ export function createServerClient(request?: NextRequest) {
       }
     }
     // Fallback to cookieStore (for server components)
-    return cookieStore.get(name)?.value;
+    try {
+      return cookieStore.get(name)?.value;
+    } catch (error) {
+      // cookieStore might not be available in all contexts
+      return undefined;
+    }
   };
 
   const client = createClient(
@@ -97,17 +102,24 @@ export function createServerClient(request?: NextRequest) {
     } as any
   );
   
-  // If we have an access token from header, set it as the session
-  // This ensures RLS policies can read auth.uid() correctly
+  // If we have an access token from header, we need to set it properly
+  // The Supabase client will use it from the Authorization header in global headers
+  // But we also need to ensure getUser() can use it
   if (accessTokenFromHeader) {
-    // Set the session so RLS policies work
-    // We use a promise that resolves immediately but sets the session
-    client.auth.setSession({
-      access_token: accessTokenFromHeader,
-      refresh_token: "",
-    } as any).catch(() => {
-      // Ignore errors - the token might be invalid, but we'll handle that in the API routes
-    });
+    // Set the session synchronously by directly setting the internal state
+    // This is a workaround since setSession is async and might not complete in time
+    try {
+      // The token is already in the global headers, so getUser() should work
+      // But we'll also try to set it as a session for getSession() to work
+      client.auth.setSession({
+        access_token: accessTokenFromHeader,
+        refresh_token: "",
+      } as any).catch(() => {
+        // Ignore errors - we'll use getUser() which reads from headers
+      });
+    } catch (error) {
+      // Ignore - token is in headers, getUser() will work
+    }
   }
   
   return client;

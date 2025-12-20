@@ -138,10 +138,60 @@ export async function POST(request: NextRequest) {
 
     // Check authentication
     const supabase = createServerClient(request);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    
+    // Try to get user - check Authorization header first, then session
+    let user;
+    const authHeader = request.headers.get("authorization");
+    
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      // Token is in header - validate it directly
+      const token = authHeader.substring(7);
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "apikey": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          },
+        });
+        if (response.ok) {
+          user = await response.json();
+          console.log("User authenticated from Authorization header, user_id:", user.id);
+        } else {
+          console.error("Token validation failed:", response.status);
+        }
+      } catch (error) {
+        console.error("Error validating token:", error);
+      }
+    }
+    
+    // Fallback to Supabase client methods
+    if (!user) {
+      const { data: { user: userFromToken }, error: userError } = await supabase.auth.getUser();
+      if (userFromToken) {
+        user = userFromToken;
+      } else {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (session?.user) {
+          user = session.user;
+        }
+        
+        if (userError) {
+          console.error("User error in chat route:", userError);
+        }
+        if (sessionError) {
+          console.error("Session error in chat route:", sessionError);
+        }
+      }
+    }
+    
     const userId = user?.id || null;
+    
+    // Log for debugging - ensure user_id is captured
+    if (userId) {
+      console.log("User authenticated, user_id:", userId);
+    } else {
+      console.log("No user authenticated (anonymous session) - hasAuthHeader:", !!authHeader);
+    }
 
     // Check chat limits BEFORE processing
     const limitCheck = await checkChatLimit(supabase, userId, sessionId);
@@ -242,27 +292,42 @@ export async function POST(request: NextRequest) {
       // Format as: YYYY-MM-DDTHH:mm:ss+03:00 (Nairobi is UTC+3)
       const nairobiTimeISO = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T${timeStr}+03:00`;
       
+      const insertData = {
+        session_id: sessionId || `session_${Date.now()}`,
+        user_id: userId, // Tie conversation to logged-in user
+        user_question: message,
+        ai_response: response,
+        context_used: {
+          recent_posts: context.recentPosts.slice(0, 5).map((p: any) => p.title),
+          categories: context.categories.map((c: any) => c.title),
+        },
+        response_time_ms: responseTime,
+        model_used: "llama-3.1-8b-instant",
+        created_at: nairobiTimeISO, // Saved in Nairobi timezone (UTC+3)
+      };
+      
+      console.log("Saving conversation with data:", {
+        session_id: insertData.session_id,
+        user_id: insertData.user_id,
+        has_user_id: !!insertData.user_id,
+      });
+      
       const { data, error } = await supabase
         .from("chat_conversations")
-        .insert({
-          session_id: sessionId || `session_${Date.now()}`,
-          user_question: message,
-          ai_response: response,
-          context_used: {
-            recent_posts: context.recentPosts.slice(0, 5).map((p: any) => p.title),
-            categories: context.categories.map((c: any) => c.title),
-          },
-          response_time_ms: responseTime,
-          model_used: "llama-3.1-8b-instant",
-          created_at: nairobiTimeISO, // Saved in Nairobi timezone (UTC+3)
-        })
-        .select("id, created_at")
+        .insert(insertData)
+        .select("id, created_at, user_id")
         .single();
         
       if (error) {
         console.error("Error saving conversation:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
       } else {
-        console.log("Conversation saved:", { id: data?.id, created_at: data?.created_at });
+        console.log("Conversation saved successfully:", { 
+          id: data?.id, 
+          created_at: data?.created_at,
+          user_id: data?.user_id,
+          saved_user_id: data?.user_id || "NULL"
+        });
       }
 
       if (!error && data) {
