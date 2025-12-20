@@ -14,7 +14,11 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "CodeCraft Academy - Master Modern Tech",
-  description: "Practical tutorials, in-depth reviews, and career advice for developers. From React to AI, we cover what matters.",
+  description: "CodeCraft Academy is a web development blog and learning platform providing practical tutorials, in-depth reviews, and career advice for developers. From React to AI, we cover what matters most.",
+  keywords: ["web development", "programming tutorials", "React", "Next.js", "TypeScript", "JavaScript", "AI", "developer blog", "CodeCraft Academy"],
+  authors: [{ name: "CodeCraft Academy" }],
+  creator: "CodeCraft Academy",
+  publisher: "CodeCraft Academy",
   icons: {
     icon: [
       { url: "/logo.png", type: "image/png" },
@@ -22,6 +26,10 @@ export const metadata: Metadata = {
     ],
     shortcut: "/logo.png",
     apple: "/logo.png",
+  },
+  other: {
+    // Add Google site verification meta tag here when you get the verification code
+    // 'google-site-verification': 'your-verification-code-here',
   },
 };
 

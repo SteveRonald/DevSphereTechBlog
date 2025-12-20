@@ -77,8 +77,11 @@ export default async function Home() {
               <span className="text-gradient">CodeCraft Academy</span>
             </h1>
             <p className="mx-auto max-w-[700px] text-lg text-muted-foreground md:text-xl">
-              Practical tutorials, in-depth reviews, and career advice for developers. 
-              From React to AI, we cover what matters most.
+              <strong>CodeCraft Academy</strong> is a web development blog and learning platform that provides practical tutorials, in-depth reviews, and career advice for developers. 
+              From React to AI, we cover what matters most to help you advance your tech career.
+            </p>
+            <p className="mx-auto max-w-[700px] text-sm text-muted-foreground mt-2">
+              <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link> | <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
               <Button size="lg" className="h-12 px-8 text-base" asChild>
@@ -140,6 +143,51 @@ export default async function Home() {
           <aside className="lg:col-span-4">
             <Sidebar />
           </aside>
+        </div>
+      </section>
+
+      {/* About CodeCraft Academy Section - For Google OAuth Verification */}
+      <section className="relative overflow-hidden bg-muted/30 py-16 md:py-20">
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-50" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl opacity-50" />
+        </div>
+        <div className="container max-w-5xl mx-auto px-4 md:px-6 relative z-10">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary backdrop-blur-sm mb-4">
+              <Sparkles className="mr-2 h-3.5 w-3.5" />
+              <span>Our Mission</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
+              About <span className="text-gradient">CodeCraft Academy</span>
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="space-y-4 text-left">
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">CodeCraft Academy</strong> is a web development blog and learning platform designed to help developers advance their careers.
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                We provide practical tutorials, in-depth product reviews, code snippets, and career advice covering modern technologies from React and Next.js to AI and machine learning.
+              </p>
+            </div>
+            <div className="space-y-4 text-left">
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Our mission is to make quality tech education accessible to developers at all skill levels, from beginners to experienced engineers.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-2">
+                <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">Web Development</span>
+                <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">Tutorials</span>
+                <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">Career Advice</span>
+                <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">AI & ML</span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link> | <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
+            </p>
+          </div>
         </div>
       </section>
 
