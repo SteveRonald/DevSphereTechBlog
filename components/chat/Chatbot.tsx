@@ -23,6 +23,7 @@ interface Message {
 
 export function Chatbot() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const [sessionId, setSessionId] = useState(() => {
