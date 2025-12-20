@@ -43,12 +43,17 @@ next-env.d.ts
 .replit
 .local
 
-# Scripts with sensitive data
-scripts/
-scripts/run-supabase-schema.js
+# Scripts with sensitive data or generated files
+scripts/*.js
+scripts/*.ts
+!scripts/*.config.js
+!scripts/*.config.ts
 
-# Supabase database files
-supabase/
+# Supabase - ignore generated/migration files but keep schema SQL files
+supabase/.temp/
+supabase/migrations/
+supabase/.branches/
+supabase/.temp/
 
 # Documentation files
 *.md
