@@ -77,7 +77,7 @@ export default async function Home() {
               <span className="text-gradient">CodeCraft Academy</span>
             </h1>
             <p className="mx-auto max-w-[600px] text-base text-muted-foreground md:text-lg">
-              Practical tutorials, in-depth reviews, and career advice to help you advance your tech career.
+              Free courses, in-depth reviews, and career advice to help you advance your tech career.
             </p>
             <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground pt-1">
               <Link href="/privacy" className="hover:text-primary underline">Privacy Policy</Link>
@@ -86,7 +86,7 @@ export default async function Home() {
             </div>
             <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
               <Button size="lg" className="h-12 px-8 text-base" asChild>
-                <Link href="/tutorials">
+                <Link href="/free-courses">
                   Start Learning <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -169,7 +169,7 @@ export default async function Home() {
                 <strong className="text-foreground">CodeCraft Academy</strong> is a web development blog and learning platform designed to help developers advance their careers.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                We provide practical tutorials, in-depth product reviews, code snippets, and career advice covering modern technologies from React and Next.js to AI and machine learning.
+                We provide free courses, in-depth product reviews, code snippets, and career advice covering modern technologies from React and Next.js to AI and machine learning.
               </p>
             </div>
             <div className="space-y-4 text-left">
@@ -178,7 +178,7 @@ export default async function Home() {
               </p>
               <div className="flex flex-wrap gap-2 pt-2">
                 <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">Web Development</span>
-                <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">Tutorials</span>
+                <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">Free Courses</span>
                 <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">Career Advice</span>
                 <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">AI & ML</span>
               </div>

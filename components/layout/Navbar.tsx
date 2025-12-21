@@ -85,7 +85,7 @@ export function Navbar() {
   };
 
   const navLinks = [
-    { name: "Tutorials", href: "/tutorials" },
+    { name: "Free Courses", href: "/free-courses" },
     { name: "Reviews", href: "/reviews" },
     { name: "Snippets", href: "/snippets" },
     { name: "About", href: "/about" },

@@ -14,7 +14,7 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: <BookOpen className="h-6 w-6" />,
-    title: "Practical Tutorials",
+    title: "Free Courses",
     description: "Learn by doing with real-world projects and hands-on examples that you can immediately apply to your work.",
   },
   {

@@ -14,8 +14,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "CodeCraft Academy - Master Modern Tech",
-  description: "CodeCraft Academy is a web development blog and learning platform providing practical tutorials, in-depth reviews, and career advice for developers. From React to AI, we cover what matters most.",
-  keywords: ["web development", "programming tutorials", "React", "Next.js", "TypeScript", "JavaScript", "AI", "developer blog", "CodeCraft Academy"],
+  description: "CodeCraft Academy is a web development blog and learning platform providing free courses, in-depth reviews, and career advice for developers. From React to AI, we cover what matters most.",
+  keywords: ["web development", "free courses", "programming courses", "React", "Next.js", "TypeScript", "JavaScript", "AI", "developer blog", "CodeCraft Academy"],
   authors: [{ name: "CodeCraft Academy" }],
   creator: "CodeCraft Academy",
   publisher: "CodeCraft Academy",

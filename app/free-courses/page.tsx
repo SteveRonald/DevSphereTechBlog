@@ -29,10 +29,10 @@ export default async function TutorialsPage() {
         <div className="container max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-center gap-3 mb-4">
             <BookOpen className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Tutorials</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Free Courses</h1>
           </div>
           <p className="text-muted-foreground max-w-3xl">
-            Step-by-step guides and tutorials to help you learn new technologies, frameworks, and best practices. 
+            Step-by-step guides and free courses to help you learn new technologies, frameworks, and best practices. 
             From beginner-friendly introductions to advanced techniques.
           </p>
         </div>
@@ -56,8 +56,8 @@ export default async function TutorialsPage() {
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium mb-2">No tutorials yet</p>
-                <p className="text-sm">Check back soon for new tutorials!</p>
+                <p className="text-lg font-medium mb-2">No free courses yet</p>
+                <p className="text-sm">Check back soon for new free courses!</p>
               </div>
             )}
           </div>

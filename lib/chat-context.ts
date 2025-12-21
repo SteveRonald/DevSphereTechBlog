@@ -37,7 +37,7 @@ export async function getWebsiteContext(): Promise<WebsiteContext> {
       categories: categories || [],
       siteInfo: {
         name: "CodeCraft Academy",
-        description: "Practical tutorials, in-depth reviews, and career advice for developers. From React to AI, we cover what matters.",
+        description: "Free courses, in-depth reviews, and career advice for developers. From React to AI, we cover what matters.",
         pages: [
           "/blog - Browse all blog posts",
           "/donate - Support us with donations",
@@ -112,7 +112,7 @@ export function formatContextForPrompt(context: WebsiteContext, requestOrigin?: 
   prompt += `- Be concise: Keep responses to 2-3 sentences when possible for fast responses\n`;
   prompt += `- Provide links: Always include relevant page links when directing users\n`;
   prompt += `- Who created you: If asked who created or developed you, respond: "I was created by CodeCraft Academy to assist visitors with questions about the website and its content. If you'd like to learn about the specific developers behind CodeCraft Academy, you can visit our About page at ${siteUrl}/about where you'll find information about our team members."\n`;
-  prompt += `- Where you get information: If asked where you get your information, respond: "I get my information from the CodeCraft Academy website content, including recent blog posts, categories, and website pages. I'm designed to help you find information about our blog posts, tutorials, and website features."\n`;
+  prompt += `- Where you get information: If asked where you get your information, respond: "I get my information from the CodeCraft Academy website content, including recent blog posts, categories, and website pages. I'm designed to help you find information about our blog posts, free courses, and website features."\n`;
   prompt += `- Login questions: If someone asks about logging in, provide clear instructions:\n`;
   prompt += `  * "To login, visit our authentication page at ${siteUrl}/auth and use the 'Sign In' tab"\n`;
   prompt += `  * "If you don't have an account, you can sign up at ${siteUrl}/auth using the 'Sign Up' tab"\n`;
@@ -127,7 +127,7 @@ export function formatContextForPrompt(context: WebsiteContext, requestOrigin?: 
   
   prompt += `**Example Responses:**\n`;
   prompt += `- Who created you: "I was created by CodeCraft Academy to assist visitors with questions about the website and its content. If you'd like to learn about the specific developers behind CodeCraft Academy, you can visit our About page at ${siteUrl}/about where you'll find information about our team members."\n`;
-  prompt += `- Where you get information: "I get my information from the CodeCraft Academy website content, including recent blog posts, categories, and website pages. I'm designed to help you find information about our blog posts, tutorials, and website features."\n`;
+  prompt += `- Where you get information: "I get my information from the CodeCraft Academy website content, including recent blog posts, categories, and website pages. I'm designed to help you find information about our blog posts, free courses, and website features."\n`;
   prompt += `- Login question: "To login to your account, please visit ${siteUrl}/auth and use the 'Sign In' tab. If you need to create an account, you can use the 'Sign Up' tab on the same page. If you've forgotten your password, there's a password reset option on the sign-in page."\n`;
   prompt += `- Password request: "I can't provide passwords or access account credentials. For security reasons, please use the password reset feature on the authentication page (${siteUrl}/auth) or contact us through our contact form if you need assistance."\n`;
   prompt += `- Out of scope: "I specialize in helping with CodeCraft Academy questions. For that topic, I'd suggest browsing our blog at ${siteUrl}/blog or contacting us directly at ${siteUrl}/contact."\n`;

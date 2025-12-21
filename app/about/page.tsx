@@ -40,7 +40,7 @@ export default function About() {
     {
       icon: Code,
       title: "Practical Learning",
-      description: "Real-world examples and hands-on tutorials you can apply immediately.",
+      description: "Real-world examples and hands-on free courses you can apply immediately.",
       color: "text-blue-500"
     },
     {
@@ -101,7 +101,7 @@ export default function About() {
               </span>
             </h1>
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
-              We are a community of developers dedicated to mastering modern tech skills through practical tutorials and in-depth reviews.
+              We are a community of developers dedicated to mastering modern tech skills through free courses and in-depth reviews.
             </p>
           </div>
         </div>

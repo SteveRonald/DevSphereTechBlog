@@ -8,14 +8,14 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-lg font-bold mb-4">CodeCraft Academy</h3>
             <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
-              Empowering developers with practical tutorials, in-depth reviews, and modern tech skills. Join our community today.
+              Empowering developers with free courses, in-depth reviews, and modern tech skills. Join our community today.
             </p>
           </div>
           
           <div>
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Resources</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
-              <li><Link href="/tutorials" className="hover:text-primary transition-colors">Tutorials</Link></li>
+              <li><Link href="/free-courses" className="hover:text-primary transition-colors">Free Courses</Link></li>
               <li><Link href="/reviews" className="hover:text-primary transition-colors">Product Reviews</Link></li>
               <li><Link href="/snippets" className="hover:text-primary transition-colors">Code Snippets</Link></li>
               <li><Link href="/newsletter" className="hover:text-primary transition-colors">Newsletter</Link></li>

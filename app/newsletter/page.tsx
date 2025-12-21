@@ -15,7 +15,7 @@ export default function NewsletterPage() {
             Join Our Newsletter
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Get the latest tutorials, tech news, and exclusive content delivered straight to your inbox.
+            Get the latest free courses, tech news, and exclusive content delivered straight to your inbox.
           </p>
         </div>
 
@@ -31,7 +31,7 @@ export default function NewsletterPage() {
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <span className="text-sm">Weekly roundup of new tutorials and articles</span>
+                <span className="text-sm">Weekly roundup of new free courses and articles</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
