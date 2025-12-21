@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2 } from "lucide-react";
+import { Loader2, Github } from "lucide-react";
 
 function AuthPageContent() {
   const [email, setEmail] = useState("");
@@ -18,6 +18,7 @@ function AuthPageContent() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -254,6 +255,68 @@ function AuthPageContent() {
     }
   };
 
+  const handleGithubSignIn = async () => {
+    setGithubLoading(true);
+    try {
+      const supabase = createClient();
+      const redirectTo = searchParams.get("redirect") || "/";
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}&action=signin`,
+        },
+      });
+
+      if (error) {
+        console.error("GitHub OAuth sign-in error:", error);
+        throw error;
+      }
+      
+      // Note: signInWithOAuth redirects the user, so we don't need to handle success here
+      // The loading state will be reset when the page redirects
+    } catch (error: any) {
+      console.error("GitHub sign-in error:", error);
+      toast({
+        title: "Sign In Error",
+        description: error.message || "Failed to sign in with GitHub. Please make sure GitHub OAuth is enabled in your Supabase project settings.",
+        variant: "destructive",
+      });
+      setGithubLoading(false);
+    }
+  };
+
+  const handleGithubSignUp = async () => {
+    setGithubLoading(true);
+    try {
+      const supabase = createClient();
+      const redirectTo = searchParams.get("redirect") || "/";
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}&action=signup`,
+        },
+      });
+
+      if (error) {
+        console.error("GitHub OAuth sign-up error:", error);
+        throw error;
+      }
+      
+      // Note: signInWithOAuth redirects the user, so we don't need to handle success here
+      // The loading state will be reset when the page redirects
+    } catch (error: any) {
+      console.error("GitHub sign-up error:", error);
+      toast({
+        title: "Sign Up Error",
+        description: error.message || "Failed to sign up with GitHub. Please make sure GitHub OAuth is enabled in your Supabase project settings.",
+        variant: "destructive",
+      });
+      setGithubLoading(false);
+    }
+  };
+
   return (
     <div className="container flex items-center justify-center min-h-[calc(100vh-200px)] py-8 md:py-12 px-4">
       <Card className="w-full max-w-md">
@@ -314,7 +377,7 @@ function AuthPageContent() {
                   variant="outline"
                   className="w-full"
                   onClick={handleGoogleSignIn}
-                  disabled={loading || googleLoading}
+                  disabled={loading || googleLoading || githubLoading}
                 >
                   {googleLoading ? (
                     <>
@@ -342,6 +405,25 @@ function AuthPageContent() {
                         />
                       </svg>
                       Google
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGithubSignIn}
+                  disabled={loading || googleLoading || githubLoading}
+                >
+                  {githubLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in with GitHub...
+                    </>
+                  ) : (
+                    <>
+                      <Github className="mr-2 h-4 w-4" />
+                      GitHub
                     </>
                   )}
                 </Button>
@@ -416,7 +498,7 @@ function AuthPageContent() {
                   variant="outline"
                   className="w-full"
                   onClick={handleGoogleSignUp}
-                  disabled={loading || googleLoading}
+                  disabled={loading || googleLoading || githubLoading}
                 >
                   {googleLoading ? (
                     <>
@@ -444,6 +526,25 @@ function AuthPageContent() {
                         />
                       </svg>
                       Google
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGithubSignUp}
+                  disabled={loading || googleLoading || githubLoading}
+                >
+                  {githubLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing up with GitHub...
+                    </>
+                  ) : (
+                    <>
+                      <Github className="mr-2 h-4 w-4" />
+                      GitHub
                     </>
                   )}
                 </Button>
