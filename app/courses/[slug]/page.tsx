@@ -127,9 +127,11 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 </div>
               </div>
               <div className="pt-4">
-                <Button size="lg" className="w-full sm:w-auto">
-                  <PlayCircle className="h-4 w-4 mr-2" />
-                  Enroll Now - Free
+                <Button size="lg" className="w-full sm:w-auto" asChild>
+                  <Link href={`/courses/${slug}/learn`}>
+                    <PlayCircle className="h-4 w-4 mr-2" />
+                    Start Learning - Free
+                  </Link>
                 </Button>
               </div>
             </div>
