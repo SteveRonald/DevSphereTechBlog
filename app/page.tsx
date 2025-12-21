@@ -79,6 +79,11 @@ export default async function Home() {
             <p className="mx-auto max-w-[600px] text-base text-muted-foreground md:text-lg">
               Practical tutorials, in-depth reviews, and career advice to help you advance your tech career.
             </p>
+            <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground pt-1">
+              <Link href="/privacy" className="hover:text-primary underline">Privacy Policy</Link>
+              <span>•</span>
+              <Link href="/terms" className="hover:text-primary underline">Terms of Service</Link>
+            </div>
             <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
               <Button size="lg" className="h-12 px-8 text-base" asChild>
                 <Link href="/tutorials">
