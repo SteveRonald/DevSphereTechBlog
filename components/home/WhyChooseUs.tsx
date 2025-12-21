@@ -2,10 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   BookOpen, 
   Code, 
-  Users, 
-  TrendingUp, 
-  CheckCircle2, 
-  Zap 
+  Users
 } from "lucide-react";
 
 interface Feature {
@@ -30,21 +27,6 @@ const features: Feature[] = [
     title: "Expert Community",
     description: "Join a community of developers sharing knowledge, asking questions, and growing together in their careers.",
   },
-  {
-    icon: <TrendingUp className="h-6 w-6" />,
-    title: "Stay Updated",
-    description: "Keep up with the latest technologies, frameworks, and tools that matter in today's fast-paced development world.",
-  },
-  {
-    icon: <CheckCircle2 className="h-6 w-6" />,
-    title: "Honest Reviews",
-    description: "Get unbiased, in-depth reviews of developer tools and services to make informed decisions for your projects.",
-  },
-  {
-    icon: <Zap className="h-6 w-6" />,
-    title: "Fast Learning",
-    description: "Accelerate your learning curve with concise, focused content that gets straight to the point without fluff.",
-  },
 ];
 
 export function WhyChooseUs() {
@@ -60,7 +42,7 @@ export function WhyChooseUs() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {features.map((feature, index) => (
             <Card key={index} className="border-border hover:shadow-md transition-shadow">
               <CardHeader>

@@ -2,7 +2,7 @@ import { Layout } from "@/components/layout/Layout";
 import { PostCard } from "@/components/blog/PostCard";
 import { Sidebar } from "@/components/blog/Sidebar";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Rocket, Sparkles } from "lucide-react";
 import { sanityClient } from "@/lib/sanity";
 import { featuredPostsQuery, recentPostsQuery, categoriesQuery } from "@/lib/sanity.queries";
 import type { Post } from "@/components/blog/PostCard";
@@ -60,34 +60,26 @@ export default async function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-background pt-16 md:pt-20 pb-16">
+      <section className="relative overflow-hidden bg-background pt-16 md:pt-20 pb-12">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
            <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-50" />
            <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-secondary/20 rounded-full blur-3xl opacity-50" />
         </div>
 
-        <div className="container max-w-7xl mx-auto relative z-10 px-4 md:px-6 text-center">
-          <div className="mx-auto max-w-4xl space-y-4">
-            <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary backdrop-blur-sm">
-              <Sparkles className="mr-2 h-3.5 w-3.5" />
+        <div className="container max-w-5xl mx-auto relative z-10 px-4 md:px-6 text-center">
+          <div className="mx-auto max-w-3xl space-y-6">
+            <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary backdrop-blur-sm">
+              <Rocket className="mr-2 h-4 w-4" />
               <span>Start Your Journey Today with CodeCraft Academy</span>
             </div>
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
               Master Modern Tech with <br className="hidden sm:inline" />
               <span className="text-gradient">CodeCraft Academy</span>
             </h1>
-            <p className="mx-auto max-w-[700px] text-lg text-muted-foreground md:text-xl">
-              <strong className="text-foreground">CodeCraft Academy</strong> is a web development blog and learning platform that provides practical tutorials, in-depth reviews, and career advice for developers. 
-              From React to AI, we cover what matters most to help you advance your tech career.
+            <p className="mx-auto max-w-[600px] text-base text-muted-foreground md:text-lg">
+              Practical tutorials, in-depth reviews, and career advice to help you advance your tech career.
             </p>
-            <div className="mx-auto max-w-[700px] mt-4 p-3 bg-muted/50 rounded-lg border border-border">
-              <div className="flex flex-wrap justify-center gap-3 text-sm">
-                <Link href="/privacy" className="text-primary hover:underline font-medium">Privacy Policy</Link>
-                <span className="text-muted-foreground">|</span>
-                <Link href="/terms" className="text-primary hover:underline font-medium">Terms of Service</Link>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
               <Button size="lg" className="h-12 px-8 text-base" asChild>
                 <Link href="/tutorials">
                   Start Learning <ArrowRight className="ml-2 h-4 w-4" />
