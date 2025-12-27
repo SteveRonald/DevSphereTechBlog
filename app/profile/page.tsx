@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/use-auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,14 +9,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LogOut, Mail, Calendar, User, Save, Loader2 } from "lucide-react";
+import { LogOut, Mail, Calendar, User, Save, Loader2, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function ProfilePage() {
   const { user, loading: authLoading, signOut } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [profileLoading, setProfileLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState({
@@ -26,6 +28,10 @@ export default function ProfilePage() {
     bio: "",
     avatar_url: "",
   });
+  
+  // Get redirect URL and message from query params
+  const redirectUrl = searchParams?.get("redirect");
+  const message = searchParams?.get("message");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -98,6 +104,19 @@ export default function ProfilePage() {
         description: "Your profile has been updated.",
         variant: "success",
       });
+
+      // Check if profile is now complete
+      const isProfileComplete = (
+        (profile.display_name && profile.display_name.trim()) ||
+        (profile.first_name && profile.first_name.trim() && profile.last_name && profile.last_name.trim())
+      );
+
+      // If redirect URL exists and profile is complete, redirect back
+      if (redirectUrl && isProfileComplete) {
+        setTimeout(() => {
+          router.push(redirectUrl);
+        }, 1000);
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -134,87 +153,100 @@ export default function ProfilePage() {
   const displayName = profile.display_name || `${profile.first_name} ${profile.last_name}`.trim() || user.email?.split("@")[0] || "User";
 
   return (
-    <div className="container max-w-6xl mx-auto px-4 md:px-6 py-12">
-      <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="account">Account</TabsTrigger>
+    <div className="container max-w-6xl mx-auto px-4 md:px-6 py-8 sm:py-12">
+      {message && (
+        <Alert className="mb-6 border-amber-200 bg-amber-50">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-sm text-amber-800">
+            {decodeURIComponent(message)}
+          </AlertDescription>
+        </Alert>
+      )}
+      <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="profile" className="text-sm sm:text-base">Profile</TabsTrigger>
+          <TabsTrigger value="account" className="text-sm sm:text-base">Account</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile" className="space-y-6">
+        <TabsContent value="profile" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-24 w-24 border-4 border-primary/20">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
+                <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-4 border-primary/20 shrink-0">
                   {profile.avatar_url ? (
                     <img src={profile.avatar_url} alt={displayName} className="object-cover" />
                   ) : (
-                    <AvatarFallback className="text-2xl bg-primary/10">{initials}</AvatarFallback>
+                    <AvatarFallback className="text-xl sm:text-2xl bg-primary/10">{initials}</AvatarFallback>
                   )}
                 </Avatar>
-                <div>
-                  <CardTitle className="text-2xl">{displayName}</CardTitle>
-                  <CardDescription>{user.email}</CardDescription>
+                <div className="text-center sm:text-left flex-1 min-w-0">
+                  <CardTitle className="text-xl sm:text-2xl break-words">{displayName}</CardTitle>
+                  <CardDescription className="break-words">{user.email}</CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
+            <CardContent className="space-y-4 sm:space-y-6">
+              <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="first_name">First Name</Label>
+                  <Label htmlFor="first_name" className="text-sm sm:text-base">First Name</Label>
                   <Input
                     id="first_name"
                     value={profile.first_name}
                     onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
                     placeholder="John"
+                    className="text-base h-11"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="last_name">Last Name</Label>
+                  <Label htmlFor="last_name" className="text-sm sm:text-base">Last Name</Label>
                   <Input
                     id="last_name"
                     value={profile.last_name}
                     onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
                     placeholder="Doe"
+                    className="text-base h-11"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="display_name">Display Name</Label>
+                <Label htmlFor="display_name" className="text-sm sm:text-base">Display Name</Label>
                 <Input
                   id="display_name"
                   value={profile.display_name}
                   onChange={(e) => setProfile({ ...profile, display_name: e.target.value })}
                   placeholder="How you want to be displayed"
+                  className="text-base h-11"
                 />
-                <p className="text-xs text-muted-foreground">
-                  This is how your name appears on the site
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  This is how your name appears on the site (or use First Name + Last Name)
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
+                <Label htmlFor="bio" className="text-sm sm:text-base">Bio</Label>
                 <Textarea
                   id="bio"
                   value={profile.bio}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                   placeholder="Tell us about yourself..."
                   rows={4}
+                  className="text-base resize-none"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="avatar_url">Avatar URL</Label>
+                <Label htmlFor="avatar_url" className="text-sm sm:text-base">Avatar URL</Label>
                 <Input
                   id="avatar_url"
                   type="url"
                   value={profile.avatar_url}
                   onChange={(e) => setProfile({ ...profile, avatar_url: e.target.value })}
                   placeholder="https://example.com/avatar.jpg"
+                  className="text-base h-11"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Enter a URL to your profile picture
                 </p>
               </div>
-              <Button onClick={handleSave} disabled={saving} className="w-full md:w-auto">
+              <Button onClick={handleSave} disabled={saving} className="w-full md:w-auto h-11 text-base">
                 {saving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -99,9 +99,7 @@ export default async function Home() {
               <span>start your tech journey right now</span>
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-              Learn Modern Tech Skills{" "}
-              <span className="inline sm:hidden"> </span>
-              <br className="hidden sm:inline" />
+              Learn Modern Tech Skills with<br className="hidden sm:inline" />
               <span className="text-gradient">CodeCraft Academy</span>
             </h1>
             <p className="mx-auto max-w-[600px] text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed px-2">

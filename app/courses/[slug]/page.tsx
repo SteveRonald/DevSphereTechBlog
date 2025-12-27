@@ -35,12 +35,14 @@ interface Lesson {
   duration: number | null;
 }
 
-// Revalidate every 5 seconds for fresh enrollment counts
-export const revalidate = 5;
+// Use dynamic rendering to ensure enrollment status is always fresh
+export const dynamic = 'force-dynamic';
 
 async function getCourse(slug: string): Promise<Course | null> {
   const supabase = createServerClient(undefined);
   
+  // Fetch course with enrollment_count from database (maintained by trigger)
+  // Same approach as admin panel - trust the database column value
   const { data: course, error } = await supabase
     .from("courses")
     .select("*")
@@ -52,19 +54,9 @@ async function getCourse(slug: string): Promise<Course | null> {
     return null;
   }
 
-  // Get fresh enrollment count directly from enrollments table
-  const { count: enrollmentCount } = await supabase
-    .from("user_course_enrollments")
-    .select("*", { count: "exact", head: true })
-    .eq("course_id", course.id);
-
-  // Use fresh count if available, otherwise fallback to stored count
-  const finalEnrollmentCount = enrollmentCount !== null ? enrollmentCount : (course.enrollment_count || 0);
-
-  return {
-    ...course,
-    enrollment_count: finalEnrollmentCount,
-  } as Course;
+  // Use enrollment_count directly from database (updated by trigger)
+  // The trigger update_course_enrollment_count() keeps this accurate
+  return course as Course;
 }
 
 async function getLessons(courseId: string): Promise<Lesson[]> {
@@ -99,23 +91,27 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   const lessons = await getLessons(course.id);
 
-  // Check if user is enrolled
+  // Check if user is enrolled - always fetch fresh data (no cache)
   const supabase = createServerClient(undefined);
   let isEnrolled = false;
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: enrollment } = await supabase
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (user && !userError) {
+      // Query enrollment for this specific course and user
+      const { data: enrollment, error: enrollmentError } = await supabase
         .from("user_course_enrollments")
         .select("id")
         .eq("user_id", user.id)
         .eq("course_id", course.id)
         .maybeSingle();
       
-      isEnrolled = !!enrollment;
+      if (!enrollmentError && enrollment) {
+        isEnrolled = true;
+      }
     }
   } catch (error) {
     // User not logged in or error - default to not enrolled
+    console.error("Error checking enrollment:", error);
     isEnrolled = false;
   }
 

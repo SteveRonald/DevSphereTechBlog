@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,12 +17,14 @@ interface CourseCertificatePageClientProps {
 }
 
 export function CourseCertificatePageClient({ slug, user }: CourseCertificatePageClientProps) {
+  const router = useRouter();
   const [course, setCourse] = useState<any>(null);
   const [enrollment, setEnrollment] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [checkingProfile, setCheckingProfile] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,13 +71,28 @@ export function CourseCertificatePageClient({ slug, user }: CourseCertificatePag
         setEnrollment(enrollmentData);
 
         // Fetch profile
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from("user_profiles")
           .select("display_name, first_name, last_name, email")
           .eq("id", user.id)
           .single();
 
         setProfile(profileData);
+
+        // Check if profile is complete (needs at least display_name OR both first_name and last_name)
+        const isProfileComplete = profileData && (
+          (profileData.display_name && profileData.display_name.trim()) ||
+          (profileData.first_name && profileData.first_name.trim() && profileData.last_name && profileData.last_name.trim())
+        );
+
+        setCheckingProfile(false);
+
+        if (!isProfileComplete) {
+          // Redirect to profile page with return URL
+          const returnUrl = `/courses/${slug}/certificate`;
+          router.push(`/profile?redirect=${encodeURIComponent(returnUrl)}&message=${encodeURIComponent("Please complete your profile to view your certificate. Your name is required for the certificate.")}`);
+          return;
+        }
       } catch (err) {
         setError("Failed to load certificate data");
       } finally {
@@ -87,7 +105,7 @@ export function CourseCertificatePageClient({ slug, user }: CourseCertificatePag
     }
   }, [user, slug]);
 
-  if (loading) {
+  if (loading || checkingProfile) {
     return (
       <div className="container max-w-5xl mx-auto px-4 md:px-6 py-10">
         <div className="flex items-center justify-center min-h-[400px]">

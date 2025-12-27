@@ -265,100 +265,100 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-shadow">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-blue-600 mb-1">Enrolled</p>
-                  <p className="text-2xl font-bold text-blue-700">{stats.total}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-blue-600 mb-1 truncate">Enrolled</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-700">{stats.total}</p>
                 </div>
-                <BookOpen className="h-8 w-8 text-blue-500 opacity-60" />
+                <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 opacity-60 shrink-0 ml-2" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-shadow">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-purple-600 mb-1">In Progress</p>
-                  <p className="text-2xl font-bold text-purple-700">{stats.inProgress}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-purple-600 mb-1 truncate">In Progress</p>
+                  <p className="text-xl sm:text-2xl font-bold text-purple-700">{stats.inProgress}</p>
                 </div>
-                <PlayCircle className="h-8 w-8 text-purple-500 opacity-60" />
+                <PlayCircle className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 opacity-60 shrink-0 ml-2" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-shadow">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-green-600 mb-1">Completed</p>
-                  <p className="text-2xl font-bold text-green-700">{stats.completed}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-green-600 mb-1 truncate">Completed</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-700">{stats.completed}</p>
                 </div>
-                <CheckCircle2 className="h-8 w-8 text-green-500 opacity-60" />
+                <CheckCircle2 className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 opacity-60 shrink-0 ml-2" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 hover:shadow-lg transition-shadow">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-amber-600 mb-1">Passed</p>
-                  <p className="text-2xl font-bold text-amber-700">{stats.passed}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-amber-600 mb-1 truncate">Passed</p>
+                  <p className="text-xl sm:text-2xl font-bold text-amber-700">{stats.passed}</p>
                 </div>
-                <Trophy className="h-8 w-8 text-amber-500 opacity-60" />
+                <Trophy className="h-6 w-6 sm:h-8 sm:w-8 text-amber-500 opacity-60 shrink-0 ml-2" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-shadow">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-orange-600 mb-1">Pending</p>
-                  <p className="text-2xl font-bold text-orange-700">{pendingSubmissions.length}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-orange-600 mb-1 truncate">Pending</p>
+                  <p className="text-xl sm:text-2xl font-bold text-orange-700">{pendingSubmissions.length}</p>
                 </div>
-                <Clock className="h-8 w-8 text-orange-500 opacity-60" />
+                <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500 opacity-60 shrink-0 ml-2" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200 hover:shadow-lg transition-shadow">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-indigo-600 mb-1">Avg Score</p>
-                  <p className="text-2xl font-bold text-indigo-700">{stats.avgScore.toFixed(0)}%</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-indigo-600 mb-1 truncate">Avg Score</p>
+                  <p className="text-xl sm:text-2xl font-bold text-indigo-700">{stats.avgScore.toFixed(0)}%</p>
                 </div>
-                <BarChart3 className="h-8 w-8 text-indigo-500 opacity-60" />
+                <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-500 opacity-60 shrink-0 ml-2" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto">
-            <TabsTrigger value="overview" className="gap-2">
-              <Zap className="h-4 w-4" />
-              <span className="hidden sm:inline">Overview</span>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-3 lg:w-auto h-auto">
+            <TabsTrigger value="overview" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
+              <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="courses" className="gap-2">
-              <BookOpen className="h-4 w-4" />
-              <span className="hidden sm:inline">All Courses</span>
+            <TabsTrigger value="courses" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
+              <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">All Courses</span>
             </TabsTrigger>
-            <TabsTrigger value="activities" className="gap-2">
-              <Target className="h-4 w-4" />
-              <span className="hidden sm:inline">Activities</span>
+            <TabsTrigger value="activities" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
+              <Target className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Activities</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid lg:grid-cols-3 gap-6">
+          <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+            <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
               {/* Left Column - Main Content */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Pending Submissions */}
@@ -374,21 +374,21 @@ export default function StudentDashboardPage() {
                       {pendingSubmissions.slice(0, 5).map((submission) => (
                         <div
                           key={submission.id}
-                          className="flex items-center justify-between p-3 bg-background rounded-lg border border-amber-200 hover:border-amber-300 transition-colors"
+                          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3 p-3 bg-background rounded-lg border border-amber-200 hover:border-amber-300 transition-colors"
                         >
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="outline" className="text-xs">
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              <Badge variant="outline" className="text-xs shrink-0">
                                 {submission.type === "quiz" ? "Quiz" : "Project"}
                               </Badge>
-                              <span className="text-sm font-medium truncate">{submission.lesson_title}</span>
+                              <span className="text-sm font-medium break-words">{submission.lesson_title}</span>
                             </div>
                             <p className="text-xs text-muted-foreground truncate">{submission.course_title}</p>
                             <p className="text-xs text-muted-foreground mt-1">
                               Submitted {new Date(submission.submitted_at).toLocaleDateString()}
                             </p>
                           </div>
-                          <Button size="sm" variant="outline" asChild className="ml-4">
+                          <Button size="sm" variant="outline" asChild className="w-full sm:w-auto shrink-0">
                             <Link href={`/courses/${submission.course_slug}/learn`}>
                               <Eye className="h-3 w-3 mr-1" />
                               View
@@ -425,9 +425,9 @@ export default function StudentDashboardPage() {
                         return (
                           <div
                             key={r.enrollment?.id || slug}
-                            className="p-4 rounded-lg border bg-card hover:shadow-md transition-all"
+                            className="p-3 sm:p-4 rounded-lg border bg-card hover:shadow-md transition-all overflow-x-hidden"
                           >
-                            <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                               {course?.thumbnail_url && (
                                 <div className="relative w-full sm:w-24 h-32 sm:h-24 rounded-lg overflow-hidden flex-shrink-0">
                                   <Image
@@ -438,21 +438,23 @@ export default function StudentDashboardPage() {
                                   />
                                 </div>
                               )}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between gap-2 mb-2">
-                                  <h3 className="font-semibold text-lg truncate">{course?.title || "Course"}</h3>
-                                  {hasPending && (
-                                    <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                                      <Clock className="h-3 w-3 mr-1" />
-                                      Review Pending
-                                    </Badge>
-                                  )}
-                                  {needsRetake && (
-                                    <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200">
-                                      <AlertCircle className="h-3 w-3 mr-1" />
-                                      Retake Needed
-                                    </Badge>
-                                  )}
+                              <div className="flex-1 min-w-0 overflow-x-hidden">
+                                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
+                                  <h3 className="font-semibold text-base sm:text-lg break-words">{course?.title || "Course"}</h3>
+                                  <div className="flex flex-wrap gap-2 shrink-0">
+                                    {hasPending && (
+                                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
+                                        <Clock className="h-3 w-3 mr-1" />
+                                        Review Pending
+                                      </Badge>
+                                    )}
+                                    {needsRetake && (
+                                      <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200 text-xs">
+                                        <AlertCircle className="h-3 w-3 mr-1" />
+                                        Retake Needed
+                                      </Badge>
+                                    )}
+                                  </div>
                                 </div>
                                 <div className="flex flex-wrap gap-2 mb-3">
                                   {course?.category && (
@@ -468,25 +470,25 @@ export default function StudentDashboardPage() {
                                 <Progress value={r.progress} className="h-2 mb-3" />
                                 <div className="flex flex-wrap gap-2">
                                   {slug && (
-                                    <Button size="sm" asChild>
+                                    <Button size="sm" asChild className="text-xs sm:text-sm h-9">
                                       <Link href={`/courses/${slug}/learn`}>
-                                        <PlayCircle className="h-4 w-4 mr-1" />
+                                        <PlayCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                         Continue
                                       </Link>
                                     </Button>
                                   )}
                                   {needsRetake && slug && (
-                                    <Button size="sm" variant="outline" asChild className="bg-amber-50 hover:bg-amber-100">
+                                    <Button size="sm" variant="outline" asChild className="bg-amber-50 hover:bg-amber-100 text-xs sm:text-sm h-9">
                                       <Link href={`/courses/${slug}/retake-final-exam`}>
-                                        <RefreshCw className="h-4 w-4 mr-1" />
+                                        <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                         Retake Exam
                                       </Link>
                                     </Button>
                                   )}
                                   {r.passed && slug && (
-                                    <Button size="sm" variant="outline" asChild className="bg-green-50 hover:bg-green-100">
+                                    <Button size="sm" variant="outline" asChild className="bg-green-50 hover:bg-green-100 text-xs sm:text-sm h-9">
                                       <Link href={`/courses/${slug}/certificate`}>
-                                        <Trophy className="h-4 w-4 mr-1" />
+                                        <Trophy className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                         View Certificate
                                       </Link>
                                     </Button>
@@ -721,17 +723,17 @@ export default function StudentDashboardPage() {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         {/* Grades Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
                           <div className={cn(
-                            "rounded-lg border p-4",
+                            "rounded-lg border p-3 sm:p-4 overflow-x-hidden",
                             cat >= 21 ? "bg-green-50 border-green-200" : cat >= 15 ? "bg-amber-50 border-amber-200" : "bg-gray-50 border-gray-200"
                           )}>
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-xs font-medium text-muted-foreground">CATs</span>
-                              <BookOpen className="h-4 w-4 text-muted-foreground" />
+                              <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
                             </div>
                             <div className={cn(
-                              "text-2xl font-bold",
+                              "text-xl sm:text-2xl font-bold break-words",
                               cat >= 21 ? "text-green-700" : cat >= 15 ? "text-amber-700" : "text-gray-700"
                             )}>
                               {cat.toFixed(1)}
@@ -739,15 +741,15 @@ export default function StudentDashboardPage() {
                             <div className="text-xs text-muted-foreground mt-1">/ 30</div>
                           </div>
                           <div className={cn(
-                            "rounded-lg border p-4",
+                            "rounded-lg border p-3 sm:p-4 overflow-x-hidden",
                             exam >= 49 ? "bg-green-50 border-green-200" : exam >= 35 ? "bg-amber-50 border-amber-200" : "bg-gray-50 border-gray-200"
                           )}>
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-xs font-medium text-muted-foreground">Final Exam</span>
-                              <Award className="h-4 w-4 text-muted-foreground" />
+                              <Award className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
                             </div>
                             <div className={cn(
-                              "text-2xl font-bold",
+                              "text-xl sm:text-2xl font-bold break-words",
                               exam >= 49 ? "text-green-700" : exam >= 35 ? "text-amber-700" : "text-gray-700"
                             )}>
                               {exam.toFixed(1)}
@@ -755,15 +757,15 @@ export default function StudentDashboardPage() {
                             <div className="text-xs text-muted-foreground mt-1">/ 70</div>
                           </div>
                           <div className={cn(
-                            "rounded-lg border p-4",
+                            "rounded-lg border p-3 sm:p-4 overflow-x-hidden",
                             total >= 70 ? "bg-green-50 border-green-200" : total >= 50 ? "bg-amber-50 border-amber-200" : "bg-gray-50 border-gray-200"
                           )}>
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-xs font-medium text-muted-foreground">Total Score</span>
-                              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
                             </div>
                             <div className={cn(
-                              "text-2xl font-bold",
+                              "text-xl sm:text-2xl font-bold break-words",
                               total >= 70 ? "text-green-700" : total >= 50 ? "text-amber-700" : "text-gray-700"
                             )}>
                               {total.toFixed(1)}
@@ -800,41 +802,41 @@ export default function StudentDashboardPage() {
                         {/* Action Buttons */}
                         <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t">
                           {slug && !r.enrollment?.is_completed && (
-                            <Button variant="outline" size="sm" asChild>
+                            <Button variant="outline" size="sm" asChild className="text-xs sm:text-sm h-9">
                               <Link href={`/courses/${slug}/learn`}>
-                                <PlayCircle className="h-4 w-4 mr-1" />
+                                <PlayCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                 Continue Learning
                               </Link>
                             </Button>
                           )}
                           {slug && r.enrollment?.is_completed && !r.passed && (
-                            <Button size="sm" asChild className="bg-amber-600 hover:bg-amber-700">
+                            <Button size="sm" asChild className="bg-amber-600 hover:bg-amber-700 text-xs sm:text-sm h-9">
                               <Link href={`/courses/${slug}/retake-final-exam`}>
-                                <RefreshCw className="h-4 w-4 mr-1" />
+                                <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                 Retake Final Exam
                               </Link>
                             </Button>
                           )}
                           {slug && r.passed && (
                             <>
-                              <Button size="sm" asChild className="bg-green-600 hover:bg-green-700">
+                              <Button size="sm" asChild className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm h-9">
                                 <Link href={`/courses/${slug}/certificate`}>
-                                  <Trophy className="h-4 w-4 mr-1" />
+                                  <Trophy className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                   View Certificate
                                 </Link>
                               </Button>
-                              <Button variant="outline" size="sm" asChild>
+                              <Button variant="outline" size="sm" asChild className="text-xs sm:text-sm h-9">
                                 <Link href="/free-courses">
-                                  <BookOpen className="h-4 w-4 mr-1" />
+                                  <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                   Find Free Courses
                                 </Link>
                               </Button>
                             </>
                           )}
                           {slug && r.enrollment?.is_completed && !r.passed && (
-                            <Button variant="outline" size="sm" asChild>
+                            <Button variant="outline" size="sm" asChild className="text-xs sm:text-sm h-9">
                               <Link href="/free-courses">
-                                <BookOpen className="h-4 w-4 mr-1" />
+                                <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                 Find Free Courses
                               </Link>
                             </Button>
@@ -849,8 +851,8 @@ export default function StudentDashboardPage() {
           </TabsContent>
 
           {/* Activities Tab */}
-          <TabsContent value="activities" className="space-y-6">
-            <div className="grid lg:grid-cols-2 gap-6">
+          <TabsContent value="activities" className="space-y-4 sm:space-y-6">
+            <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Pending Submissions */}
               <Card>
                 <CardHeader>
@@ -870,21 +872,21 @@ export default function StudentDashboardPage() {
                       {pendingSubmissions.map((submission) => (
                         <div
                           key={submission.id}
-                          className="p-4 rounded-lg border bg-card hover:shadow-md transition-all"
+                          className="p-3 sm:p-4 rounded-lg border bg-card hover:shadow-md transition-all overflow-x-hidden"
                         >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-2">
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-2 sm:gap-3">
+                            <div className="flex-1 min-w-0 overflow-x-hidden">
+                              <div className="flex flex-wrap items-center gap-2 mb-2">
                                 <Badge 
                                   variant={submission.type === "quiz" ? "default" : "secondary"}
-                                  className="text-xs"
+                                  className="text-xs shrink-0"
                                 >
                                   {submission.type === "quiz" ? "Quiz" : "Project"}
                                 </Badge>
-                                <span className="text-sm font-semibold truncate">{submission.lesson_title}</span>
+                                <span className="text-sm font-semibold break-words">{submission.lesson_title}</span>
                               </div>
                               <p className="text-sm text-muted-foreground truncate">{submission.course_title}</p>
-                              <p className="text-xs text-muted-foreground mt-2">
+                              <p className="text-xs text-muted-foreground mt-2 break-words">
                                 Submitted on {new Date(submission.submitted_at).toLocaleDateString("en-US", {
                                   year: "numeric",
                                   month: "long",
@@ -894,7 +896,7 @@ export default function StudentDashboardPage() {
                                 })}
                               </p>
                             </div>
-                            <Button size="sm" variant="outline" asChild>
+                            <Button size="sm" variant="outline" asChild className="w-full sm:w-auto shrink-0 text-xs sm:text-sm h-9">
                               <Link href={`/courses/${submission.course_slug}/learn`}>
                                 <Eye className="h-3 w-3 mr-1" />
                                 View
@@ -932,23 +934,23 @@ export default function StudentDashboardPage() {
                           return (
                             <div
                               key={r.enrollment?.id || slug}
-                              className="p-4 rounded-lg border bg-green-50/50 border-green-200 hover:shadow-md transition-all"
+                              className="p-3 sm:p-4 rounded-lg border bg-green-50/50 border-green-200 hover:shadow-md transition-all overflow-x-hidden"
                             >
-                              <div className="flex items-center justify-between">
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-semibold truncate">{course?.title || "Course"}</h4>
-                                  <div className="flex items-center gap-2 mt-2">
-                                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3">
+                                <div className="flex-1 min-w-0 overflow-x-hidden">
+                                  <h4 className="font-semibold text-sm sm:text-base break-words">{course?.title || "Course"}</h4>
+                                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                                    <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
                                       <Trophy className="h-3 w-3 mr-1" />
                                       Passed
                                     </Badge>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs text-muted-foreground break-words">
                                       Score: {r.grades?.final_score_100?.toFixed(1)}%
                                     </span>
                                   </div>
                                 </div>
                                 {slug && (
-                                  <Button size="sm" variant="outline" asChild className="ml-4">
+                                  <Button size="sm" variant="outline" asChild className="w-full sm:w-auto shrink-0 text-xs sm:text-sm h-9">
                                     <Link href={`/courses/${slug}/certificate`}>
                                       <Trophy className="h-3 w-3 mr-1" />
                                       Certificate
