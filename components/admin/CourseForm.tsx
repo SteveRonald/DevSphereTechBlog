@@ -57,6 +57,7 @@ export function CourseForm({ course, onClose, onSuccess }: CourseFormProps) {
   const [uploading, setUploading] = useState(false);
   const [publishOverride, setPublishOverride] = useState<boolean | null>(null);
   const [notifyUpdateOverride, setNotifyUpdateOverride] = useState<boolean | null>(null);
+  const [activeAction, setActiveAction] = useState<'update' | 'save-draft' | 'publish' | 'unpublish' | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(course?.thumbnail_url || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<Course>({
@@ -185,12 +186,13 @@ export function CourseForm({ course, onClose, onSuccess }: CourseFormProps) {
 
   const handleSubmit = async (
     e: React.FormEvent,
-    options?: { overrideIsPublished?: boolean; notifyUpdate?: boolean }
+    options?: { overrideIsPublished?: boolean; notifyUpdate?: boolean; action?: 'update' | 'save-draft' | 'publish' | 'unpublish' }
   ) => {
     e.preventDefault();
     const action = course?.id ? "Updating" : "Creating";
     setStatusMessage(`${action} course...`);
     setLoading(true);
+    setActiveAction(options?.action || null);
 
     try {
       const supabase = createClient();
@@ -280,6 +282,7 @@ export function CourseForm({ course, onClose, onSuccess }: CourseFormProps) {
       clearAutosave();
       setHasUnsavedChanges(false);
       setLastSaved(null);
+      setActiveAction(null);
 
       onSuccess();
       onClose();
@@ -291,6 +294,7 @@ export function CourseForm({ course, onClose, onSuccess }: CourseFormProps) {
       });
     } finally {
       setLoading(false);
+      setActiveAction(null);
     }
   };
 
@@ -551,7 +555,7 @@ export function CourseForm({ course, onClose, onSuccess }: CourseFormProps) {
                 <Button
                   type="submit"
                   variant="default"
-                  disabled={loading}
+                  disabled={loading && activeAction !== 'update'}
                   onClick={(e) => {
                     e.preventDefault();
                     setStatusMessage(formData.is_published ? "Updating course..." : "Updating draft...");
@@ -559,12 +563,13 @@ export function CourseForm({ course, onClose, onSuccess }: CourseFormProps) {
                     setPublishOverride(null); // Keep current publish status
                     handleSubmit(e, { 
                       overrideIsPublished: undefined, // Don't override, keep current status
-                      notifyUpdate: false 
+                      notifyUpdate: false,
+                      action: 'update'
                     });
                   }}
                   className="w-full sm:w-auto"
                 >
-                  {loading && publishOverride === null && notifyUpdateOverride === null ? (
+                  {loading && activeAction === 'update' ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Updating...
@@ -582,7 +587,7 @@ export function CourseForm({ course, onClose, onSuccess }: CourseFormProps) {
               <Button
                 type="submit"
                 variant="outline"
-                disabled={loading}
+                disabled={loading && activeAction !== 'save-draft'}
                 onClick={(e) => {
                   e.preventDefault();
                   setStatusMessage("Saving draft...");
@@ -590,12 +595,13 @@ export function CourseForm({ course, onClose, onSuccess }: CourseFormProps) {
                   setPublishOverride(false);
                   handleSubmit(e, { 
                     overrideIsPublished: false,
-                    notifyUpdate: false 
+                    notifyUpdate: false,
+                    action: 'save-draft'
                   });
                 }}
                 className="w-full sm:w-auto"
               >
-                {loading && publishOverride === false && notifyUpdateOverride === null ? (
+                {loading && activeAction === 'save-draft' ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Saving...
@@ -613,7 +619,7 @@ export function CourseForm({ course, onClose, onSuccess }: CourseFormProps) {
                 <Button
                   type="submit"
                   variant="default"
-                  disabled={loading}
+                  disabled={loading && activeAction !== 'publish'}
                   onClick={(e) => {
                     e.preventDefault();
                     setStatusMessage(course?.id ? "Publishing course..." : "Creating and publishing course...");
@@ -621,12 +627,13 @@ export function CourseForm({ course, onClose, onSuccess }: CourseFormProps) {
                     setPublishOverride(true);
                     handleSubmit(e, { 
                       overrideIsPublished: true,
-                      notifyUpdate: false 
+                      notifyUpdate: false,
+                      action: 'publish'
                     });
                   }}
                   className="w-full sm:w-auto"
                 >
-                  {loading && publishOverride === true ? (
+                  {loading && activeAction === 'publish' ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Publishing...
@@ -645,7 +652,7 @@ export function CourseForm({ course, onClose, onSuccess }: CourseFormProps) {
                 <Button
                   type="submit"
                   variant="outline"
-                  disabled={loading}
+                  disabled={loading && activeAction !== 'unpublish'}
                   onClick={(e) => {
                     e.preventDefault();
                     setStatusMessage("Unpublishing course...");
@@ -653,12 +660,13 @@ export function CourseForm({ course, onClose, onSuccess }: CourseFormProps) {
                     setPublishOverride(false);
                     handleSubmit(e, { 
                       overrideIsPublished: false,
-                      notifyUpdate: false 
+                      notifyUpdate: false,
+                      action: 'unpublish'
                     });
                   }}
                   className="w-full sm:w-auto"
                 >
-                  {loading && publishOverride === false && formData.is_published ? (
+                  {loading && activeAction === 'unpublish' ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Unpublishing...
