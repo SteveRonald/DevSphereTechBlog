@@ -52,7 +52,19 @@ async function getCourse(slug: string): Promise<Course | null> {
     return null;
   }
 
-  return course as Course;
+  // Get fresh enrollment count directly from enrollments table
+  const { count: enrollmentCount } = await supabase
+    .from("user_course_enrollments")
+    .select("*", { count: "exact", head: true })
+    .eq("course_id", course.id);
+
+  // Use fresh count if available, otherwise fallback to stored count
+  const finalEnrollmentCount = enrollmentCount !== null ? enrollmentCount : (course.enrollment_count || 0);
+
+  return {
+    ...course,
+    enrollment_count: finalEnrollmentCount,
+  } as Course;
 }
 
 async function getLessons(courseId: string): Promise<Lesson[]> {
@@ -86,6 +98,26 @@ export default async function CoursePage({ params }: CoursePageProps) {
   }
 
   const lessons = await getLessons(course.id);
+
+  // Check if user is enrolled
+  const supabase = createServerClient(undefined);
+  let isEnrolled = false;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: enrollment } = await supabase
+        .from("user_course_enrollments")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("course_id", course.id)
+        .maybeSingle();
+      
+      isEnrolled = !!enrollment;
+    }
+  } catch (error) {
+    // User not logged in or error - default to not enrolled
+    isEnrolled = false;
+  }
 
   const difficultyColors = {
     beginner: "bg-green-500/10 text-green-600 border-green-500/20",
@@ -145,26 +177,26 @@ export default async function CoursePage({ params }: CoursePageProps) {
               <p className="text-muted-foreground text-lg">
                 {course.description || course.short_description}
               </p>
-              <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-medium">{course.rating.toFixed(1)}</span>
-                  <span>({course.total_ratings} ratings)</span>
+              <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400 shrink-0" />
+                  <span className="font-medium text-base sm:text-sm">{course.rating.toFixed(1)}</span>
+                  <span className="text-xs sm:text-sm">({course.total_ratings} ratings)</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  <span>{course.enrollment_count} students</span>
+                <div className="flex items-center gap-1.5">
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+                  <span className="text-base sm:text-sm">{course.enrollment_count} students</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span>{formatDuration(course.estimated_duration)}</span>
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+                  <span className="text-base sm:text-sm break-words">{formatDuration(course.estimated_duration)}</span>
                 </div>
               </div>
               <div className="pt-4">
-                <Button size="lg" className="w-full sm:w-auto" asChild>
+                <Button size="lg" className="w-full sm:w-auto text-base h-11" asChild>
                   <Link href={`/courses/${slug}/learn`}>
                     <PlayCircle className="h-4 w-4 mr-2" />
-                    Start Learning - Free
+                    {isEnrolled ? "Continue Learning" : "Start Learning - Free"}
                   </Link>
                 </Button>
               </div>
