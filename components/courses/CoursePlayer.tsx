@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { CheckCircle2, Lock, PlayCircle, ChevronRight, Trophy, Star, Gift } from "lucide-react";
+import { CheckCircle2, Lock, PlayCircle, ChevronRight, Trophy, Star, Gift, Menu, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -10,6 +10,7 @@ import { CelebrationVariants } from "./CelebrationVariants";
 import { LessonContent } from "./LessonContent";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 interface Course {
   id: string;
@@ -178,18 +179,89 @@ export function CoursePlayer({
       {showCelebration && <CelebrationVariants variant={celebrationVariant} />}
 
       {/* Progress Bar */}
-      <div className="sticky top-14 sm:top-16 z-10 bg-background border-b border-border">
-        <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 overflow-x-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs sm:text-sm font-medium">Course Progress</span>
-              <Badge variant="outline" className="text-xs">{Math.round(progress)}%</Badge>
+      <div className="sticky top-14 sm:top-16 z-10 bg-background border-b border-border shadow-sm">
+        <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 overflow-x-hidden">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="text-sm sm:text-base font-medium text-base">Course Progress</span>
+              <Badge variant="outline" className="text-xs sm:text-sm shrink-0">{Math.round(progress)}%</Badge>
             </div>
+            {/* Mobile Menu Button */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm" className="lg:hidden shrink-0">
+                  <Menu className="h-4 w-4 mr-2" />
+                  <span className="hidden xs:inline">Menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[85vw] sm:w-[400px] overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    Course Curriculum
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="mt-6 space-y-2">
+                  {lessons.map((lesson, index) => {
+                    const unlocked = isLessonUnlocked(lesson, index);
+                    const completed = completedLessons.has(lesson.id);
+                    const pending = pendingReviewLessons?.has(lesson.id) === true;
+                    const isCurrent = lesson.id === currentLesson.id;
+
+                    return (
+                      <button
+                        key={lesson.id}
+                        onClick={() => {
+                          if (unlocked) {
+                            onLessonChange(lesson.id);
+                          }
+                        }}
+                        className={cn(
+                          "w-full text-left p-3 rounded-lg border transition-all",
+                          "flex items-start gap-3",
+                          isCurrent
+                            ? "border-primary bg-primary/5"
+                            : unlocked
+                            ? "border-border hover:bg-muted/50"
+                            : "border-border/50 bg-muted/30 opacity-60 cursor-not-allowed"
+                        )}
+                      >
+                        <div className="flex-shrink-0 mt-0.5">
+                          {completed ? (
+                            <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          ) : pending ? (
+                            <PlayCircle className="h-5 w-5 text-yellow-600" />
+                          ) : unlocked ? (
+                            <PlayCircle className="h-5 w-5 text-primary" />
+                          ) : (
+                            <Lock className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
+                            <span className="font-medium text-base break-words">{lesson.title}</span>
+                            {isFinalExamLesson(lesson) && (
+                              <Badge variant="outline" className="shrink-0 bg-primary/10 text-primary text-xs self-start sm:self-center">
+                                Final
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-0.5">Module {lesson.step_number}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+          <div className="flex items-center justify-between gap-2 mb-1.5">
             <span className="text-xs sm:text-sm text-muted-foreground">
-              {completedOrPendingCount} of {totalLessons} lessons completed or pending review
+              {completedOrPendingCount} of {totalLessons} lessons
             </span>
           </div>
-          <Progress value={progress} className="h-1.5 sm:h-2" />
+          <Progress value={progress} className="h-2" />
 
           {isCourseCompleted && (
             <div className="mt-4 sm:mt-6 p-4 sm:p-6 rounded-lg bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 border-2 border-primary/20">
@@ -220,25 +292,25 @@ export function CoursePlayer({
         </div>
       </div>
 
-      <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 overflow-x-hidden">
+      <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 overflow-x-hidden">
         <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content Area */}
-          <div className="lg:col-span-8 order-2 lg:order-1 min-w-0">
-            <Card className="mb-4 sm:mb-6 overflow-hidden">
-              <CardContent className="p-4 sm:p-6 overflow-x-hidden">
-                <div className="mb-4 overflow-x-hidden">
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Module {currentLesson.step_number}</p>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold break-words overflow-wrap-anywhere">{currentLesson.title}</h1>
+          <div className="lg:col-span-8 min-w-0">
+            <Card className="mb-4 sm:mb-6 overflow-hidden shadow-sm">
+              <CardContent className="p-4 sm:p-5 lg:p-6 overflow-x-hidden">
+                <div className="mb-4 sm:mb-5 overflow-x-hidden">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Module {currentLesson.step_number}</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold break-words leading-tight">{currentLesson.title}</h1>
                     {isFinalExamLesson(currentLesson) && (
-                      <Badge variant="outline" className="bg-primary/10 text-primary self-start sm:self-center shrink-0">
+                      <Badge variant="outline" className="bg-primary/10 text-primary self-start sm:self-center shrink-0 text-sm">
                         <Trophy className="h-3.5 w-3.5 mr-1" />
                         Final Exam
                       </Badge>
                     )}
                   </div>
                   {currentLesson.description && (
-                    <p className="text-sm sm:text-base text-muted-foreground mt-2 break-words">{currentLesson.description}</p>
+                    <p className="text-base sm:text-lg text-muted-foreground mt-2 break-words leading-relaxed">{currentLesson.description}</p>
                   )}
                 </div>
 
@@ -263,22 +335,24 @@ export function CoursePlayer({
             </Card>
 
             {/* Navigation */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 pt-4 border-t border-border">
               <Button
                 variant="outline"
                 onClick={handlePreviousLesson}
                 disabled={currentStepIndex === 0}
-                className="w-full sm:w-auto shrink-0"
+                className="w-full sm:w-auto shrink-0 h-11 text-base"
+                size="lg"
               >
                 Previous
               </Button>
-              <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left shrink-0">
+              <div className="text-sm text-muted-foreground text-center sm:text-left shrink-0 py-2">
                 Lesson {currentStepIndex + 1} of {totalLessons}
               </div>
               <Button
                 onClick={handleNextLesson}
                 disabled={!canProceed}
-                className="w-full sm:w-auto shrink-0"
+                className="w-full sm:w-auto shrink-0 h-11 text-base"
+                size="lg"
               >
                 Next Lesson
                 <ChevronRight className="h-4 w-4 ml-2" />
@@ -286,12 +360,15 @@ export function CoursePlayer({
             </div>
           </div>
 
-          {/* Sidebar - Course Navigation */}
-          <div className="lg:col-span-4 order-1 lg:order-2">
-            <Card className="sticky top-20 lg:top-24">
-              <CardContent className="p-4 sm:p-6">
-                <h3 className="font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Course Curriculum</h3>
-                <div className="space-y-2 max-h-[400px] sm:max-h-[600px] overflow-y-auto">
+          {/* Sidebar - Course Navigation (Hidden on mobile, shown in drawer) */}
+          <div className="hidden lg:block lg:col-span-4">
+            <Card className="sticky top-24 shadow-sm">
+              <CardContent className="p-4 lg:p-6">
+                <h3 className="font-semibold mb-4 text-lg flex items-center gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  Course Curriculum
+                </h3>
+                <div className="space-y-2 max-h-[600px] overflow-y-auto">
                   {lessons.map((lesson, index) => {
                     const unlocked = isLessonUnlocked(lesson, index);
                     const completed = completedLessons.has(lesson.id);
@@ -307,37 +384,37 @@ export function CoursePlayer({
                           }
                         }}
                         className={cn(
-                          "w-full text-left p-2 sm:p-3 rounded-lg border transition-all",
-                          "flex items-start sm:items-center gap-2 sm:gap-3",
+                          "w-full text-left p-3 rounded-lg border transition-all",
+                          "flex items-start gap-3",
                           isCurrent
-                            ? "border-primary bg-primary/5"
+                            ? "border-primary bg-primary/5 shadow-sm"
                             : unlocked
                             ? "border-border hover:bg-muted/50"
                             : "border-border/50 bg-muted/30 opacity-60 cursor-not-allowed"
                         )}
                       >
-                        <div className="flex-shrink-0 mt-0.5 sm:mt-0">
+                        <div className="flex-shrink-0 mt-0.5">
                           {completed ? (
-                            <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                            <CheckCircle2 className="h-5 w-5 text-green-600" />
                           ) : pending ? (
-                            <PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
+                            <PlayCircle className="h-5 w-5 text-yellow-600" />
                           ) : unlocked ? (
-                            <PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                            <PlayCircle className="h-5 w-5 text-primary" />
                           ) : (
-                            <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                            <Lock className="h-5 w-5 text-muted-foreground" />
                           )}
                         </div>
 
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
-                            <span className="font-medium text-sm sm:text-base truncate">{lesson.title}</span>
+                            <span className="font-medium text-base break-words">{lesson.title}</span>
                             {isFinalExamLesson(lesson) && (
                               <Badge variant="outline" className="shrink-0 bg-primary/10 text-primary text-xs self-start sm:self-center">
                                 Final
                               </Badge>
                             )}
                           </div>
-                          <div className="text-xs text-muted-foreground mt-0.5">Module {lesson.step_number}</div>
+                          <div className="text-sm text-muted-foreground mt-0.5">Module {lesson.step_number}</div>
                         </div>
                       </button>
                     );

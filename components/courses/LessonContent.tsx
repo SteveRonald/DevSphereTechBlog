@@ -57,7 +57,7 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
 
   const renderMarkdown = (value: string) => {
     return (
-      <div className="prose prose-sm max-w-none dark:prose-invert overflow-x-hidden break-words">
+      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert overflow-x-hidden break-words prose-headings:text-foreground prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-strong:text-foreground prose-strong:font-semibold prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-ul:text-base prose-ol:text-base prose-li:text-base">
         <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
           {value}
         </ReactMarkdown>
@@ -126,8 +126,8 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
             {typeof lesson.content?.text_content === "string" && lesson.content.text_content.trim()
               ? renderMarkdown(lesson.content.text_content)
               : (
-                <div className="prose prose-sm max-w-none overflow-x-hidden break-words">
-                  <p className="text-muted-foreground break-words">{lesson.description || "No content available"}</p>
+                <div className="prose prose-sm sm:prose-base max-w-none overflow-x-hidden break-words">
+                  <p className="text-base sm:text-lg text-muted-foreground break-words leading-relaxed">{lesson.description || "No content available"}</p>
                 </div>
               )}
           </div>
@@ -276,10 +276,10 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
           {isCompleted ? (
             <>
               <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
-              <span className="text-xs sm:text-sm font-medium text-green-600 break-words">Lesson Completed!</span>
+              <span className="text-sm sm:text-base font-medium text-green-600 break-words">Lesson Completed!</span>
             </>
           ) : (
-            <span className="text-xs sm:text-sm text-muted-foreground break-words">
+            <span className="text-sm sm:text-base text-muted-foreground break-words leading-relaxed">
               {lesson.content_type === "project"
                 ? "Submit your project for review to proceed"
                 : lesson.content_type === "quiz"
@@ -293,7 +293,8 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
         <Button
           onClick={handleComplete}
           disabled={isCompleted || !canComplete}
-          className="gap-2 w-full sm:w-auto shrink-0"
+          className="gap-2 w-full sm:w-auto shrink-0 h-11 text-base"
+          size="lg"
         >
           {isCompleted ? (
             <>
