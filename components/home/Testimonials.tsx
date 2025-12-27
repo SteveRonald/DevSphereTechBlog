@@ -18,7 +18,7 @@ const testimonials: Testimonial[] = [
     name: "Sarah Chen",
     role: "Full Stack Developer",
     company: "TechCorp",
-    content: "CodeCraft Academy transformed my understanding of modern web development. The tutorials are practical, well-structured, and actually applicable to real projects. I've implemented several techniques in my current role!",
+    content: "The step-by-step course flow is what I needed. Short lessons, clear explanations, and the progress tracking kept me consistent.",
     rating: 5,
   },
   {
@@ -26,7 +26,7 @@ const testimonials: Testimonial[] = [
     name: "Edwin Nyang'",
     role: "Data Analyst",
     company: "Kisumu",
-    content: "The best resource I've found for staying updated with React and Next.js. The code examples are clean, the explanations are clear, and the community is supportive. Highly recommend!",
+    content: "Finally a beginner-friendly platform that doesn’t waste time. The courses are straight to the point and the examples are easy to follow.",
     rating: 5,
   },
   {
@@ -34,7 +34,7 @@ const testimonials: Testimonial[] = [
     name: "Emily Rodriguez",
     role: "Software Engineer",
     company: "Moi University",
-    content: "As someone transitioning from backend to full-stack, CodeCraft Academy made the learning curve much smoother. The tutorials break down complex concepts into digestible pieces.",
+    content: "I like that the blog supports the courses. I read a quick article, then jump into a course lesson and actually apply it.",
     rating: 5,
   },
 ];
@@ -45,10 +45,10 @@ export function Testimonials() {
       <div className="container max-w-7xl mx-auto px-4 md:px-6">
         <div className="text-center mb-8 md:mb-12">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-3 md:mb-4">
-            What People Say About Us
+            What Learners Say
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of developers who are advancing their careers with CodeCraft Academy
+            A beginner-first learning experience built around short courses and practical lessons.
           </p>
         </div>
 

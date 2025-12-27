@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CheckCircle2, Lock, PlayCircle, ChevronRight, Trophy, Star, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { CelebrationAnimation } from "./CelebrationAnimation";
+import { CelebrationVariants } from "./CelebrationVariants";
 import { LessonContent } from "./LessonContent";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface Course {
   id: string;
@@ -35,6 +36,8 @@ interface CoursePlayerProps {
   currentLesson: Lesson | null;
   currentStepIndex: number;
   completedLessons: Set<string>;
+  pendingReviewLessons?: Set<string>;
+  enrollment?: { is_completed?: boolean; is_passed?: boolean } | null;
   onLessonComplete: (lessonId: string) => void;
   onLessonChange: (lessonId: string) => void;
 }
@@ -45,16 +48,28 @@ export function CoursePlayer({
   currentLesson,
   currentStepIndex,
   completedLessons,
+  pendingReviewLessons,
+  enrollment,
   onLessonComplete,
   onLessonChange,
 }: CoursePlayerProps) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [justCompleted, setJustCompleted] = useState<string | null>(null);
+  const [celebrationVariant, setCelebrationVariant] = useState<number>(0);
+  const prevCompletedCountRef = useRef<number>(completedLessons.size);
 
   // Calculate progress
   const totalLessons = lessons.length;
-  const completedCount = completedLessons.size;
-  const progress = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
+  const completedOrPendingCount = (() => {
+    const all = new Set<string>();
+    completedLessons.forEach((id) => all.add(id));
+    (pendingReviewLessons || new Set<string>()).forEach((id) => all.add(id));
+    return all.size;
+  })();
+  const progress = totalLessons > 0 ? (completedOrPendingCount / totalLessons) * 100 : 0;
+  const isCourseCompleted = totalLessons > 0 && completedOrPendingCount >= totalLessons;
+  // Certificate is only available when course is completed AND final exam is passed
+  const canViewCertificate = isCourseCompleted && enrollment?.is_completed === true && enrollment?.is_passed === true;
 
   // Check if a lesson is unlocked
   const isLessonUnlocked = (lesson: Lesson, index: number) => {
@@ -62,22 +77,67 @@ export function CoursePlayer({
     if (lesson.is_preview) return true; // Preview lessons are always unlocked
     // Lesson is unlocked if previous lesson is completed
     const previousLesson = lessons[index - 1];
-    return completedLessons.has(previousLesson.id);
+    return completedLessons.has(previousLesson.id) || pendingReviewLessons?.has(previousLesson.id) === true;
   };
 
   const handleComplete = (lessonId: string) => {
     if (!completedLessons.has(lessonId)) {
       onLessonComplete(lessonId);
       setJustCompleted(lessonId);
+      // Rotate through different celebration variants based on progress
+      const progressPercent = (completedOrPendingCount / totalLessons) * 100;
+      if (progressPercent < 25) {
+        setCelebrationVariant(0); // Fireworks for early progress
+      } else if (progressPercent < 50) {
+        setCelebrationVariant(1); // Flowers for mid progress
+      } else if (progressPercent < 75) {
+        setCelebrationVariant(2); // Stars for advanced progress
+      } else {
+        setCelebrationVariant(3); // Confetti for near completion
+      }
       setShowCelebration(true);
       
       // Hide celebration after animation
       setTimeout(() => {
         setShowCelebration(false);
         setJustCompleted(null);
-      }, 3000);
+      }, 4000);
     }
   };
+
+  const isFinalExamLesson = (lesson: Lesson) =>
+    lesson.content_type === "quiz" &&
+    (lesson as any)?.content?.quiz_data?.assessment_type === "final_exam";
+
+  useEffect(() => {
+    // If completion happens asynchronously (e.g. manual review approved while user is on the page),
+    // still show the celebration.
+    const prevCount = prevCompletedCountRef.current;
+    const nextCount = completedLessons.size;
+    if (nextCount > prevCount) {
+      // Find a newly completed lesson (best-effort)
+      const newlyCompleted = lessons.find((l) => completedLessons.has(l.id) && (!justCompleted || l.id !== justCompleted));
+      if (newlyCompleted && newlyCompleted.id !== justCompleted) {
+        const progressPercent = (nextCount / totalLessons) * 100;
+        if (progressPercent < 25) {
+          setCelebrationVariant(0);
+        } else if (progressPercent < 50) {
+          setCelebrationVariant(1);
+        } else if (progressPercent < 75) {
+          setCelebrationVariant(2);
+        } else {
+          setCelebrationVariant(3);
+        }
+        setJustCompleted(newlyCompleted.id);
+        setShowCelebration(true);
+        setTimeout(() => {
+          setShowCelebration(false);
+          setJustCompleted(null);
+        }, 4000);
+      }
+    }
+    prevCompletedCountRef.current = nextCount;
+  }, [completedLessons, lessons]);
 
   const handleNextLesson = () => {
     if (currentStepIndex < lessons.length - 1) {
@@ -109,12 +169,13 @@ export function CoursePlayer({
 
   const isUnlocked = isLessonUnlocked(currentLesson, currentStepIndex);
   const isCompleted = completedLessons.has(currentLesson.id);
-  const canProceed = isCompleted && currentStepIndex < lessons.length - 1;
+  const isPendingReview = pendingReviewLessons?.has(currentLesson.id) === true;
+  const canProceed = (isCompleted || isPendingReview) && currentStepIndex < lessons.length - 1;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Celebration Animation Overlay */}
-      {showCelebration && <CelebrationAnimation />}
+      {showCelebration && <CelebrationVariants variant={celebrationVariant} />}
 
       {/* Progress Bar */}
       <div className="sticky top-16 z-10 bg-background border-b border-border">
@@ -125,10 +186,37 @@ export function CoursePlayer({
               <Badge variant="outline">{Math.round(progress)}%</Badge>
             </div>
             <span className="text-sm text-muted-foreground">
-              {completedCount} of {totalLessons} lessons completed
+              {completedOrPendingCount} of {totalLessons} lessons completed or pending review
             </span>
           </div>
           <Progress value={progress} className="h-2" />
+
+          {isCourseCompleted && (
+            <div className="mt-6 p-6 rounded-lg bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 border-2 border-primary/20">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-center sm:text-left">
+                  <h3 className="text-lg font-bold text-foreground mb-1">🎓 Course Completed!</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {canViewCertificate 
+                      ? "Congratulations! You've successfully completed all lessons and passed the final exam. View your certificate below."
+                      : "Congratulations! You've successfully completed all lessons. Complete the final exam to unlock your certificate."}
+                  </p>
+                </div>
+                {canViewCertificate && (
+                  <Button 
+                    size="lg"
+                    onClick={() => {
+                      window.location.href = `/courses/${course.slug}/certificate`;
+                    }}
+                    className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <Trophy className="h-5 w-5 mr-2" />
+                    View Certificate
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -140,11 +228,16 @@ export function CoursePlayer({
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline">Step {currentLesson.step_number}</Badge>
-                      <Badge variant="outline">{currentLesson.content_type}</Badge>
+                    <p className="text-xs font-medium text-muted-foreground">Module {currentLesson.step_number}</p>
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-2xl md:text-3xl font-bold">{currentLesson.title}</h1>
+                      {isFinalExamLesson(currentLesson) ? (
+                        <Badge variant="outline" className="bg-primary/10 text-primary">
+                          <Trophy className="h-3.5 w-3.5 mr-1" />
+                          Final Exam
+                        </Badge>
+                      ) : null}
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-bold">{currentLesson.title}</h1>
                     {currentLesson.description && (
                       <p className="text-muted-foreground mt-2">{currentLesson.description}</p>
                     )}
@@ -202,6 +295,7 @@ export function CoursePlayer({
                   {lessons.map((lesson, index) => {
                     const unlocked = isLessonUnlocked(lesson, index);
                     const completed = completedLessons.has(lesson.id);
+                    const pending = pendingReviewLessons?.has(lesson.id) === true;
                     const isCurrent = lesson.id === currentLesson.id;
 
                     return (
@@ -225,24 +319,25 @@ export function CoursePlayer({
                         <div className="flex-shrink-0">
                           {completed ? (
                             <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          ) : pending ? (
+                            <PlayCircle className="h-5 w-5 text-yellow-600" />
                           ) : unlocked ? (
                             <PlayCircle className="h-5 w-5 text-primary" />
                           ) : (
                             <Lock className="h-5 w-5 text-muted-foreground" />
                           )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-medium text-muted-foreground">
-                              {lesson.step_number}
-                            </span>
-                            <span className="text-sm font-medium truncate">{lesson.title}</span>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="font-medium truncate">{lesson.title}</span>
+                            {isFinalExamLesson(lesson) ? (
+                              <Badge variant="outline" className="shrink-0 bg-primary/10 text-primary">
+                                Final
+                              </Badge>
+                            ) : null}
                           </div>
-                          {lesson.duration && (
-                            <span className="text-xs text-muted-foreground">
-                              {lesson.duration} min
-                            </span>
-                          )}
+                          <div className="text-xs text-muted-foreground">Module {lesson.step_number}</div>
                         </div>
                       </button>
                     );
@@ -256,4 +351,12 @@ export function CoursePlayer({
     </div>
   );
 }
+
+
+
+
+
+
+
+
 

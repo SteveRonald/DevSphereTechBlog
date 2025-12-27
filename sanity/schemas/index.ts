@@ -9,3 +9,11 @@ export const schemaTypes = [post, category, author];
 
 
 
+
+
+
+
+
+
+
+

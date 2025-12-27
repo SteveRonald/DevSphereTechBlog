@@ -35,7 +35,9 @@ export default function CourseLearnPage() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
+  const [pendingReviewLessons, setPendingReviewLessons] = useState<Set<string>>(new Set());
   const [enrolled, setEnrolled] = useState(false);
+  const [enrollment, setEnrollment] = useState<{ is_completed?: boolean; is_passed?: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const slug = params?.slug as string;
@@ -67,16 +69,13 @@ export default function CourseLearnPage() {
           .from("lessons")
           .select("*")
           .eq("course_id", courseData.id)
+          .eq("is_published", true)
           .order("step_number", { ascending: true });
 
         if (lessonsError) {
           console.error("Error fetching lessons:", lessonsError);
         } else {
           setLessons(lessonsData || []);
-          // Set first lesson as current if available
-          if (lessonsData && lessonsData.length > 0) {
-            setCurrentLessonId(lessonsData[0].id);
-          }
         }
 
         // Check enrollment and progress if user is logged in
@@ -90,6 +89,10 @@ export default function CourseLearnPage() {
 
           if (enrollment) {
             setEnrolled(true);
+            setEnrollment({
+              is_completed: enrollment.is_completed || false,
+              is_passed: enrollment.is_passed || false,
+            });
           }
 
           // Fetch completed lessons
@@ -100,7 +103,31 @@ export default function CourseLearnPage() {
             .eq("course_id", courseData.id);
 
           if (completions) {
-            setCompletedLessons(new Set(completions.map((c) => c.lesson_id)));
+            setCompletedLessons(new Set(completions.map((c: { lesson_id: string }) => c.lesson_id)));
+          }
+
+          // Fetch pending quiz reviews for this course (allows progression but not completion).
+          const { data: pending } = await supabase
+            .from("lesson_quiz_submissions")
+            .select("lesson_id")
+            .eq("user_id", user.id)
+            .eq("course_id", courseData.id)
+            .eq("status", "pending_review");
+
+          const { data: pendingProjects } = await supabase
+            .from("lesson_project_submissions")
+            .select("lesson_id")
+            .eq("user_id", user.id)
+            .eq("course_id", courseData.id)
+            .eq("status", "pending_review");
+
+          const pendingLessonIds = [
+            ...(pending || []).map((p: any) => p.lesson_id),
+            ...(pendingProjects || []).map((p: any) => p.lesson_id),
+          ].filter(Boolean);
+
+          if (pendingLessonIds.length > 0) {
+            setPendingReviewLessons(new Set(pendingLessonIds));
           }
         }
       } catch (error) {
@@ -112,6 +139,85 @@ export default function CourseLearnPage() {
 
     fetchCourseData();
   }, [slug, user, router]);
+
+  useEffect(() => {
+    if (!course || lessons.length === 0) return;
+    if (!user) return;
+    if (currentLessonId) return;
+
+    const key = `course:lastLesson:${user.id}:${course.id}`;
+    const saved = typeof window !== "undefined" ? window.localStorage.getItem(key) : null;
+    const isUnlocked = (index: number) => {
+      if (index === 0) return true;
+      const prev = lessons[index - 1];
+      return completedLessons.has(prev.id) || pendingReviewLessons.has(prev.id);
+    };
+
+    const savedIndex = saved ? lessons.findIndex((l) => l.id === saved) : -1;
+    if (savedIndex >= 0 && isUnlocked(savedIndex)) {
+      setCurrentLessonId(lessons[savedIndex].id);
+      return;
+    }
+
+    const firstIncompleteIndex = lessons.findIndex(
+      (l, idx) => !completedLessons.has(l.id) && !pendingReviewLessons.has(l.id) && isUnlocked(idx)
+    );
+    if (firstIncompleteIndex >= 0) {
+      setCurrentLessonId(lessons[firstIncompleteIndex].id);
+      return;
+    }
+
+    setCurrentLessonId(lessons[0].id);
+  }, [course, lessons, completedLessons, pendingReviewLessons, user, currentLessonId]);
+
+  useEffect(() => {
+    if (!user || !course) return;
+    if (!currentLessonId) return;
+    const key = `course:lastLesson:${user.id}:${course.id}`;
+    window.localStorage.setItem(key, currentLessonId);
+  }, [user, course, currentLessonId]);
+
+  useEffect(() => {
+    if (!user || !course) return;
+    const supabase = createClient();
+
+    const tick = async () => {
+      const { data: completions } = await supabase
+        .from("user_lesson_completion")
+        .select("lesson_id")
+        .eq("user_id", user.id)
+        .eq("course_id", course.id);
+
+      if (completions) {
+        setCompletedLessons(new Set(completions.map((c: any) => c.lesson_id)));
+      }
+
+      const { data: pending } = await supabase
+        .from("lesson_quiz_submissions")
+        .select("lesson_id")
+        .eq("user_id", user.id)
+        .eq("course_id", course.id)
+        .eq("status", "pending_review");
+
+      const { data: pendingProjects } = await supabase
+        .from("lesson_project_submissions")
+        .select("lesson_id")
+        .eq("user_id", user.id)
+        .eq("course_id", course.id)
+        .eq("status", "pending_review");
+
+      const pendingLessonIds = [
+        ...(pending || []).map((p: any) => p.lesson_id),
+        ...(pendingProjects || []).map((p: any) => p.lesson_id),
+      ].filter(Boolean);
+
+      setPendingReviewLessons(new Set(pendingLessonIds));
+    };
+
+    void tick();
+    const id = window.setInterval(() => void tick(), 15000);
+    return () => window.clearInterval(id);
+  }, [user, course]);
 
   const handleEnroll = async () => {
     if (!user) {
@@ -239,6 +345,13 @@ export default function CourseLearnPage() {
   const currentLesson = lessons.find((l) => l.id === currentLessonId);
   const currentStepIndex = lessons.findIndex((l) => l.id === currentLessonId);
 
+  const persistAndSetCurrentLessonId = (lessonId: string) => {
+    setCurrentLessonId(lessonId);
+    if (!user || !course) return;
+    const key = `course:lastLesson:${user.id}:${course.id}`;
+    window.localStorage.setItem(key, lessonId);
+  };
+
   return (
     <CoursePlayer
       course={course}
@@ -246,9 +359,19 @@ export default function CourseLearnPage() {
       currentLesson={currentLesson || null}
       currentStepIndex={currentStepIndex}
       completedLessons={completedLessons}
+      pendingReviewLessons={pendingReviewLessons}
+      enrollment={enrollment}
       onLessonComplete={handleLessonComplete}
-      onLessonChange={setCurrentLessonId}
+      onLessonChange={persistAndSetCurrentLessonId}
     />
   );
 }
+
+
+
+
+
+
+
+
 

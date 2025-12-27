@@ -86,12 +86,13 @@ export const postsByCategoryQuery = groq`*[_type == "post" && defined(publishedA
   }
 }`;
 
-// Get all categories
+// Get all categories with post counts
 export const categoriesQuery = groq`*[_type == "category"] | order(title asc) {
   _id,
   title,
   slug,
-  description
+  description,
+  "count": count(*[_type == "post" && defined(publishedAt) && references(^._id)])
 }`;
 
 // Get recent posts (only published ones)

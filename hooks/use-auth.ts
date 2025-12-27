@@ -15,6 +15,10 @@ export function useAuth() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
+    }).catch(() => {
+      // Handle session errors gracefully
+      setUser(null);
+      setLoading(false);
     });
 
     // Listen for auth changes
@@ -36,6 +40,14 @@ export function useAuth() {
 
   return { user, loading, signOut };
 }
+
+
+
+
+
+
+
+
 
 
 

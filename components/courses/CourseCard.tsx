@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Clock, Users, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { CoursePreviewModal } from "./CoursePreviewModal";
+import { Progress } from "@/components/ui/progress";
 
 export interface Course {
   id: string;
@@ -41,6 +46,8 @@ const difficultyLabels = {
 };
 
 export function CourseCard({ course, enrolled = false, progress = 0 }: CourseCardProps) {
+  const [previewOpen, setPreviewOpen] = useState(false);
+
   const formatDuration = (minutes?: number) => {
     if (!minutes) return "N/A";
     if (minutes < 60) return `${minutes}m`;
@@ -73,6 +80,22 @@ export function CourseCard({ course, enrolled = false, progress = 0 }: CourseCar
               </Badge>
             </div>
           )}
+
+          <div className="absolute bottom-2 left-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="h-8 px-3 text-xs"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setPreviewOpen(true);
+              }}
+            >
+              Quick View
+            </Button>
+          </div>
         </div>
       </Link>
 
@@ -122,12 +145,7 @@ export function CourseCard({ course, enrolled = false, progress = 0 }: CourseCar
               <span>Progress</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
+            <Progress value={progress} className="h-2" />
           </div>
         )}
       </CardContent>
@@ -139,7 +157,17 @@ export function CourseCard({ course, enrolled = false, progress = 0 }: CourseCar
           </Button>
         </Link>
       </CardFooter>
+
+      <CoursePreviewModal slug={course.slug} open={previewOpen} onOpenChange={setPreviewOpen} />
     </Card>
   );
 }
+
+
+
+
+
+
+
+
 

@@ -4,8 +4,38 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Clock, Users, Star, PlayCircle, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import Link from "next/link";
+import { CourseRating } from "@/components/courses/CourseRating";
 
-async function getCourse(slug: string) {
+type DifficultyLevel = "beginner" | "intermediate" | "advanced";
+
+interface Course {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  short_description: string | null;
+  thumbnail_url: string | null;
+  difficulty_level: DifficultyLevel;
+  estimated_duration: number | null;
+  category: string | null;
+  is_published: boolean;
+  enrollment_count: number;
+  rating: number;
+  total_ratings: number;
+}
+
+interface Lesson {
+  id: string;
+  course_id: string;
+  step_number: number;
+  title: string;
+  description: string | null;
+  content_type: string;
+  duration: number | null;
+}
+
+async function getCourse(slug: string): Promise<Course | null> {
   const supabase = createServerClient(undefined);
   
   const { data: course, error } = await supabase
@@ -19,16 +49,17 @@ async function getCourse(slug: string) {
     return null;
   }
 
-  return course;
+  return course as Course;
 }
 
-async function getLessons(courseId: string) {
+async function getLessons(courseId: string): Promise<Lesson[]> {
   const supabase = createServerClient(undefined);
   
   const { data: lessons, error } = await supabase
     .from("lessons")
     .select("*")
     .eq("course_id", courseId)
+    .eq("is_published", true)
     .order("step_number", { ascending: true });
 
   if (error) {
@@ -36,7 +67,7 @@ async function getLessons(courseId: string) {
     return [];
   }
 
-  return lessons || [];
+  return (lessons || []) as Lesson[];
 }
 
 interface CoursePageProps {
@@ -57,16 +88,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
     beginner: "bg-green-500/10 text-green-600 border-green-500/20",
     intermediate: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
     advanced: "bg-red-500/10 text-red-600 border-red-500/20",
-  };
+  } satisfies Record<DifficultyLevel, string>;
 
   const difficultyLabels = {
     beginner: "Beginner",
     intermediate: "Intermediate",
     advanced: "Advanced",
-  };
+  } satisfies Record<DifficultyLevel, string>;
 
-  const formatDuration = (minutes?: number) => {
-    if (!minutes) return "N/A";
+  const formatDuration = (minutes?: number | null) => {
+    if (minutes == null) return "N/A";
     if (minutes < 60) return `${minutes} minutes`;
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
@@ -149,7 +180,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 <h2 className="text-2xl font-bold mb-4">Course Curriculum</h2>
                 <div className="space-y-2">
                   {lessons.length > 0 ? (
-                    lessons.map((lesson, index) => (
+                    lessons.map((lesson: Lesson, index: number) => (
                       <div
                         key={lesson.id}
                         className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
@@ -162,14 +193,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
                           )}
                         </div>
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              Step {lesson.step_number}
-                            </span>
-                            <Badge variant="outline" className="text-xs">
-                              {lesson.content_type}
-                            </Badge>
-                          </div>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Module {lesson.step_number}
+                          </p>
                           <h3 className="font-semibold">{lesson.title}</h3>
                           {lesson.description && (
                             <p className="text-sm text-muted-foreground mt-1">
@@ -215,6 +241,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   </li>
                 </ul>
               </div>
+              <CourseRating
+                courseId={course.id}
+                courseSlug={course.slug}
+                currentRating={course.rating}
+                totalRatings={course.total_ratings}
+              />
             </div>
           </div>
         </div>

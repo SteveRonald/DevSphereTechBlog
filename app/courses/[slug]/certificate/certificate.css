@@ -1,0 +1,462 @@
+/* Enhanced Certificate Styles */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@700&display=swap');
+
+.certificate-container {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 3px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  min-height: 600px;
+  aspect-ratio: 16/9;
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+}
+
+.certificate-container > .relative {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.certificate-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(236, 72, 153, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.certificate-border {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  pointer-events: none;
+}
+
+.certificate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.certificate-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.certificate-logo img {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.certificate-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.certificate-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 4px 0 0 0;
+  font-weight: 500;
+}
+
+.certificate-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.certificate-badge {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+}
+
+.certificate-body {
+  text-align: center;
+  margin: 20px 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 20px;
+}
+
+.certificate-certifies {
+  font-size: 18px;
+  color: #64748b;
+  margin-bottom: 20px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.certificate-student-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: #3b82f6;
+  margin: 0 0 15px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 1.2;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.certificate-course-text {
+  font-size: 18px;
+  color: #64748b;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.certificate-course-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 15px 0;
+  line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.certificate-date {
+  font-size: 16px;
+  color: #64748b;
+  margin-bottom: 10px;
+}
+
+.certificate-date-value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.certificate-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 2px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.certificate-id {
+  text-align: left;
+}
+
+.certificate-id-label {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.certificate-id-value {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.certificate-verify {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.certificate-verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.certificate-verified-badge svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.certificate-verify-label {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.certificate-verify-value {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 600;
+  margin: 0;
+}
+
+.certificate-signature {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 30px;
+  flex-shrink: 0;
+  min-height: 100px;
+  padding-top: 10px;
+}
+
+.certificate-signature-block {
+  text-align: center;
+  flex: 1;
+  position: relative;
+}
+
+.certificate-signature-line {
+  width: 200px;
+  height: 2px;
+  background: #1e293b;
+  margin: 0 auto;
+  display: block;
+  position: relative;
+}
+
+.certificate-signature-title {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+  margin: 0;
+  margin-top: -10px;
+  position: relative;
+  z-index: 1;
+  background: white;
+  display: inline-block;
+  padding: 0 8px;
+}
+
+.certificate-signature-date {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 600;
+  margin: 0;
+  margin-top: -10px;
+  position: relative;
+  z-index: 1;
+  background: white;
+  display: inline-block;
+  padding: 0 8px;
+}
+
+.certificate-signature-name {
+  font-family: 'Dancing Script', cursive;
+  font-size: 22px;
+  color: #1e293b;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+/* Print styles - High Quality */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  .certificate-container,
+  .certificate-container * {
+    visibility: visible;
+  }
+  
+  .certificate-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    padding: 30px;
+    background: white !important;
+    box-sizing: border-box;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .certificate-container::before {
+    display: none;
+  }
+  
+  /* High quality print settings */
+  @page {
+    size: A4 landscape;
+    margin: 0.3in;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Force high quality rendering */
+  .certificate-container {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  
+  /* Ensure text clarity */
+  .certificate-container * {
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    text-rendering: optimizeLegibility !important;
+  }
+  
+  /* Force colors for print */
+  .certificate-student-name {
+    color: #3b82f6 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .certificate-title {
+    color: #000000 !important;
+  }
+  
+  .certificate-course-name {
+    color: #000000 !important;
+  }
+  
+  .certificate-signature-line {
+    background: #000000 !important;
+    border: none !important;
+    height: 2px !important;
+    width: 200px !important;
+    margin: 0 auto !important;
+  }
+  
+  .certificate-signature-title,
+  .certificate-signature-date {
+    margin-top: -10px !important;
+    background: white !important;
+    padding: 0 8px !important;
+  }
+  
+  .certificate-signature-name {
+    color: #000000 !important;
+  }
+  
+  .certificate-badge {
+    background: #3b82f6 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .certificate-verified-badge {
+    background: #3b82f6 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .certificate-verified-badge svg circle {
+    fill: #3b82f6 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Ensure borders are visible */
+  .certificate-container,
+  .certificate-border,
+  .certificate-header,
+  .certificate-footer {
+    border-color: #000000 !important;
+    border-style: solid !important;
+  }
+  
+  /* Ensure logo prints */
+  .certificate-logo img {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .certificate-student-name {
+    font-size: 36px;
+  }
+  
+  .certificate-course-name {
+    font-size: 24px;
+  }
+  
+  .certificate-title {
+    font-size: 20px;
+  }
+  
+  .certificate-logo img {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .certificate-signature {
+    flex-direction: column;
+    gap: 40px;
+  }
+}

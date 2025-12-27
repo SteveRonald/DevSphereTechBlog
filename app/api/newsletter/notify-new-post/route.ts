@@ -71,9 +71,33 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com";
+    // Get site URL - ensure it's not a placeholder
+    let siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "";
+    if (!siteUrl || siteUrl.includes("your-project") || siteUrl.includes("yourdomain") || siteUrl === "http://localhost:3000") {
+      // Try to get from request headers as fallback
+      const host = request.headers.get("host");
+      const protocol = request.headers.get("x-forwarded-proto") || "https";
+      if (host && !host.includes("localhost")) {
+        siteUrl = `${protocol}://${host}`;
+      } else {
+        siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://codecraftacademy.com";
+      }
+    }
+    
     const postUrl = `${siteUrl}/blog/${post.slug}`;
-    const postImage = post.mainImage?.url || "";
+    
+    // Ensure image URL is absolute
+    let postImage = post.mainImage?.url || "";
+    if (postImage && !postImage.startsWith("http")) {
+      // If relative URL, make it absolute
+      if (postImage.startsWith("//")) {
+        postImage = `https:${postImage}`;
+      } else if (postImage.startsWith("/")) {
+        postImage = `${siteUrl}${postImage}`;
+      } else {
+        postImage = `${siteUrl}/${postImage}`;
+      }
+    }
     const authorName = post.author?.name || "Our Team";
     const categoryName = post.categories?.[0]?.title || "Blog";
     const publishedDate = post.publishedAt 

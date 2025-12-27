@@ -32,25 +32,27 @@ function syncSessionToCookies(session: any) {
 }
 
 export function createClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Missing Supabase environment variables");
+  }
+
+  // During SSR, client components/modules can be evaluated on the server.
+  // Avoid throwing; return a non-cached client (no cookie syncing).
   if (typeof window === "undefined") {
-    throw new Error("Supabase client can only be used on the client side");
+    return createSupabaseClient(supabaseUrl, supabaseAnonKey);
   }
 
   if (!client) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error("Missing Supabase environment variables");
-    }
-
     client = createSupabaseClient(supabaseUrl, supabaseAnonKey);
-    
+
     // Listen for auth state changes and sync to cookies
     client.auth.onAuthStateChange((_event, session) => {
       syncSessionToCookies(session);
     });
-    
+
     // Sync initial session
     client.auth.getSession().then(({ data: { session } }) => {
       syncSessionToCookies(session);

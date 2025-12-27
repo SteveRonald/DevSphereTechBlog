@@ -10,18 +10,32 @@ import { createClient } from "@/lib/supabase";
 import { CourseForm } from "@/components/admin/CourseForm";
 import { LessonManager } from "@/components/admin/LessonManager";
 import { Badge } from "@/components/ui/badge";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
+import { AdminShell } from "@/components/admin/AdminShell";
 
-interface Course {
+type AnalyticsPoint = {
+  date: string;
+  courses_created: number;
+  enrollments: number;
+  completions: number;
+};
+
+interface AdminCourse {
   id: string;
   title: string;
   slug: string;
   description: string;
   short_description: string;
   thumbnail_url?: string;
-  difficulty_level: string;
+  difficulty_level: "beginner" | "intermediate" | "advanced";
   estimated_duration: number;
   category: string;
   is_published: boolean;
@@ -37,11 +51,14 @@ export default function AdminCoursesPage() {
   const [mounted, setMounted] = useState(false);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [checkingAdmin, setCheckingAdmin] = useState(true);
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<AdminCourse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingCourseId, setDeletingCourseId] = useState<string | null>(null);
   const [showCourseForm, setShowCourseForm] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [editingCourse, setEditingCourse] = useState<AdminCourse | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<AdminCourse | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsPoint[]>([]);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     published: 0,
@@ -114,6 +131,7 @@ export default function AdminCoursesPage() {
     if (isAdmin === true) {
       fetchCourses();
       fetchStats();
+      fetchAnalytics();
     }
   }, [isAdmin]);
 
@@ -136,6 +154,37 @@ export default function AdminCoursesPage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAnalytics = async () => {
+    try {
+      setLoadingAnalytics(true);
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const response = await fetch("/api/admin/analytics?days=30", {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to load analytics");
+      }
+
+      setAnalytics(data.series || []);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to load analytics",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingAnalytics(false);
     }
   };
 
@@ -186,6 +235,7 @@ export default function AdminCoursesPage() {
     }
 
     try {
+      setDeletingCourseId(courseId);
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
 
@@ -213,6 +263,8 @@ export default function AdminCoursesPage() {
         description: error.message || "Failed to delete course",
         variant: "destructive",
       });
+    } finally {
+      setDeletingCourseId(null);
     }
   };
 
@@ -223,33 +275,39 @@ export default function AdminCoursesPage() {
     setShowCourseForm(false);
   };
 
-  if (!mounted || authLoading || checkingAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Checking access...</p>
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/");
+  };
+
+  const showShellLoading = !mounted || authLoading || checkingAdmin;
+  const showAccessDenied = mounted && !authLoading && !checkingAdmin && isAdmin === false;
+  const showContentLoading = mounted && !authLoading && !checkingAdmin && isAdmin === true && loading;
+
+  return (
+    <AdminShell
+      title="Admin Dashboard"
+      subtitle="Courses management system"
+      userEmail={user?.email}
+      userName={user?.email}
+      onSignOut={handleSignOut}
+    >
+      {showShellLoading ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
         </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  if (isAdmin === false) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <Card className="max-w-md w-full mx-4">
+      ) : showAccessDenied ? (
+        <Card className="max-w-md">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
               <Shield className="h-6 w-6 text-destructive" />
               <CardTitle>Access Denied</CardTitle>
             </div>
-            <CardDescription>
-              This page is restricted to administrators only.
-            </CardDescription>
+            <CardDescription>This page is restricted to administrators only.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
@@ -259,133 +317,140 @@ export default function AdminCoursesPage() {
               <Button variant="outline" onClick={() => router.push("/")} className="flex-1">
                 Go Home
               </Button>
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  const supabase = createClient();
-                  await supabase.auth.signOut();
-                  router.push("/");
-                }}
-                className="flex-1"
-              >
+              <Button variant="outline" onClick={handleSignOut} className="flex-1">
                 Sign Out
               </Button>
             </div>
           </CardContent>
         </Card>
-      </div>
-    );
-  }
+      ) : (
+        <>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Courses</CardTitle>
+                <BookOpen className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{stats.total}</div>
+                <p className="text-xs text-muted-foreground mt-1">{stats.published} published</p>
+              </CardContent>
+            </Card>
 
-  if (isAdmin !== true) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Verifying access...</p>
-        </div>
-      </div>
-    );
-  }
+            <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-blue-500/10">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total Students</CardTitle>
+                <Users className="h-4 w-4 text-blue-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{stats.students}</div>
+                <p className="text-xs text-muted-foreground mt-1">Active learners</p>
+              </CardContent>
+            </Card>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Admin Header with Branding */}
-      <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
-        <div className="container max-w-7xl mx-auto px-4 md:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Shield className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold flex items-center gap-2">
-                  <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                    Admin Dashboard
-                  </span>
-                  <Badge variant="outline" className="text-xs">CodeCraft Academy</Badge>
-                </h1>
-                <p className="text-xs text-muted-foreground">Courses Management System</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => router.push("/")}>
-                View Site
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => router.push("/studio")}>
-                <Settings className="h-4 w-4 mr-2" />
-                CMS Studio
-              </Button>
-            </div>
+            <Card className="border-green-500/20 bg-gradient-to-br from-green-500/5 to-green-500/10">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Completion Rate</CardTitle>
+                <TrendingUp className="h-4 w-4 text-green-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{stats.completionRate}%</div>
+                <p className="text-xs text-muted-foreground mt-1">Average completion</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-yellow-500/20 bg-gradient-to-br from-yellow-500/5 to-yellow-500/10">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Published</CardTitle>
+                <Award className="h-4 w-4 text-yellow-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{stats.published}</div>
+                <p className="text-xs text-muted-foreground mt-1">Live courses</p>
+              </CardContent>
+            </Card>
           </div>
-        </div>
-      </div>
 
-      <div className="container max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Courses</CardTitle>
-              <BookOpen className="h-4 w-4 text-primary" />
+          <Card className="mb-8">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Analytics (Last 30 days)</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void fetchAnalytics()}
+                disabled={loadingAnalytics}
+              >
+                {loadingAnalytics ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  "Refresh"
+                )}
+              </Button>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stats.total}</div>
-              <p className="text-xs text-muted-foreground mt-1">{stats.published} published</p>
+              {loadingAnalytics ? (
+                <div className="flex items-center justify-center py-10">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : (
+                <ChartContainer
+                  className="h-[280px] w-full"
+                  config={{
+                    enrollments: { label: "Enrollments", color: "hsl(var(--primary))" },
+                    completions: { label: "Completions", color: "hsl(var(--chart-2))" },
+                  }}
+                >
+                  <AreaChart data={analytics} margin={{ left: 12, right: 12 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} minTickGap={32} />
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                    <Area
+                      dataKey="enrollments"
+                      type="monotone"
+                      fill="var(--color-enrollments)"
+                      fillOpacity={0.15}
+                      stroke="var(--color-enrollments)"
+                      strokeWidth={2}
+                    />
+                    <Area
+                      dataKey="completions"
+                      type="monotone"
+                      fill="var(--color-completions)"
+                      fillOpacity={0.12}
+                      stroke="var(--color-completions)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ChartContainer>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-blue-500/10">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Students</CardTitle>
-              <Users className="h-4 w-4 text-blue-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.students}</div>
-              <p className="text-xs text-muted-foreground mt-1">Active learners</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-green-500/20 bg-gradient-to-br from-green-500/5 to-green-500/10">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Completion Rate</CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.completionRate}%</div>
-              <p className="text-xs text-muted-foreground mt-1">Average completion</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-yellow-500/20 bg-gradient-to-br from-yellow-500/5 to-yellow-500/10">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Published</CardTitle>
-              <Award className="h-4 w-4 text-yellow-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.published}</div>
-              <p className="text-xs text-muted-foreground mt-1">Live courses</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Action Bar */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">All Courses</h2>
-            <p className="text-muted-foreground">Manage and organize your course content</p>
+          {/* Action Bar */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">All Courses</h2>
+              <p className="text-muted-foreground">Manage and organize your course content</p>
+            </div>
+            <Button
+              size="lg"
+              className="gap-2"
+              onClick={() => {
+                setEditingCourse(null);
+                setShowCourseForm(true);
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Create New Course
+            </Button>
           </div>
-          <Button size="lg" className="gap-2" onClick={() => {
-            setEditingCourse(null);
-            setShowCourseForm(true);
-          }}>
-            <Plus className="h-4 w-4" />
-            Create New Course
-          </Button>
-        </div>
 
         {/* Courses List */}
-        {loading ? (
+        {showContentLoading ? (
           <Card>
             <CardContent className="py-12 text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
@@ -475,8 +540,20 @@ export default function AdminCoursesPage() {
                       size="sm"
                       onClick={() => handleDelete(course.id)}
                       className="text-destructive hover:text-destructive"
+                      disabled={deletingCourseId === course.id}
+                      aria-label={deletingCourseId === course.id ? "Deleting course" : "Delete course"}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      {deletingCourseId === course.id ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span className="sr-only">Deleting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete</span>
+                        </>
+                      )}
                     </Button>
                     <Button
                       variant="outline"
@@ -493,31 +570,41 @@ export default function AdminCoursesPage() {
             ))}
           </div>
         )}
-      </div>
+          {/* Course Form Modal */}
+          {showCourseForm && (
+            <CourseForm
+              course={
+                editingCourse
+                  ? {
+                      ...editingCourse,
+                      thumbnail_url: editingCourse.thumbnail_url || "",
+                    }
+                  : null
+              }
+              onClose={() => {
+                setShowCourseForm(false);
+                setEditingCourse(null);
+              }}
+              onSuccess={handleFormSuccess}
+            />
+          )}
 
-      {/* Course Form Modal */}
-      {showCourseForm && (
-        <CourseForm
-          course={editingCourse}
-          onClose={() => {
-            setShowCourseForm(false);
-            setEditingCourse(null);
-          }}
-          onSuccess={handleFormSuccess}
-        />
+          {/* Lesson Manager Modal */}
+          {selectedCourse && (
+            <LessonManager
+              course={{
+                id: selectedCourse.id,
+                title: selectedCourse.title,
+                is_published: selectedCourse.is_published,
+              }}
+              onClose={() => setSelectedCourse(null)}
+              onSuccess={() => {
+                void fetchCourses();
+              }}
+            />
+          )}
+        </>
       )}
-
-      {/* Lesson Manager Modal */}
-      {selectedCourse && (
-        <LessonManager
-          course={selectedCourse}
-          onClose={() => setSelectedCourse(null)}
-          onSuccess={() => {
-            setSelectedCourse(null);
-            fetchCourses();
-          }}
-        />
-      )}
-    </div>
+    </AdminShell>
   );
 }

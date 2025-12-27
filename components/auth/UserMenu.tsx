@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LogOut, User, Settings } from "lucide-react";
+import { LayoutDashboard, LogOut, MessageSquare, User, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 
@@ -58,6 +58,14 @@ export function UserMenu() {
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push("/dashboard")}>
+          <LayoutDashboard className="mr-2 h-4 w-4" />
+          <span>Dashboard</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push("/chat")}>
+          <MessageSquare className="mr-2 h-4 w-4" />
+          <span>Chat</span>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push("/settings")}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
@@ -71,6 +79,14 @@ export function UserMenu() {
     </DropdownMenu>
   );
 }
+
+
+
+
+
+
+
+
 
 
 

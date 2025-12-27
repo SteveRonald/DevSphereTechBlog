@@ -21,13 +21,37 @@ const createGmailTransporter = () => {
 // Create Resend client (primary)
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+// Get site URL helper
+function getSiteUrl(request?: Request): string {
+  let siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "";
+  
+  if (!siteUrl || siteUrl.includes("your-project") || siteUrl.includes("yourdomain") || siteUrl === "http://localhost:3000") {
+    // Try to get from request headers as fallback
+    if (request) {
+      const host = request.headers.get("host");
+      const protocol = request.headers.get("x-forwarded-proto") || "https";
+      if (host && !host.includes("localhost")) {
+        siteUrl = `${protocol}://${host}`;
+      }
+    }
+    
+    // Final fallback
+    if (!siteUrl || siteUrl.includes("your-project") || siteUrl.includes("yourdomain")) {
+      siteUrl = "https://codecraftacademy.com";
+    }
+  }
+  
+  return siteUrl;
+}
+
 // Send thank you email to donor
 async function sendThankYouEmail(
   donorEmail: string,
   amount: number,
   currency: string,
   reference: string,
-  isRecurring: boolean
+  isRecurring: boolean,
+  request?: Request
 ) {
   // Skip if email is a placeholder (for KES mobile money without email)
   if (donorEmail.includes("@paystack.local") || donorEmail.includes("@example.com") || donorEmail.includes("@donation.placeholder")) {
@@ -35,6 +59,7 @@ async function sendThankYouEmail(
     return { sent: false, reason: "placeholder_email" };
   }
 
+  const siteUrl = getSiteUrl(request);
   const currencySymbol = currency === "KES" ? "KES" : "$";
   const formattedAmount = currency === "KES" 
     ? `${currencySymbol} ${amount.toLocaleString()}` 
@@ -73,7 +98,7 @@ async function sendThankYouEmail(
       </div>
 
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com"}/blog" 
+        <a href="${siteUrl}/blog" 
            style="background: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">
           Explore Our Content
         </a>
@@ -96,7 +121,7 @@ Your contribution helps us continue creating high-quality tutorials, reviews, an
 ${isRecurring ? "Recurring Donation: Your monthly donation will continue automatically. You can manage or cancel it anytime from your account.\n\n" : ""}
 Transaction Reference: ${reference}
 
-Explore our content: ${process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com"}/blog
+Explore our content: ${siteUrl}/blog
 
 This is an automated receipt from CodeCraft Academy.
 If you have any questions, please contact us at ${process.env.CONTACT_EMAIL || "support@codecraftacademy.com"}
@@ -210,7 +235,8 @@ export async function POST(request: NextRequest) {
               amount,
               currency,
               payment.reference,
-              isRecurring
+              isRecurring,
+              request
             );
             console.log("Thank you email result:", emailResult);
           } catch (emailError) {

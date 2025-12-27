@@ -77,7 +77,8 @@ export default function MyCoursesPage() {
           const { count: totalLessons } = await supabase
             .from("lessons")
             .select("*", { count: "exact", head: true })
-            .eq("course_id", enrollment.course_id);
+            .eq("course_id", enrollment.course_id)
+            .eq("is_published", true);
 
           // Get completed lessons
           const { count: completedLessons } = await supabase
@@ -86,8 +87,28 @@ export default function MyCoursesPage() {
             .eq("user_id", user.id)
             .eq("course_id", enrollment.course_id);
 
+          const { count: pendingQuizCount } = await supabase
+            .from("lesson_quiz_submissions")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("course_id", enrollment.course_id)
+            .eq("status", "pending_review");
+
+          const pendingProjectsRes = await supabase
+            .from("lesson_project_submissions")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("course_id", enrollment.course_id)
+            .eq("status", "pending_review");
+          const pendingProjectCount = pendingProjectsRes.error ? 0 : (pendingProjectsRes.count || 0);
+
+          const numerator = Math.min(
+            totalLessons || 0,
+            (completedLessons || 0) + (pendingQuizCount || 0) + (pendingProjectCount || 0)
+          );
+
           const progress = totalLessons && totalLessons > 0
-            ? (completedLessons || 0) / totalLessons * 100
+            ? (numerator / totalLessons) * 100
             : 0;
 
           return {
@@ -100,13 +121,13 @@ export default function MyCoursesPage() {
       setEnrolledCourses(coursesWithProgress);
 
       // Calculate stats
-      const completed = coursesWithProgress.filter((c) => c.is_completed).length;
-      const inProgress = coursesWithProgress.filter((c) => !c.is_completed).length;
+      const completed = coursesWithProgress.filter((c: any) => c.is_completed).length;
+      const inProgress = coursesWithProgress.filter((c: any) => !c.is_completed).length;
       
       // Calculate total time spent (sum of estimated durations of completed courses)
       const totalTime = coursesWithProgress
-        .filter((c) => c.is_completed)
-        .reduce((sum, c) => sum + (c.courses.estimated_duration || 0), 0);
+        .filter((c: any) => c.is_completed)
+        .reduce((sum: number, c: any) => sum + (c.courses.estimated_duration || 0), 0);
 
       setStats({
         total: coursesWithProgress.length,
@@ -318,4 +339,12 @@ export default function MyCoursesPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
 

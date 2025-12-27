@@ -14,18 +14,18 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: <BookOpen className="h-6 w-6" />,
-    title: "Free Courses",
-    description: "Learn by doing with real-world projects and hands-on examples that you can immediately apply to your work.",
+    title: "Free Short Courses",
+    description: "Structured lessons designed for busy learners — learn fast, stay consistent, and build real momentum.",
   },
   {
     icon: <Code className="h-6 w-6" />,
-    title: "Quality Code Examples",
-    description: "Clean, well-documented code snippets and examples that follow industry best practices and modern standards.",
+    title: "Practical, Real Examples",
+    description: "Hands-on explanations and code you can copy, run, and understand — focused on skills that matter.",
   },
   {
     icon: <Users className="h-6 w-6" />,
-    title: "Expert Community",
-    description: "Join a community of developers sharing knowledge, asking questions, and growing together in their careers.",
+    title: "Built for Beginners",
+    description: "Clear steps, simple language, and guided progression — perfect if you’re not sure where to start.",
   },
 ];
 
@@ -38,7 +38,7 @@ export function WhyChooseUs() {
             Why Choose CodeCraft Academy?
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            We're committed to helping developers succeed with practical, high-quality content and a supportive community.
+            Learn tech the practical way with short courses, clear guidance, and a growing knowledge base that supports your journey.
           </p>
         </div>
 

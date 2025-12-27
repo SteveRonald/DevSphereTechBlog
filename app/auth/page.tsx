@@ -25,11 +25,14 @@ function AuthPageContent() {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user) {
+    if (user && !loading) {
       const redirect = searchParams.get("redirect") || "/";
-      router.push(redirect);
+      // Prevent redirect loops
+      if (window.location.pathname === "/auth" && redirect !== "/auth") {
+        router.push(redirect);
+      }
     }
-  }, [user, router, searchParams]);
+  }, [user, loading, router, searchParams]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,7 +84,7 @@ function AuthPageContent() {
       });
 
       const redirect = searchParams.get("redirect") || "/";
-      window.location.href = redirect;
+      router.push(redirect);
     } catch (error: any) {
       toast({
         title: "Error",

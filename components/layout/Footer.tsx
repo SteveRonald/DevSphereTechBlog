@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Heart } from "lucide-react";
 
 export function Footer() {
   return (
@@ -27,6 +28,15 @@ export function Footer() {
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Support</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li><Link href="/faq" className="hover:text-primary transition-colors">FAQ</Link></li>
+              <li>
+                <Link
+                  href="/donate"
+                  className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-md hover:shadow-lg"
+                >
+                  <Heart className="h-4 w-4 fill-white/20" />
+                  Support Us
+                </Link>
+              </li>
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
               <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>

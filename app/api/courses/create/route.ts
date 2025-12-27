@@ -8,7 +8,11 @@ export async function POST(request: NextRequest) {
     const supabase = createServerClient(request);
 
     // Check admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+    const {
+      data: { user },
+    } = token ? await supabase.auth.getUser(token) : await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -57,9 +61,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    // If the course is created already published, notify subscribers.
+    if (data?.is_published === true) {
+      try {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+        await fetch(`${siteUrl}/api/newsletter/notify-new-course`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            course: {
+              id: data.id,
+              title: data.title,
+              slug: data.slug,
+              short_description: data.short_description,
+              thumbnail_url: data.thumbnail_url,
+              category: data.category,
+              difficulty_level: data.difficulty_level,
+              created_at: data.created_at,
+            },
+          }),
+        });
+      } catch (notifyError) {
+        console.error("Failed to send course notifications:", notifyError);
+      }
+    }
+
     return NextResponse.json({ course: data }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
 

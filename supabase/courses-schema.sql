@@ -47,8 +47,16 @@ CREATE TABLE IF NOT EXISTS user_course_enrollments (
   last_accessed_at TIMESTAMPTZ,
   completed_at TIMESTAMPTZ,
   is_completed BOOLEAN DEFAULT FALSE,
+  final_score_100 NUMERIC(6,2),
+  is_passed BOOLEAN,
   UNIQUE(user_id, course_id)
 );
+
+ALTER TABLE user_course_enrollments
+  ADD COLUMN IF NOT EXISTS final_score_100 NUMERIC(6,2);
+
+ALTER TABLE user_course_enrollments
+  ADD COLUMN IF NOT EXISTS is_passed BOOLEAN;
 
 -- User lesson completion tracking
 CREATE TABLE IF NOT EXISTS user_lesson_completion (
@@ -105,6 +113,16 @@ RETURNS TRIGGER AS $$
 DECLARE
   total_lessons INTEGER;
   completed_lessons INTEGER;
+  final_exam_lessons INTEGER;
+  final_exam_graded INTEGER;
+  cat_raw NUMERIC;
+  cat_total NUMERIC;
+  exam_raw NUMERIC;
+  exam_total NUMERIC;
+  cat_scaled NUMERIC;
+  exam_scaled NUMERIC;
+  final_score NUMERIC;
+  passed BOOLEAN;
 BEGIN
   -- Get total lessons for the course
   SELECT COUNT(*) INTO total_lessons
@@ -118,9 +136,54 @@ BEGIN
   
   -- Update enrollment completion status
   IF completed_lessons >= total_lessons AND total_lessons > 0 THEN
-    UPDATE user_course_enrollments
-    SET is_completed = TRUE, completed_at = NOW() AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi'
-    WHERE user_id = NEW.user_id AND course_id = NEW.course_id;
+    -- Final exam must exist and be graded
+    SELECT COUNT(*) INTO final_exam_lessons
+    FROM lessons l
+    WHERE l.course_id = NEW.course_id
+      AND (l.content->'quiz_data'->>'assessment_type') = 'final_exam';
+
+    SELECT COUNT(*) INTO final_exam_graded
+    FROM lesson_quiz_submissions s
+    JOIN lessons l ON l.id = s.lesson_id
+    WHERE s.user_id = NEW.user_id
+      AND s.course_id = NEW.course_id
+      AND s.status = 'graded'
+      AND (l.content->'quiz_data'->>'assessment_type') = 'final_exam';
+
+    IF final_exam_lessons > 0 AND final_exam_graded >= final_exam_lessons THEN
+      SELECT
+        COALESCE(SUM(CASE WHEN s.status = 'graded' THEN s.score ELSE 0 END), 0),
+        COALESCE(SUM(CASE WHEN s.status = 'graded' THEN s.total ELSE 0 END), 0)
+      INTO cat_raw, cat_total
+      FROM lesson_quiz_submissions s
+      JOIN lessons l ON l.id = s.lesson_id
+      WHERE s.user_id = NEW.user_id
+        AND s.course_id = NEW.course_id
+        AND (l.content->'quiz_data'->>'assessment_type' IS NULL OR (l.content->'quiz_data'->>'assessment_type') = 'cat');
+
+      SELECT
+        COALESCE(SUM(CASE WHEN s.status = 'graded' THEN s.score ELSE 0 END), 0),
+        COALESCE(SUM(CASE WHEN s.status = 'graded' THEN s.total ELSE 0 END), 0)
+      INTO exam_raw, exam_total
+      FROM lesson_quiz_submissions s
+      JOIN lessons l ON l.id = s.lesson_id
+      WHERE s.user_id = NEW.user_id
+        AND s.course_id = NEW.course_id
+        AND (l.content->'quiz_data'->>'assessment_type') = 'final_exam';
+
+      cat_scaled := CASE WHEN cat_total > 0 THEN (cat_raw / cat_total) * 30 ELSE 0 END;
+      exam_scaled := CASE WHEN exam_total > 0 THEN (exam_raw / exam_total) * 70 ELSE 0 END;
+      final_score := cat_scaled + exam_scaled;
+      passed := final_score >= 70;
+
+      UPDATE user_course_enrollments
+      SET
+        is_completed = TRUE,
+        completed_at = NOW() AT TIME ZONE 'UTC' AT TIME ZONE 'Africa/Nairobi',
+        final_score_100 = final_score,
+        is_passed = passed
+      WHERE user_id = NEW.user_id AND course_id = NEW.course_id;
+    END IF;
   END IF;
   
   RETURN NEW;

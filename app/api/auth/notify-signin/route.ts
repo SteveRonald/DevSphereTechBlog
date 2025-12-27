@@ -66,6 +66,19 @@ export async function POST(request: Request) {
       })
       .eq("id", userId);
 
+    // Get site URL - ensure it's not a placeholder
+    let siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "";
+    if (!siteUrl || siteUrl.includes("your-project") || siteUrl.includes("yourdomain") || siteUrl === "http://localhost:3000") {
+      // Try to get from request headers as fallback
+      const host = request.headers.get("host");
+      const protocol = request.headers.get("x-forwarded-proto") || "https";
+      if (host && !host.includes("localhost")) {
+        siteUrl = `${protocol}://${host}`;
+      } else {
+        siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://codecraftacademy.com";
+      }
+    }
+
     // Email content
     const subject = isNewDeviceOrLocation 
       ? "New Sign-In from New Device/Location - CodeCraft Academy"
@@ -96,7 +109,7 @@ export async function POST(request: Request) {
             For extra security, we strongly recommend enabling Two-Factor Authentication (2FA).
           </p>
           <div style="text-align: center;">
-            <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com'}/settings" 
+            <a href="${siteUrl}/settings" 
                style="background: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
               Enable 2FA in Settings
             </a>
@@ -112,7 +125,7 @@ export async function POST(request: Request) {
           </p>
         </div>
         <div style="text-align: center; margin: 20px 0;">
-          <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com'}/profile" 
+          <a href="${siteUrl}/profile" 
              style="background: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
             View Account Settings
           </a>
@@ -136,13 +149,13 @@ Location: ${ip}${isNewLocation ? ' (NEW)' : ''}
     New Device or Location Detected!
 We detected a sign-in from a ${isNewDevice ? 'new device' : ''}${isNewDevice && isNewLocation ? ' and ' : ''}${isNewLocation ? 'new location' : ''}. 
 For extra security, we strongly recommend enabling Two-Factor Authentication (2FA).
-Enable 2FA: ${process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com'}/settings
+Enable 2FA: ${siteUrl}/settings
 ` : ''}
 
 If this was you: No action needed.
 If this wasn't you: Please change your password immediately.
 
-View Account: ${process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com'}/profile
+View Account: ${siteUrl}/profile
     `;
 
     // Try Resend first (primary)

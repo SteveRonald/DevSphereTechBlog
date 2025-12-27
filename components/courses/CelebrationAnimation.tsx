@@ -97,8 +97,8 @@ export function CelebrationAnimation() {
                     transition={{
                       delay: gift.delay,
                       duration: 0.6,
-                      type: "spring",
-                      stiffness: 200,
+                      type: "tween",
+                      ease: "easeOut",
                     }}
                     className="relative"
                   >
@@ -109,6 +109,8 @@ export function CelebrationAnimation() {
                       transition={{
                         delay: gift.delay + 0.3,
                         duration: 0.4,
+                        type: "tween",
+                        ease: "easeOut",
                       }}
                       className={`absolute inset-0 rounded-full ${gift.color.replace("text-", "bg-")} opacity-20`}
                     />
@@ -122,4 +124,12 @@ export function CelebrationAnimation() {
     </AnimatePresence>
   );
 }
+
+
+
+
+
+
+
+
 

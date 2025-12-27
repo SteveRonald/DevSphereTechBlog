@@ -1,8 +1,12 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
 import { Sidebar } from "@/components/blog/Sidebar";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Search, Filter } from "lucide-react";
+import { BookOpen, Search, Filter, X } from "lucide-react";
 import { CourseCard, type Course } from "@/components/courses/CourseCard";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -10,31 +14,361 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/hooks/use-auth";
+import { createClient } from "@/lib/supabase";
+import { useRouter, useSearchParams } from "next/navigation";
 
-async function getCourses(): Promise<{ courses: Course[]; total: number }> {
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/courses`, {
-      cache: "no-store",
-    });
-    
-    if (!response.ok) {
-      console.error("Failed to fetch courses");
-      return { courses: [], total: 0 };
+export default function FreeCoursesPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const hasInitialized = useRef(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>("all");
+  const [selectedSort, setSelectedSort] = useState<string>("newest");
+  const [selectedDuration, setSelectedDuration] = useState<string>("all");
+  const [selectedMinRating, setSelectedMinRating] = useState<string>("all");
+  const [categories, setCategories] = useState<Array<{ name: string; count: number }>>(() => {
+    // Try to restore categories from sessionStorage
+    if (typeof window !== "undefined") {
+      const cached = sessionStorage.getItem("course-categories");
+      if (cached) {
+        try {
+          const data = JSON.parse(cached);
+          const cacheTime = data.timestamp || 0;
+          const now = Date.now();
+          if (now - cacheTime < 5 * 60 * 1000) {
+            return data.categories || [];
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
     }
-    
-    const data = await response.json();
-    return { courses: data.courses || [], total: data.total || 0 };
-  } catch (error) {
-    console.error("Error fetching courses:", error);
-    return { courses: [], total: 0 };
-  }
-}
+    return [];
+  });
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<string>>(new Set());
+  const [courseProgress, setCourseProgress] = useState<Record<string, number>>({});
+  const [total, setTotal] = useState(() => {
+    // Try to restore total from sessionStorage
+    if (typeof window !== "undefined") {
+      const cached = sessionStorage.getItem("free-courses-cache");
+      if (cached) {
+        try {
+          const data = JSON.parse(cached);
+          const cacheTime = data.timestamp || 0;
+          const now = Date.now();
+          if (now - cacheTime < 2 * 60 * 1000) {
+            return data.total || 0;
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+    }
+    return 0;
+  });
+  const [offset, setOffset] = useState(0);
+  const limit = 12;
 
-// Revalidate every 60 seconds
-export const revalidate = 60;
+  useEffect(() => {
+    // Initialize filters from URL (deep link support)
+    const urlSearch = searchParams.get("search") || "";
+    const urlCategory = searchParams.get("category") || "all";
+    const urlDifficulty = searchParams.get("difficulty") || "all";
+    const urlSort = searchParams.get("sort") || "newest";
+    const urlMinDuration = searchParams.get("min_duration");
+    const urlMaxDuration = searchParams.get("max_duration");
+    const urlMinRating = searchParams.get("min_rating");
 
-export default async function FreeCoursesPage() {
-  const { courses, total } = await getCourses();
+    const urlDuration = urlMinDuration || urlMaxDuration
+      ? `${urlMinDuration || "0"}-${urlMaxDuration || ""}`
+      : "all";
+    const urlRating = urlMinRating ? urlMinRating : "all";
+
+    // Check if we have cached data for these exact filters
+    const cacheKey = `free-courses-${urlSearch}-${urlCategory}-${urlDifficulty}-${urlSort}-${urlDuration}-${urlRating}`;
+    const cached = typeof window !== "undefined" ? sessionStorage.getItem(cacheKey) : null;
+    let hasValidCache = false;
+
+    if (cached) {
+      try {
+        const data = JSON.parse(cached);
+        const cacheTime = data.timestamp || 0;
+        const now = Date.now();
+        // Use cached data if less than 2 minutes old
+        if (now - cacheTime < 2 * 60 * 1000 && data.courses && data.courses.length > 0) {
+          // Restore from cache immediately
+          setCourses(data.courses);
+          setTotal(data.total || 0);
+          setLoading(false);
+          setInitialLoad(false);
+          hasValidCache = true;
+          hasInitialized.current = true;
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
+
+    setSearchQuery(urlSearch);
+    setSelectedCategory(urlCategory);
+    setSelectedDifficulty(urlDifficulty);
+    setSelectedSort(urlSort);
+    setSelectedDuration(urlDuration);
+    setSelectedMinRating(urlRating);
+    setOffset(0);
+
+    // Only fetch if we don't have valid cached data
+    if (!hasValidCache) {
+      // Fetch categories and courses in parallel
+      Promise.all([
+        fetchCategories(),
+        fetchCourses({ replace: true, nextOffset: 0, override: { search: urlSearch, category: urlCategory, difficulty: urlDifficulty, sort: urlSort, duration: urlDuration, minRating: urlRating } })
+      ]).then(() => {
+        setInitialLoad(false);
+        hasInitialized.current = true;
+      });
+    }
+
+    if (user) {
+      fetchEnrollments();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  useEffect(() => {
+    // Debounce search/filters
+    const timer = setTimeout(() => {
+      setOffset(0);
+      syncUrl();
+      fetchCourses({ replace: true, nextOffset: 0 });
+    }, 300);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, selectedCategory, selectedDifficulty, selectedSort, selectedDuration, selectedMinRating]);
+
+  const syncUrl = () => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("search", searchQuery);
+    if (selectedCategory !== "all") params.set("category", selectedCategory);
+    if (selectedDifficulty !== "all") params.set("difficulty", selectedDifficulty);
+    if (selectedSort !== "newest") params.set("sort", selectedSort);
+
+    if (selectedDuration !== "all") {
+      const [minStr, maxStr] = selectedDuration.split("-");
+      const min = parseInt(minStr || "0");
+      const max = maxStr ? parseInt(maxStr) : NaN;
+      if (!Number.isNaN(min) && min > 0) params.set("min_duration", String(min));
+      if (!Number.isNaN(max)) params.set("max_duration", String(max));
+    }
+
+    if (selectedMinRating !== "all") {
+      params.set("min_rating", selectedMinRating);
+    }
+
+    const qs = params.toString();
+    router.replace(qs ? `/free-courses?${qs}` : "/free-courses");
+  };
+
+  const fetchCategories = async () => {
+    try {
+      // Use cache to prevent refetching on every render
+      const cacheKey = "course-categories";
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const data = JSON.parse(cached);
+        const cacheTime = data.timestamp || 0;
+        const now = Date.now();
+        // Cache for 5 minutes
+        if (now - cacheTime < 5 * 60 * 1000) {
+          setCategories(data.categories || []);
+          return;
+        }
+      }
+
+      const response = await fetch("/api/courses/meta", {
+        cache: 'default'
+      });
+      const data = await response.json();
+      const categories = data.categories || [];
+      setCategories(categories);
+      
+      // Cache the result
+      sessionStorage.setItem(cacheKey, JSON.stringify({
+        categories,
+        timestamp: Date.now()
+      }));
+    } catch (error) {
+      console.error("Error fetching course categories:", error);
+    }
+  };
+
+  const fetchCourses = async (opts?: {
+    replace?: boolean;
+    nextOffset?: number;
+    override?: { search?: string; category?: string; difficulty?: string; sort?: string; duration?: string; minRating?: string };
+  }) => {
+    const replace = opts?.replace ?? true;
+    const nextOffset = opts?.nextOffset ?? offset;
+    const override = opts?.override;
+
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      const effectiveSearch = override?.search ?? searchQuery;
+      const effectiveCategory = override?.category ?? selectedCategory;
+      const effectiveDifficulty = override?.difficulty ?? selectedDifficulty;
+      const effectiveSort = override?.sort ?? selectedSort;
+      const effectiveDuration = override?.duration ?? selectedDuration;
+      const effectiveMinRating = override?.minRating ?? selectedMinRating;
+
+      if (effectiveSearch) params.append("search", effectiveSearch);
+      if (effectiveCategory !== "all") params.append("category", effectiveCategory);
+      if (effectiveDifficulty !== "all") params.append("difficulty", effectiveDifficulty);
+      if (effectiveSort) params.append("sort", effectiveSort);
+
+      if (effectiveDuration !== "all") {
+        const [minStr, maxStr] = effectiveDuration.split("-");
+        const min = parseInt(minStr || "0");
+        const max = maxStr ? parseInt(maxStr) : NaN;
+        if (!Number.isNaN(min) && min > 0) params.append("min_duration", String(min));
+        if (!Number.isNaN(max)) params.append("max_duration", String(max));
+      }
+
+      if (effectiveMinRating !== "all") {
+        params.append("min_rating", effectiveMinRating);
+      }
+
+      params.append("limit", String(limit));
+      params.append("offset", String(nextOffset));
+
+      const response = await fetch(`/api/courses?${params.toString()}`, {
+        // Use default caching for better performance
+        cache: 'default'
+      });
+      const data = await response.json();
+      setTotal(data.total || 0);
+      setOffset(nextOffset);
+
+      const nextCourses = (data.courses || []) as Course[];
+      const finalCourses = replace ? nextCourses : [...courses, ...nextCourses];
+      setCourses(finalCourses);
+      
+      // Cache the courses data in sessionStorage with filter-specific key
+      if (replace && typeof window !== "undefined") {
+        const effectiveSearch = override?.search ?? searchQuery;
+        const effectiveCategory = override?.category ?? selectedCategory;
+        const effectiveDifficulty = override?.difficulty ?? selectedDifficulty;
+        const effectiveSort = override?.sort ?? selectedSort;
+        const effectiveDuration = override?.duration ?? selectedDuration;
+        const effectiveMinRating = override?.minRating ?? selectedMinRating;
+        
+        const cacheKey = `free-courses-${effectiveSearch}-${effectiveCategory}-${effectiveDifficulty}-${effectiveSort}-${effectiveDuration}-${effectiveMinRating}`;
+        sessionStorage.setItem(cacheKey, JSON.stringify({
+          courses: finalCourses,
+          total: data.total || 0,
+          timestamp: Date.now()
+        }));
+        
+        // Also update the default cache
+        sessionStorage.setItem("free-courses-cache", JSON.stringify({
+          courses: finalCourses,
+          total: data.total || 0,
+          timestamp: Date.now()
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchEnrollments = async () => {
+    if (!user) return;
+
+    try {
+      const supabase = createClient();
+      const { data: enrollments } = await supabase
+        .from("user_course_enrollments")
+        .select("course_id, is_completed")
+        .eq("user_id", user.id);
+
+      if (enrollments) {
+        setEnrolledCourseIds(new Set(enrollments.map((e: { course_id: string }) => e.course_id)));
+
+        // Fetch progress for each enrolled course
+        const progressMap: Record<string, number> = {};
+        for (const enrollment of enrollments) {
+          const { count: totalLessons } = await supabase
+            .from("lessons")
+            .select("*", { count: "exact", head: true })
+            .eq("course_id", enrollment.course_id)
+            .eq("is_published", true);
+
+          const { count: completedLessons } = await supabase
+            .from("user_lesson_completion")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("course_id", enrollment.course_id);
+
+          const { count: pendingQuizCount } = await supabase
+            .from("lesson_quiz_submissions")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("course_id", enrollment.course_id)
+            .eq("status", "pending_review");
+
+          const pendingProjectsRes = await supabase
+            .from("lesson_project_submissions")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("course_id", enrollment.course_id)
+            .eq("status", "pending_review");
+          const pendingProjectCount = pendingProjectsRes.error ? 0 : (pendingProjectsRes.count || 0);
+
+          const numerator = Math.min(
+            totalLessons || 0,
+            (completedLessons || 0) + (pendingQuizCount || 0) + (pendingProjectCount || 0)
+          );
+
+          if (totalLessons && totalLessons > 0) {
+            progressMap[enrollment.course_id] = Math.round(
+              (numerator / totalLessons) * 100
+            );
+          }
+        }
+        setCourseProgress(progressMap);
+      }
+    } catch (error) {
+      console.error("Error fetching enrollments:", error);
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("all");
+    setSelectedDifficulty("all");
+    setSelectedSort("newest");
+    setSelectedDuration("all");
+    setSelectedMinRating("all");
+    setOffset(0);
+  };
+
+  const hasActiveFilters =
+    searchQuery ||
+    selectedCategory !== "all" ||
+    selectedDifficulty !== "all" ||
+    selectedDuration !== "all" ||
+    selectedMinRating !== "all";
+  const canLoadMore = courses.length < total;
 
   return (
     <>
@@ -52,6 +386,40 @@ export default async function FreeCoursesPage() {
       </div>
 
       <div className="container max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
+        <Card className="mb-6 border-amber-200 bg-gradient-to-br from-amber-50/50 to-transparent">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1 space-y-2">
+                <h3 className="font-semibold text-foreground text-base">Free Courses Disclaimer</h3>
+                <div className="text-sm text-muted-foreground space-y-1.5 leading-relaxed">
+                  <p>
+                    All free courses on CodeCraft Academy may include embedded educational resources from third-party
+                    platforms, such as YouTube.
+                  </p>
+                  <p>These materials are used strictly for learning and reference purposes.</p>
+                  <p>
+                    CodeCraft Academy does not own any third-party video content and does not claim authorship of such
+                    materials.
+                  </p>
+                  <p>
+                    All rights remain with the original creators, and proper attribution is provided where applicable.
+                  </p>
+                  <p>
+                    If you are a content owner and believe any material has been used inappropriately, please{" "}
+                    <a href="/contact" className="text-primary hover:underline font-medium">contact us</a>
+                    {" "}for prompt review or removal.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Search and Filters */}
         <div className="mb-6 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
@@ -60,22 +428,25 @@ export default async function FreeCoursesPage() {
               type="search"
               placeholder="Search courses..."
               className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Select>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="web-development">Web Development</SelectItem>
-              <SelectItem value="ai-ml">AI & Machine Learning</SelectItem>
-              <SelectItem value="mobile">Mobile Development</SelectItem>
-              <SelectItem value="devops">DevOps</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat.name} value={cat.name}>
+                  {cat.name} ({cat.count})
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
-          <Select>
+          <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="All Levels" />
             </SelectTrigger>
@@ -86,36 +457,104 @@ export default async function FreeCoursesPage() {
               <SelectItem value="advanced">Advanced</SelectItem>
             </SelectContent>
           </Select>
+
+          <Select value={selectedSort} onValueChange={setSelectedSort}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="popular">Most Popular</SelectItem>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="highest_rated">Highest Rated</SelectItem>
+              <SelectItem value="duration">Duration</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedDuration} onValueChange={setSelectedDuration}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Duration" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Any Duration</SelectItem>
+              <SelectItem value="0-60">Under 1 hour</SelectItem>
+              <SelectItem value="60-180">1–3 hours</SelectItem>
+              <SelectItem value="180-">3+ hours</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedMinRating} onValueChange={setSelectedMinRating}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Rating" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Any Rating</SelectItem>
+              <SelectItem value="4.5">4.5+ stars</SelectItem>
+              <SelectItem value="4">4.0+ stars</SelectItem>
+              <SelectItem value="3.5">3.5+ stars</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {hasActiveFilters && (
+            <Button variant="outline" onClick={clearFilters} className="gap-2">
+              <X className="h-4 w-4" />
+              Clear
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
           <div className="lg:col-span-8">
-            {courses.length > 0 ? (
+            {loading && initialLoad ? (
+              <div className="text-center py-12">
+                <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50 animate-pulse" />
+                <p className="text-muted-foreground">Loading courses...</p>
+              </div>
+            ) : courses.length > 0 ? (
               <>
                 <div className="mb-4 text-sm text-muted-foreground">
-                  Showing {courses.length} of {total} courses
+                  Showing {courses.length} of {total} course{total !== 1 ? "s" : ""}
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
                   {courses.map((course) => (
-                    <CourseCard key={course.id} course={course} />
+                    <CourseCard
+                      key={course.id}
+                      course={course}
+                      enrolled={enrolledCourseIds.has(course.id)}
+                      progress={courseProgress[course.id] || 0}
+                    />
                   ))}
                 </div>
-                
-                {total > courses.length && (
-                  <div className="mt-10 flex justify-center">
-                    <Button variant="outline" size="lg">Load More</Button>
+
+                {canLoadMore && (
+                  <div className="mt-8 flex justify-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => fetchCourses({ replace: false, nextOffset: courses.length })}
+                      disabled={loading}
+                    >
+                      {loading ? "Loading..." : "Load more"}
+                    </Button>
                   </div>
                 )}
               </>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium mb-2">No free courses yet</p>
-                <p className="text-sm">Check back soon for new free courses!</p>
+                <p className="text-lg font-medium mb-2">No courses found</p>
+                <p className="text-sm mb-4">
+                  {hasActiveFilters
+                    ? "Try adjusting your filters"
+                    : "Check back soon for new free courses!"}
+                </p>
+                {hasActiveFilters && (
+                  <Button variant="outline" onClick={clearFilters}>
+                    Clear Filters
+                  </Button>
+                )}
               </div>
             )}
           </div>
-          
+
           <aside className="lg:col-span-4">
             <Sidebar />
           </aside>

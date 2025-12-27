@@ -109,7 +109,6 @@ export function Navbar() {
         </Link>
 
         <div className="hidden md:flex md:gap-x-6 lg:gap-x-8">
-          <BlogDropdown />
           {navLinks.map((link) => (
             <Link 
               key={link.href} 
@@ -121,6 +120,7 @@ export function Navbar() {
               {link.name}
             </Link>
           ))}
+          <BlogDropdown />
           {isStudio && (
             <span className="text-sm font-medium text-primary">• CMS Studio</span>
           )}
@@ -141,14 +141,6 @@ export function Navbar() {
               </kbd>
             </Button>
           </div>
-          
-          {/* Support Us Button - Desktop */}
-          <Link href="/donate" className="hidden sm:block">
-            <Button variant="default" size="sm" className="gap-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-md hover:shadow-lg">
-              <Heart className="h-4 w-4 fill-white/20" />
-              <span className="hidden md:inline">Support Us</span>
-            </Button>
-          </Link>
           
           {/* Mobile Search Icon Button */}
           <Button 
@@ -253,13 +245,6 @@ export function Navbar() {
               <Search className="mr-2 h-4 w-4" />
               Search...
             </Button>
-            <Link 
-              href="/blog"
-              className="block py-2 text-base font-medium text-foreground hover:text-primary"
-              onClick={() => setIsOpen(false)}
-            >
-              Blog
-            </Link>
             {navLinks.map((link) => (
               <Link 
                 key={link.href} 
@@ -271,18 +256,11 @@ export function Navbar() {
               </Link>
             ))}
             <Link 
-              href="/donate"
+              href="/blog"
+              className="block py-2 text-base font-medium text-foreground hover:text-primary"
               onClick={() => setIsOpen(false)}
-              className="block"
             >
-              <Button 
-                variant="default" 
-                size="sm" 
-                className="w-full gap-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-md hover:shadow-lg justify-start"
-              >
-                <Heart className="h-4 w-4 fill-white/20" />
-                Support Us
-              </Button>
+              Blog
             </Link>
             {isStudio && (
               <div className="py-2 text-base font-medium text-primary">

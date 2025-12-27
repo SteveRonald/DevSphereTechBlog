@@ -26,3 +26,11 @@ $$ LANGUAGE plpgsql;
 -- SELECT created_at AT TIME ZONE 'Africa/Nairobi' as nairobi_time FROM chat_conversations;
 -- Or use the function: SELECT to_nairobi_time(created_at) as nairobi_time FROM chat_conversations;
 
+
+
+
+
+
+
+
+

@@ -27,6 +27,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Verify we have a valid session before proceeding
+    if (!data.session || !data.user) {
+      console.error("No session or user after code exchange");
+      return NextResponse.redirect(
+        `${requestUrl.origin}/auth?error=No session created&redirect=${encodeURIComponent(redirectTo)}`
+      );
+    }
+
     // Ensure user profile exists after OAuth sign-in/sign-up
     if (data.user) {
       try {
@@ -48,7 +56,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Prevent redirect loops - if redirecting to auth, go to home instead
+  const finalRedirect = redirectTo === "/auth" ? "/" : redirectTo;
+  
   // Redirect to the original destination or home
-  return NextResponse.redirect(`${requestUrl.origin}${redirectTo}`);
+  return NextResponse.redirect(`${requestUrl.origin}${finalRedirect}`);
 }
 
