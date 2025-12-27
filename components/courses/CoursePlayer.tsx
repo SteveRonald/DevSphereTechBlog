@@ -178,25 +178,25 @@ export function CoursePlayer({
       {showCelebration && <CelebrationVariants variant={celebrationVariant} />}
 
       {/* Progress Bar */}
-      <div className="sticky top-16 z-10 bg-background border-b border-border">
-        <div className="container max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-2">
+      <div className="sticky top-14 sm:top-16 z-10 bg-background border-b border-border">
+        <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Course Progress</span>
-              <Badge variant="outline">{Math.round(progress)}%</Badge>
+              <span className="text-xs sm:text-sm font-medium">Course Progress</span>
+              <Badge variant="outline" className="text-xs">{Math.round(progress)}%</Badge>
             </div>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-xs sm:text-sm text-muted-foreground">
               {completedOrPendingCount} of {totalLessons} lessons completed or pending review
             </span>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progress} className="h-1.5 sm:h-2" />
 
           {isCourseCompleted && (
-            <div className="mt-6 p-6 rounded-lg bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 border-2 border-primary/20">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-center sm:text-left">
-                  <h3 className="text-lg font-bold text-foreground mb-1">🎓 Course Completed!</h3>
-                  <p className="text-sm text-muted-foreground">
+            <div className="mt-4 sm:mt-6 p-4 sm:p-6 rounded-lg bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 border-2 border-primary/20">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+                <div className="text-center sm:text-left flex-1">
+                  <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">🎓 Course Completed!</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {canViewCertificate 
                       ? "Congratulations! You've successfully completed all lessons and passed the final exam. View your certificate below."
                       : "Congratulations! You've successfully completed all lessons. Complete the final exam to unlock your certificate."}
@@ -204,13 +204,13 @@ export function CoursePlayer({
                 </div>
                 {canViewCertificate && (
                   <Button 
-                    size="lg"
+                    size="default"
                     onClick={() => {
                       window.location.href = `/courses/${course.slug}/certificate`;
                     }}
-                    className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
                   >
-                    <Trophy className="h-5 w-5 mr-2" />
+                    <Trophy className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                     View Certificate
                   </Button>
                 )}
@@ -220,28 +220,26 @@ export function CoursePlayer({
         </div>
       </div>
 
-      <div className="container max-w-7xl mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-12 gap-8">
+      <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content Area */}
-          <div className="lg:col-span-8">
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">Module {currentLesson.step_number}</p>
-                    <div className="flex items-center gap-2">
-                      <h1 className="text-2xl md:text-3xl font-bold">{currentLesson.title}</h1>
-                      {isFinalExamLesson(currentLesson) ? (
-                        <Badge variant="outline" className="bg-primary/10 text-primary">
-                          <Trophy className="h-3.5 w-3.5 mr-1" />
-                          Final Exam
-                        </Badge>
-                      ) : null}
-                    </div>
-                    {currentLesson.description && (
-                      <p className="text-muted-foreground mt-2">{currentLesson.description}</p>
+          <div className="lg:col-span-8 order-2 lg:order-1">
+            <Card className="mb-4 sm:mb-6">
+              <CardContent className="p-4 sm:p-6">
+                <div className="mb-4">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Module {currentLesson.step_number}</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold break-words">{currentLesson.title}</h1>
+                    {isFinalExamLesson(currentLesson) && (
+                      <Badge variant="outline" className="bg-primary/10 text-primary self-start sm:self-center">
+                        <Trophy className="h-3.5 w-3.5 mr-1" />
+                        Final Exam
+                      </Badge>
                     )}
                   </div>
+                  {currentLesson.description && (
+                    <p className="text-sm sm:text-base text-muted-foreground mt-2">{currentLesson.description}</p>
+                  )}
                 </div>
 
                 {!isUnlocked ? (
@@ -265,20 +263,22 @@ export function CoursePlayer({
             </Card>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
               <Button
                 variant="outline"
                 onClick={handlePreviousLesson}
                 disabled={currentStepIndex === 0}
+                className="w-full sm:w-auto"
               >
                 Previous
               </Button>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
                 Lesson {currentStepIndex + 1} of {totalLessons}
               </div>
               <Button
                 onClick={handleNextLesson}
                 disabled={!canProceed}
+                className="w-full sm:w-auto"
               >
                 Next Lesson
                 <ChevronRight className="h-4 w-4 ml-2" />
@@ -287,11 +287,11 @@ export function CoursePlayer({
           </div>
 
           {/* Sidebar - Course Navigation */}
-          <div className="lg:col-span-4">
-            <Card className="sticky top-24">
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-4">Course Curriculum</h3>
-                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+          <div className="lg:col-span-4 order-1 lg:order-2">
+            <Card className="sticky top-20 lg:top-24">
+              <CardContent className="p-4 sm:p-6">
+                <h3 className="font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Course Curriculum</h3>
+                <div className="space-y-2 max-h-[400px] sm:max-h-[600px] overflow-y-auto">
                   {lessons.map((lesson, index) => {
                     const unlocked = isLessonUnlocked(lesson, index);
                     const completed = completedLessons.has(lesson.id);
@@ -307,8 +307,8 @@ export function CoursePlayer({
                           }
                         }}
                         className={cn(
-                          "w-full text-left p-3 rounded-lg border transition-all",
-                          "flex items-center gap-3",
+                          "w-full text-left p-2 sm:p-3 rounded-lg border transition-all",
+                          "flex items-start sm:items-center gap-2 sm:gap-3",
                           isCurrent
                             ? "border-primary bg-primary/5"
                             : unlocked
@@ -316,28 +316,28 @@ export function CoursePlayer({
                             : "border-border/50 bg-muted/30 opacity-60 cursor-not-allowed"
                         )}
                       >
-                        <div className="flex-shrink-0">
+                        <div className="flex-shrink-0 mt-0.5 sm:mt-0">
                           {completed ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-600" />
+                            <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                           ) : pending ? (
-                            <PlayCircle className="h-5 w-5 text-yellow-600" />
+                            <PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
                           ) : unlocked ? (
-                            <PlayCircle className="h-5 w-5 text-primary" />
+                            <PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                           ) : (
-                            <Lock className="h-5 w-5 text-muted-foreground" />
+                            <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                           )}
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="font-medium truncate">{lesson.title}</span>
-                            {isFinalExamLesson(lesson) ? (
-                              <Badge variant="outline" className="shrink-0 bg-primary/10 text-primary">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
+                            <span className="font-medium text-sm sm:text-base truncate">{lesson.title}</span>
+                            {isFinalExamLesson(lesson) && (
+                              <Badge variant="outline" className="shrink-0 bg-primary/10 text-primary text-xs self-start sm:self-center">
                                 Final
                               </Badge>
-                            ) : null}
+                            )}
                           </div>
-                          <div className="text-xs text-muted-foreground">Module {lesson.step_number}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">Module {lesson.step_number}</div>
                         </div>
                       </button>
                     );

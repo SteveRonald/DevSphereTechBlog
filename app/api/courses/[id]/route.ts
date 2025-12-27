@@ -138,6 +138,7 @@ export async function PUT(
         console.error("Failed to publish lessons for course:", lessonPublishError);
       }
 
+      // Notify newsletter subscribers
       try {
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
         await fetch(`${siteUrl}/api/newsletter/notify-new-course`, {
@@ -158,6 +159,39 @@ export async function PUT(
         });
       } catch (notifyError) {
         console.error("Failed to send course notifications:", notifyError);
+      }
+
+      // Notify enrolled students
+      try {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+        await fetch(`${siteUrl}/api/courses/${id}/notify-enrolled-students`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            course: {
+              id: data.id,
+              title: data.title,
+              slug: data.slug,
+              short_description: data.short_description,
+              thumbnail_url: data.thumbnail_url,
+            },
+          }),
+        });
+      } catch (enrolledNotifyError) {
+        console.error("Failed to notify enrolled students:", enrolledNotifyError);
+      }
+
+      // Revalidate course pages
+      try {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+        await fetch(`${siteUrl}/api/revalidate?path=/courses/${data.slug}`, {
+          method: "GET",
+        });
+        await fetch(`${siteUrl}/api/revalidate?path=/free-courses`, {
+          method: "GET",
+        });
+      } catch (revalidateError) {
+        console.error("Failed to revalidate pages:", revalidateError);
       }
     }
 

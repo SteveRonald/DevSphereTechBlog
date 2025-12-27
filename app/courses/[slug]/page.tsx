@@ -35,6 +35,9 @@ interface Lesson {
   duration: number | null;
 }
 
+// Revalidate every 10 seconds for fresh data
+export const revalidate = 10;
+
 async function getCourse(slug: string): Promise<Course | null> {
   const supabase = createServerClient(undefined);
   

@@ -141,7 +141,9 @@ export async function POST(request: NextRequest) {
 
                   <div style="border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     ${courseImage ? `
-                      <img src="${courseImage}" alt="${course.title}" style="width: 100%; height: 300px; object-fit: cover; display: block;" />
+                      <div style="width: 100%; max-width: 100%; background-color: #f3f4f6; text-align: center; padding: 0; margin: 0;">
+                        <img src="${courseImage}" alt="${course.title}" style="max-width: 100%; width: 100%; height: auto; max-height: 300px; object-fit: contain; display: block; margin: 0 auto;" />
+                      </div>
                     ` : ""}
                     <div style="padding: 30px;">
                       <div style="margin-bottom: 15px;">
