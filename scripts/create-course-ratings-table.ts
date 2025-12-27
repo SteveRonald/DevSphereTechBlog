@@ -120,8 +120,8 @@ CREATE POLICY IF NOT EXISTS "Users can delete their own ratings"
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "apikey": SUPABASE_SERVICE_ROLE_KEY,
-          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          "apikey": SUPABASE_SERVICE_ROLE_KEY || "",
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY || ""}`,
         },
         body: JSON.stringify({ sql }),
       });

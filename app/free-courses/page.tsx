@@ -386,17 +386,19 @@ export default function FreeCoursesPage() {
       </div>
 
       <div className="container max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
-        <Card className="mb-6 border-amber-200 bg-gradient-to-br from-amber-50/50 to-transparent">
+        <Card className="mb-6 border-amber-500/30 dark:border-amber-400/40 bg-gradient-to-br from-amber-50/80 via-amber-50/40 to-transparent dark:from-amber-950/40 dark:via-amber-950/20 dark:to-transparent shadow-sm">
           <CardContent className="p-4 md:p-6">
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               <div className="flex-shrink-0 mt-0.5">
-                <svg className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <div className="rounded-full bg-amber-100 dark:bg-amber-900/50 p-2">
+                  <svg className="h-5 w-5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
               </div>
-              <div className="flex-1 space-y-2">
-                <h3 className="font-semibold text-foreground text-base">Free Courses Disclaimer</h3>
-                <div className="text-sm text-muted-foreground space-y-1.5 leading-relaxed">
+              <div className="flex-1 space-y-3">
+                <h3 className="font-semibold text-amber-900 dark:text-amber-100 text-lg">Free Courses Disclaimer</h3>
+                <div className="text-sm text-amber-800/90 dark:text-amber-200/90 space-y-2 leading-relaxed">
                   <p>
                     All free courses on CodeCraft Academy may include embedded educational resources from third-party
                     platforms, such as YouTube.
@@ -411,7 +413,12 @@ export default function FreeCoursesPage() {
                   </p>
                   <p>
                     If you are a content owner and believe any material has been used inappropriately, please{" "}
-                    <a href="/contact" className="text-primary hover:underline font-medium">contact us</a>
+                    <a 
+                      href="/contact" 
+                      className="text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 underline font-medium transition-colors"
+                    >
+                      contact us
+                    </a>
                     {" "}for prompt review or removal.
                   </p>
                 </div>

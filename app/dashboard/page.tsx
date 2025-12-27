@@ -134,8 +134,15 @@ export default function StudentDashboardPage() {
             .in("course_id", courseIds),
         ]);
 
-        const coursesMap = new Map((coursesData.data || []).map((c: any) => [c.id, c]));
-        const lessonsMap = new Map((lessonsData.data || []).map((l: any) => [l.id, l]));
+        type CourseInfo = { id: string; title: string; slug: string };
+        type LessonInfo = { id: string; title: string; course_id: string };
+        
+        const coursesMap = new Map<string, CourseInfo>(
+          (coursesData.data || []).map((c: CourseInfo) => [c.id, c])
+        );
+        const lessonsMap = new Map<string, LessonInfo>(
+          (lessonsData.data || []).map((l: LessonInfo) => [l.id, l])
+        );
 
         const submissions: PendingSubmission[] = [];
         
