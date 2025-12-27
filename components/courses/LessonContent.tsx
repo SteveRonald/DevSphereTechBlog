@@ -57,7 +57,7 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
 
   const renderMarkdown = (value: string) => {
     return (
-      <div className="prose prose-sm max-w-none dark:prose-invert">
+      <div className="prose prose-sm max-w-none dark:prose-invert overflow-x-hidden break-words">
         <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
           {value}
         </ReactMarkdown>
@@ -73,12 +73,12 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
     switch (lesson.content_type) {
       case "video":
         return (
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-x-hidden">
             {normalizedVideoUrl ? (
-              <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-black">
+              <div className="relative aspect-video w-full max-w-full rounded-lg overflow-hidden bg-black">
                 {youtubeVideoId ? (
                   <iframe
-                    className="absolute inset-0 h-full w-full"
+                    className="absolute inset-0 h-full w-full max-w-full"
                     src={`https://www.youtube.com/embed/${youtubeVideoId}?rel=0&modestbranding=1&playsinline=1`}
                     title={lesson.title || "YouTube video"}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -98,20 +98,20 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
               </Card>
             )}
             {lesson.description && (
-              <div className="prose prose-sm max-w-none">
-                <p className="text-muted-foreground">{lesson.description}</p>
+              <div className="prose prose-sm max-w-none overflow-x-hidden break-words">
+                <p className="text-muted-foreground break-words">{lesson.description}</p>
               </div>
             )}
 
             {typeof lesson.content?.text_content === "string" && lesson.content.text_content.trim() ? (
-              <div className="pt-2">{renderMarkdown(lesson.content.text_content)}</div>
+              <div className="pt-2 overflow-x-hidden">{renderMarkdown(lesson.content.text_content)}</div>
             ) : null}
           </div>
         );
 
       case "project":
         return (
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-x-hidden">
             {typeof lesson.content?.text_content === "string" && lesson.content.text_content.trim()
               ? renderMarkdown(lesson.content.text_content)
               : null}
@@ -122,12 +122,12 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
 
       case "text":
         return (
-          <div>
+          <div className="overflow-x-hidden">
             {typeof lesson.content?.text_content === "string" && lesson.content.text_content.trim()
               ? renderMarkdown(lesson.content.text_content)
               : (
-                <div className="prose prose-sm max-w-none">
-                  <p className="text-muted-foreground">{lesson.description || "No content available"}</p>
+                <div className="prose prose-sm max-w-none overflow-x-hidden break-words">
+                  <p className="text-muted-foreground break-words">{lesson.description || "No content available"}</p>
                 </div>
               )}
           </div>
@@ -135,20 +135,22 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
 
       case "code":
         return (
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-x-hidden">
             {lesson.content?.code_examples ? (
               <div className="space-y-4">
                 {lesson.content.code_examples.map((example: any, index: number) => (
-                  <Card key={index}>
-                    <CardContent className="p-4">
+                  <Card key={index} className="overflow-hidden">
+                    <CardContent className="p-4 overflow-x-hidden">
                       {example.title && (
-                        <h4 className="font-semibold mb-2">{example.title}</h4>
+                        <h4 className="font-semibold mb-2 break-words">{example.title}</h4>
                       )}
-                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
-                        <code>{example.code}</code>
-                      </pre>
+                      <div className="w-full overflow-x-auto">
+                        <pre className="bg-muted p-4 rounded-lg overflow-x-auto max-w-full">
+                          <code className="break-all whitespace-pre-wrap">{example.code}</code>
+                        </pre>
+                      </div>
                       {example.explanation && (
-                        <p className="text-sm text-muted-foreground mt-2">{example.explanation}</p>
+                        <p className="text-sm text-muted-foreground mt-2 break-words">{example.explanation}</p>
                       )}
                     </CardContent>
                   </Card>
@@ -167,7 +169,7 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
 
       case "quiz":
         return (
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-x-hidden">
             {lesson.content?.quiz_data?.questions?.length > 0 ? (
               <QuizComponent
                 quizData={lesson.content.quiz_data}
@@ -191,23 +193,23 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
 
       case "resource":
         return (
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-x-hidden">
             {Array.isArray(lesson.content?.resources) && lesson.content.resources.length > 0 ? (
               <div className="space-y-3">
                 {lesson.content.resources.map((r: any, index: number) => (
-                  <Card key={`${r?.url || "resource"}-${index}`}>
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <div className="p-2 rounded-md bg-muted">
+                  <Card key={`${r?.url || "resource"}-${index}`} className="overflow-hidden">
+                    <CardContent className="p-4 flex items-center gap-3 overflow-x-hidden">
+                      <div className="p-2 rounded-md bg-muted shrink-0">
                         {r?.kind === "file" ? (
                           <Download className="h-4 w-4" />
                         ) : (
                           <LinkIcon className="h-4 w-4" />
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{r?.title || "Resource"}</p>
+                      <div className="flex-1 min-w-0 overflow-x-hidden">
+                        <p className="font-medium truncate break-words">{r?.title || "Resource"}</p>
                         {r?.url && (
-                          <p className="text-xs text-muted-foreground truncate">{r.url}</p>
+                          <p className="text-xs text-muted-foreground truncate break-all">{r.url}</p>
                         )}
                       </div>
                       {r?.url ? (
@@ -265,21 +267,25 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
       : true;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden">
       {renderContent()}
 
       {/* Completion Button */}
-      <div className="flex items-center justify-between pt-4 border-t border-border">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 pt-4 border-t border-border overflow-x-hidden">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           {isCompleted ? (
             <>
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              <span className="text-sm font-medium text-green-600">Lesson Completed!</span>
+              <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+              <span className="text-xs sm:text-sm font-medium text-green-600 break-words">Lesson Completed!</span>
             </>
           ) : (
-            <span className="text-sm text-muted-foreground">
+            <span className="text-xs sm:text-sm text-muted-foreground break-words">
               {lesson.content_type === "project"
                 ? "Submit your project for review to proceed"
+                : lesson.content_type === "quiz"
+                ? quizRequiresManualReview
+                  ? "Your quiz is pending review"
+                  : "Complete this lesson to proceed"
                 : "Mark this lesson as complete to proceed"}
             </span>
           )}
@@ -287,7 +293,7 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
         <Button
           onClick={handleComplete}
           disabled={isCompleted || !canComplete}
-          className="gap-2"
+          className="gap-2 w-full sm:w-auto shrink-0"
         >
           {isCompleted ? (
             <>

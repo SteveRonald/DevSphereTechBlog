@@ -297,16 +297,16 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
 
   if (pendingReview) {
     return (
-      <Card className="border-2">
-        <CardHeader>
+      <Card className="border-2 overflow-hidden">
+        <CardHeader className="overflow-x-hidden">
           <CardTitle className="text-center">
             <div className="flex items-center justify-center gap-2 text-yellow-600">
-              <AlertCircle className="h-6 w-6" />
-              {isFinalExam ? "Final Exam Submitted" : "Submitted for Review"}
+              <AlertCircle className="h-6 w-6 shrink-0" />
+              <span className="break-words">{isFinalExam ? "Final Exam Submitted" : "Submitted for Review"}</span>
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-center">
+        <CardContent className="space-y-3 text-center overflow-x-hidden">
           <p className="text-muted-foreground">
             Your answers were submitted. An instructor will review your free-text responses.
           </p>
@@ -361,40 +361,40 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
       .filter((v): v is number => typeof v === "number");
 
     return (
-      <Card className="border-2">
-        <CardHeader>
+      <Card className="border-2 overflow-hidden">
+        <CardHeader className="overflow-x-hidden">
           <CardTitle className="text-center">
             {passed ? (
               <div className="flex items-center justify-center gap-2 text-green-600">
-                <CheckCircle2 className="h-6 w-6" />
-                {isFinalExam ? "Final Exam Completed" : "Quiz Completed!"}
+                <CheckCircle2 className="h-6 w-6 shrink-0" />
+                <span className="break-words">{isFinalExam ? "Final Exam Completed" : "Quiz Completed!"}</span>
               </div>
             ) : (
               <div className="flex items-center justify-center gap-2 text-yellow-600">
-                <AlertCircle className="h-6 w-6" />
-                {isFinalExam ? "Final Exam Completed" : "Quiz Completed"}
+                <AlertCircle className="h-6 w-6 shrink-0" />
+                <span className="break-words">{isFinalExam ? "Final Exam Completed" : "Quiz Completed"}</span>
               </div>
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="text-center">
-            <div className="text-4xl font-bold mb-2">
+        <CardContent className="space-y-6 overflow-x-hidden">
+          <div className="text-center overflow-x-hidden">
+            <div className="text-3xl sm:text-4xl font-bold mb-2 break-words">
               {score} / {totalPossible}
             </div>
-            <div className="text-2xl font-semibold mb-4">
+            <div className="text-xl sm:text-2xl font-semibold mb-4 break-words">
               {percentage}%
             </div>
-            <Badge variant={passed ? "default" : "outline"} className="text-lg px-4 py-2">
+            <Badge variant={passed ? "default" : "outline"} className="text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 break-words">
               {isFinalExam ? (passed ? "Final exam submitted" : "Final exam submitted") : passed ? "Great job" : "Keep practicing"}
             </Badge>
           </div>
 
           {!passed ? (
-            <div className="rounded-lg border border-border p-4 bg-muted/40">
-              <p className="font-medium">Keep going — take your study seriously and you will improve.</p>
+            <div className="rounded-lg border border-border p-4 bg-muted/40 overflow-x-hidden">
+              <p className="font-medium break-words">Keep going — take your study seriously and you will improve.</p>
               {failedIndexes.length > 0 ? (
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground mt-1 break-words">
                   Review the questions you missed: {failedIndexes
                     .map((i) => i + 1)
                     .join(", ")}
@@ -404,7 +404,7 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
           ) : null}
 
           {!hasFreeText && !passed && !retryUsed ? (
-            <div className="flex justify-center">
+            <div className="flex justify-center overflow-x-hidden">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -415,6 +415,7 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
                   setTextAnswers([]);
                   setLoadedSubmission(null);
                 }}
+                className="w-full sm:w-auto"
               >
                 Retry Quiz (1 attempt)
               </Button>
@@ -422,8 +423,8 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
           ) : null}
 
           {!hasFreeText ? (
-            <div className="space-y-4">
-              <h3 className="font-semibold">Review Answers:</h3>
+            <div className="space-y-4 overflow-x-hidden">
+              <h3 className="font-semibold break-words">Review Answers:</h3>
               {quizData.questions
                 .map((question, index) => ({ question, index }))
                 .filter(({ question }) => questionType(question) === "multiple_choice")
@@ -436,24 +437,24 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
                 <Card
                   key={index}
                   className={cn(
-                    "border-2",
+                    "border-2 overflow-hidden",
                     isCorrect ? "border-green-500" : "border-red-500"
                   )}
                 >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-sm">
+                  <CardHeader className="overflow-x-hidden">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-sm break-words flex-1 min-w-0">
                         Question {index + 1}
                       </CardTitle>
                       {isCorrect ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-red-600" />
+                        <XCircle className="h-5 w-5 text-red-600 shrink-0" />
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="font-medium">{question.question}</p>
+                  <CardContent className="space-y-3 overflow-x-hidden">
+                    <p className="font-medium break-words">{question.question}</p>
                     <div className="space-y-2">
                       {(question.options || []).map((option, optIndex) => {
                         const isSelected = userAnswer === optIndex;
@@ -463,7 +464,7 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
                           <div
                             key={optIndex}
                             className={cn(
-                              "p-3 rounded-lg border",
+                              "p-3 rounded-lg border overflow-x-hidden",
                               isCorrectAnswer
                                 ? "bg-green-500/10 border-green-500"
                                 : isSelected && !isCorrectAnswer
@@ -471,16 +472,16 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
                                 : "bg-muted border-border"
                             )}
                           >
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
                               {isCorrectAnswer && (
-                                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
                               )}
                               {isSelected && !isCorrectAnswer && (
-                                <XCircle className="h-4 w-4 text-red-600" />
+                                <XCircle className="h-4 w-4 text-red-600 shrink-0" />
                               )}
-                              <span>{option}</span>
+                              <span className="break-words flex-1 min-w-0">{option}</span>
                               {isCorrectAnswer && (
-                                <Badge variant="outline" className="ml-auto text-xs">
+                                <Badge variant="outline" className="ml-auto text-xs shrink-0">
                                   Correct Answer
                                 </Badge>
                               )}
@@ -490,8 +491,8 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
                       })}
                     </div>
                     {question.explanation && (
-                      <div className="mt-3 p-3 bg-muted rounded-lg">
-                        <p className="text-sm text-muted-foreground">
+                      <div className="mt-3 p-3 bg-muted rounded-lg overflow-x-hidden">
+                        <p className="text-sm text-muted-foreground break-words">
                           <strong>Explanation:</strong> {question.explanation}
                         </p>
                       </div>
@@ -502,7 +503,7 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
             })}
             </div>
           ) : (
-            <div className="rounded-lg border border-border p-4 bg-muted/40 text-sm text-muted-foreground">
+            <div className="rounded-lg border border-border p-4 bg-muted/40 text-sm text-muted-foreground overflow-x-hidden break-words">
               {isFinalExam
                 ? "Your final exam results will be used to compute your final course grade once all grading is complete."
                 : "This assessment has been graded."}
@@ -537,23 +538,23 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{isFinalExam ? "Final Exam" : "Quiz"}</CardTitle>
-          <Badge variant="outline">
+    <Card className="overflow-hidden">
+      <CardHeader className="overflow-x-hidden">
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="break-words flex-1 min-w-0">{isFinalExam ? "Final Exam" : "Quiz"}</CardTitle>
+          <Badge variant="outline" className="shrink-0">
             Question {currentQuestionIndex + 1} of {quizData.questions.length}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="rounded-md border border-border p-3">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-sm font-medium">Attachments (optional)</div>
-              <div className="text-xs text-muted-foreground">PDF/PNG/JPG/ZIP up to 10MB</div>
+      <CardContent className="space-y-6 overflow-x-hidden">
+        <div className="rounded-md border border-border p-3 overflow-x-hidden">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium break-words">Attachments (optional)</div>
+              <div className="text-xs text-muted-foreground break-words">PDF/PNG/JPG/ZIP up to 10MB</div>
             </div>
-            <label className="inline-flex">
+            <label className="inline-flex shrink-0">
               <input
                 type="file"
                 className="hidden"
@@ -565,7 +566,7 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
                   if (f) void uploadFile(f);
                 }}
               />
-              <Button type="button" variant="outline" disabled={uploading || submitting}>
+              <Button type="button" variant="outline" disabled={uploading || submitting} className="w-full sm:w-auto">
                 {uploading ? "Uploading..." : "Upload"}
               </Button>
             </label>
@@ -592,17 +593,17 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
             </div>
           ) : null}
         </div>
-        <Card className="border">
-          <CardHeader className="pb-3">
+        <Card className="border overflow-hidden">
+          <CardHeader className="pb-3 overflow-x-hidden">
             <div className="flex items-start justify-between gap-2">
-              <CardTitle className="text-sm">Question {currentQuestionIndex + 1}</CardTitle>
+              <CardTitle className="text-sm break-words flex-1 min-w-0">Question {currentQuestionIndex + 1}</CardTitle>
               {typeof currentQuestion?.max_marks === "number" ? (
-                <Badge variant="outline">{currentQuestion.max_marks} marks</Badge>
+                <Badge variant="outline" className="shrink-0">{currentQuestion.max_marks} marks</Badge>
               ) : null}
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="font-medium">{currentQuestion?.question}</p>
+          <CardContent className="space-y-3 overflow-x-hidden">
+            <p className="font-medium break-words">{currentQuestion?.question}</p>
             {questionType(currentQuestion) === "multiple_choice" ? (
               <RadioGroup
                 value={typeof answers[currentQuestionIndex] === "number" ? answers[currentQuestionIndex].toString() : ""}
@@ -611,19 +612,20 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
                   next[currentQuestionIndex] = parseInt(value, 10);
                   setAnswers(next);
                 }}
+                className="space-y-2"
               >
                 {(currentQuestion?.options || []).map((opt, optIdx) => (
-                  <div key={optIdx} className="flex items-center space-x-2 p-2 rounded-md border border-border">
-                    <RadioGroupItem value={optIdx.toString()} id={`q-${currentQuestionIndex}-opt-${optIdx}`} />
-                    <Label htmlFor={`q-${currentQuestionIndex}-opt-${optIdx}`} className="flex-1">
+                  <div key={optIdx} className="flex items-center space-x-2 p-2 rounded-md border border-border overflow-x-hidden">
+                    <RadioGroupItem value={optIdx.toString()} id={`q-${currentQuestionIndex}-opt-${optIdx}`} className="shrink-0" />
+                    <Label htmlFor={`q-${currentQuestionIndex}-opt-${optIdx}`} className="flex-1 break-words min-w-0 cursor-pointer">
                       {opt}
                     </Label>
                   </div>
                 ))}
               </RadioGroup>
             ) : (
-              <div className="space-y-2">
-                <Label>Your answer</Label>
+              <div className="space-y-2 overflow-x-hidden">
+                <Label className="break-words">Your answer</Label>
                 <Textarea
                   value={textAnswers[currentQuestionIndex] || ""}
                   onChange={(e) => {
@@ -633,24 +635,25 @@ export function QuizComponent({ quizData, courseId, lessonId, onComplete, onFini
                   }}
                   placeholder="Type your answer here..."
                   rows={6}
+                  className="w-full max-w-full resize-none"
                 />
-                <p className="text-xs text-muted-foreground">This answer will be reviewed by an instructor.</p>
+                <p className="text-xs text-muted-foreground break-words">This answer will be reviewed by an instructor.</p>
               </div>
             )}
           </CardContent>
         </Card>
 
-        <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={goPrevious} disabled={currentQuestionIndex === 0}>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 overflow-x-hidden">
+          <Button variant="outline" onClick={goPrevious} disabled={currentQuestionIndex === 0} className="w-full sm:w-auto shrink-0">
             Previous
           </Button>
 
           {isLastQuestion ? (
-            <Button onClick={() => void submitAll()} disabled={submitting || !allAnswered}>
+            <Button onClick={() => void submitAll()} disabled={submitting || !allAnswered} className="w-full sm:w-auto shrink-0">
               {submitting ? "Submitting..." : "Finish"}
             </Button>
           ) : (
-            <Button onClick={goNext} disabled={submitting || !currentAnswered}>
+            <Button onClick={goNext} disabled={submitting || !currentAnswered} className="w-full sm:w-auto shrink-0">
               Next
             </Button>
           )}

@@ -173,13 +173,13 @@ export function CoursePlayer({
   const canProceed = (isCompleted || isPendingReview) && currentStepIndex < lessons.length - 1;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Celebration Animation Overlay */}
       {showCelebration && <CelebrationVariants variant={celebrationVariant} />}
 
       {/* Progress Bar */}
       <div className="sticky top-14 sm:top-16 z-10 bg-background border-b border-border">
-        <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+        <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 overflow-x-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
               <span className="text-xs sm:text-sm font-medium">Course Progress</span>
@@ -220,25 +220,25 @@ export function CoursePlayer({
         </div>
       </div>
 
-      <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 overflow-x-hidden">
         <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content Area */}
-          <div className="lg:col-span-8 order-2 lg:order-1">
-            <Card className="mb-4 sm:mb-6">
-              <CardContent className="p-4 sm:p-6">
-                <div className="mb-4">
+          <div className="lg:col-span-8 order-2 lg:order-1 min-w-0">
+            <Card className="mb-4 sm:mb-6 overflow-hidden">
+              <CardContent className="p-4 sm:p-6 overflow-x-hidden">
+                <div className="mb-4 overflow-x-hidden">
                   <p className="text-xs font-medium text-muted-foreground mb-1">Module {currentLesson.step_number}</p>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold break-words">{currentLesson.title}</h1>
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold break-words overflow-wrap-anywhere">{currentLesson.title}</h1>
                     {isFinalExamLesson(currentLesson) && (
-                      <Badge variant="outline" className="bg-primary/10 text-primary self-start sm:self-center">
+                      <Badge variant="outline" className="bg-primary/10 text-primary self-start sm:self-center shrink-0">
                         <Trophy className="h-3.5 w-3.5 mr-1" />
                         Final Exam
                       </Badge>
                     )}
                   </div>
                   {currentLesson.description && (
-                    <p className="text-sm sm:text-base text-muted-foreground mt-2">{currentLesson.description}</p>
+                    <p className="text-sm sm:text-base text-muted-foreground mt-2 break-words">{currentLesson.description}</p>
                   )}
                 </div>
 
@@ -251,7 +251,7 @@ export function CoursePlayer({
                     </p>
                   </div>
                 ) : (
-                  <div className="mt-6">
+                  <div className="mt-6 overflow-x-hidden">
                     <LessonContent
                       lesson={currentLesson}
                       isCompleted={isCompleted}
@@ -268,17 +268,17 @@ export function CoursePlayer({
                 variant="outline"
                 onClick={handlePreviousLesson}
                 disabled={currentStepIndex === 0}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto shrink-0"
               >
                 Previous
               </Button>
-              <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
+              <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left shrink-0">
                 Lesson {currentStepIndex + 1} of {totalLessons}
               </div>
               <Button
                 onClick={handleNextLesson}
                 disabled={!canProceed}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto shrink-0"
               >
                 Next Lesson
                 <ChevronRight className="h-4 w-4 ml-2" />

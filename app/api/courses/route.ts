@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase-server";
 
-// Cache for 10 seconds to ensure fresh data
-export const revalidate = 10;
+// Cache for 5 seconds to ensure fresh enrollment counts
+export const revalidate = 5;
 
 // GET: Fetch published courses with optional filters
 export async function GET(request: NextRequest) {
@@ -116,8 +116,8 @@ export async function GET(request: NextRequest) {
       offset,
     });
 
-    // Add caching headers - shorter cache for real-time updates
-    response.headers.set('Cache-Control', 'public, s-maxage=10, stale-while-revalidate=30');
+    // Add caching headers - shorter cache for real-time enrollment count updates
+    response.headers.set('Cache-Control', 'public, s-maxage=5, stale-while-revalidate=15');
 
     return response;
   } catch (error: any) {

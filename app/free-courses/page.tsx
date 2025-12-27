@@ -251,9 +251,9 @@ export default function FreeCoursesPage() {
       params.append("offset", String(nextOffset));
 
       const response = await fetch(`/api/courses?${params.toString()}`, {
-        // Use no-store to get fresh data
+        // Use no-store to get fresh enrollment counts
         cache: 'no-store',
-        next: { revalidate: 10 }
+        next: { revalidate: 5 }
       });
       const data = await response.json();
       setTotal(data.total || 0);
