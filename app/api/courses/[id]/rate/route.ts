@@ -143,7 +143,7 @@ export async function POST(
       console.error("Error fetching ratings:", ratingsError);
     } else if (ratings && ratings.length > 0) {
       const totalRatings = ratings.length;
-      const sumRatings = ratings.reduce((sum, r) => sum + (r.rating || 0), 0);
+      const sumRatings = ratings.reduce((sum: number, r) => sum + (r.rating || 0), 0);
       const averageRating = sumRatings / totalRatings;
 
       // Update course rating
