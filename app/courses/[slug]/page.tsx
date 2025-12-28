@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import Link from "next/link";
 import { CourseRating } from "@/components/courses/CourseRating";
-import { EnrollmentCount } from "@/components/courses/EnrollmentCount";
 
 type DifficultyLevel = "beginner" | "intermediate" | "advanced";
 
@@ -54,19 +53,12 @@ async function getCourse(slug: string): Promise<Course | null> {
     return null;
   }
 
-  // Fetch real-time enrollment count directly from enrollments table
-  // This ensures we always get accurate, up-to-date count (same approach as admin panel)
-  const { count, error: countError } = await supabase
-    .from("user_course_enrollments")
-    .select("*", { count: "exact", head: true })
-    .eq("course_id", course.id);
-
-  // Use real-time count if available, otherwise fall back to database column
-  const enrollmentCount = countError ? (course.enrollment_count || 0) : (count || 0);
-
+  // Use enrollment_count from courses table (same as course cards)
+  // This column is automatically updated by database trigger when enrollments are created/deleted
+  // This matches how course cards get their count, ensuring consistency
   return {
     ...course,
-    enrollment_count: enrollmentCount,
+    enrollment_count: course.enrollment_count || 0,
   } as Course;
 }
 
@@ -190,7 +182,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   <span className="font-medium text-base sm:text-sm">{course.rating.toFixed(1)}</span>
                   <span className="text-xs sm:text-sm">({course.total_ratings} ratings)</span>
                 </div>
-                <EnrollmentCount courseId={course.id} initialCount={course.enrollment_count} />
+                <div className="flex items-center gap-1.5">
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+                  <span className="text-base sm:text-sm">{course.enrollment_count} students</span>
+                </div>
                 <div className="flex items-center gap-1.5">
                   <Clock className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
                   <span className="text-base sm:text-sm break-words">{formatDuration(course.estimated_duration)}</span>

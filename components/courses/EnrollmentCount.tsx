@@ -12,7 +12,7 @@ export function EnrollmentCount({ courseId, initialCount }: EnrollmentCountProps
   const [count, setCount] = useState(initialCount);
 
   useEffect(() => {
-    // Fetch count function
+    // Always fetch fresh count on mount
     const fetchCount = async () => {
       try {
         const response = await fetch(`/api/courses/${courseId}/enrollment-count?t=${Date.now()}`, {
@@ -20,7 +20,7 @@ export function EnrollmentCount({ courseId, initialCount }: EnrollmentCountProps
         });
         if (response.ok) {
           const data = await response.json();
-          if (data.count !== undefined) {
+          if (data.count !== undefined && data.count !== null) {
             setCount(data.count);
           }
         }
@@ -29,15 +29,23 @@ export function EnrollmentCount({ courseId, initialCount }: EnrollmentCountProps
       }
     };
 
-    // Check sessionStorage once on mount (for immediate enrollment updates)
-    const key = `enrollment-${courseId}`;
-    const enrollmentTime = sessionStorage.getItem(key);
-    if (enrollmentTime) {
-      fetchCount();
-      sessionStorage.removeItem(key);
-    }
+    // Fetch immediately
+    fetchCount();
 
-    // Only update when page becomes visible (user navigates back from learn page)
+    // Check sessionStorage for enrollment events
+    const checkStorage = () => {
+      const key = `enrollment-${courseId}`;
+      const enrollmentTime = sessionStorage.getItem(key);
+      if (enrollmentTime) {
+        fetchCount();
+        sessionStorage.removeItem(key);
+      }
+    };
+
+    // Check storage periodically
+    const storageInterval = setInterval(checkStorage, 1000);
+
+    // Update when page becomes visible
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         fetchCount();
@@ -53,6 +61,7 @@ export function EnrollmentCount({ courseId, initialCount }: EnrollmentCountProps
     window.addEventListener(`enrollment-${courseId}`, handleEnrollment);
 
     return () => {
+      clearInterval(storageInterval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener(`enrollment-${courseId}`, handleEnrollment);
     };
