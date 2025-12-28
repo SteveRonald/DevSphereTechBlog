@@ -242,6 +242,13 @@ export default function CourseLearnPage() {
         console.error("Error enrolling:", error);
       } else {
         setEnrolled(true);
+        // Trigger enrollment count update on course page
+        if (course?.id) {
+          // Dispatch custom event to update enrollment count
+          window.dispatchEvent(new CustomEvent(`enrollment-${course.id}`));
+          // Also set in sessionStorage to trigger cross-tab updates
+          sessionStorage.setItem(`enrollment-${course.id}`, Date.now().toString());
+        }
       }
     } catch (error) {
       console.error("Error:", error);

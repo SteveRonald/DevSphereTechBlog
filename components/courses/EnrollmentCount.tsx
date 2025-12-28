@@ -17,29 +17,34 @@ export function EnrollmentCount({ courseId, initialCount }: EnrollmentCountProps
     const fetchCount = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/courses/${courseId}/enrollment-count`, {
-          cache: 'no-store', // Always fetch fresh data
+        const response = await fetch(`/api/courses/${courseId}/enrollment-count?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
         });
         
         if (response.ok) {
           const data = await response.json();
-          setCount(data.count || 0);
+          const newCount = data.count ?? 0;
+          setCount(newCount);
         }
       } catch (error) {
         console.error("Error fetching enrollment count:", error);
-        // Keep the initial count on error
       } finally {
         setIsLoading(false);
       }
     };
 
-    // Fetch immediately on mount
-    fetchCount();
+    // Fetch immediately on mount (with small delay to ensure page is ready)
+    const initialTimeout = setTimeout(() => {
+      fetchCount();
+    }, 100);
 
-    // Set up polling to refresh count every 10 seconds
-    const interval = setInterval(fetchCount, 10000);
+    // Poll every 2 seconds for immediate updates
+    const interval = setInterval(fetchCount, 2000);
 
-    // Refresh when page becomes visible (user navigates back)
+    // Refresh when page becomes visible
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         fetchCount();
@@ -47,9 +52,28 @@ export function EnrollmentCount({ courseId, initialCount }: EnrollmentCountProps
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    // Check sessionStorage every second for enrollment events
+    const checkStorage = setInterval(() => {
+      const key = `enrollment-${courseId}`;
+      const value = sessionStorage.getItem(key);
+      if (value) {
+        fetchCount();
+        sessionStorage.removeItem(key);
+      }
+    }, 1000);
+
+    // Listen for custom enrollment events
+    const handleEnrollment = () => {
+      fetchCount();
+    };
+    window.addEventListener(`enrollment-${courseId}`, handleEnrollment);
+
     return () => {
+      clearTimeout(initialTimeout);
       clearInterval(interval);
+      clearInterval(checkStorage);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener(`enrollment-${courseId}`, handleEnrollment);
     };
   }, [courseId]);
 
