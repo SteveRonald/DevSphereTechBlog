@@ -19,17 +19,10 @@ export const metadata: Metadata = {
   authors: [{ name: "CodeCraft Academy" }],
   creator: "CodeCraft Academy",
   publisher: "CodeCraft Academy",
-  // Next.js 14 automatically generates favicons from app/icon.png (icon-only version)
-  // The icon.png should be the simplified icon without text for favicon use
   icons: {
-    icon: [
-      { url: "/icon.png", type: "image/png", sizes: "32x32" },
-      { url: "/icon.png", type: "image/png", sizes: "16x16" },
-    ],
+    icon: "/icon.png",
     shortcut: "/icon.png",
-    apple: [
-      { url: "/icon.png", sizes: "180x180", type: "image/png" },
-    ],
+    apple: "/icon.png",
   },
   other: {
     // Add Google site verification meta tag here when you get the verification code
