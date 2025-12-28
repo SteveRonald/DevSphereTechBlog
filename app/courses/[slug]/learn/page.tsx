@@ -25,6 +25,9 @@ interface Course {
   id: string;
   title: string;
   slug: string;
+  enrollment_count?: number;
+  rating?: number;
+  total_ratings?: number;
 }
 
 export default function CourseLearnPage() {
@@ -62,7 +65,18 @@ export default function CourseLearnPage() {
           return;
         }
 
-        setCourse(courseData);
+        // Fetch real-time enrollment count
+        const { count } = await supabase
+          .from("user_course_enrollments")
+          .select("*", { count: "exact", head: true })
+          .eq("course_id", courseData.id);
+
+        setCourse({
+          ...courseData,
+          enrollment_count: count || courseData.enrollment_count || 0,
+          rating: courseData.rating || 0,
+          total_ratings: courseData.total_ratings || 0,
+        });
 
         // Fetch lessons
         const { data: lessonsData, error: lessonsError } = await supabase

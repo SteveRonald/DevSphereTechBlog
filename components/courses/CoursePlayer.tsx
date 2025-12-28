@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { CheckCircle2, Lock, PlayCircle, ChevronRight, Trophy, Star, Gift, Menu, BookOpen } from "lucide-react";
+import { CheckCircle2, Lock, PlayCircle, ChevronRight, Trophy, Star, Gift, Menu, BookOpen, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { CelebrationVariants } from "./CelebrationVariants";
 import { LessonContent } from "./LessonContent";
+import { EnrollmentCount } from "./EnrollmentCount";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -16,6 +17,9 @@ interface Course {
   id: string;
   title: string;
   slug: string;
+  enrollment_count?: number;
+  rating?: number;
+  total_ratings?: number;
 }
 
 interface Lesson {
@@ -364,6 +368,25 @@ export function CoursePlayer({
           <div className="hidden lg:block lg:col-span-4">
             <Card className="sticky top-24 shadow-sm">
               <CardContent className="p-4 lg:p-6">
+                {/* Course Stats */}
+                {(course.enrollment_count !== undefined || course.rating !== undefined) && (
+                  <div className="mb-6 pb-6 border-b border-border">
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                      {course.rating !== undefined && (
+                        <div className="flex items-center gap-1.5">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-medium text-foreground">{course.rating.toFixed(1)}</span>
+                          {course.total_ratings !== undefined && (
+                            <span className="text-xs">({course.total_ratings})</span>
+                          )}
+                        </div>
+                      )}
+                      {course.enrollment_count !== undefined && (
+                        <EnrollmentCount courseId={course.id} initialCount={course.enrollment_count} />
+                      )}
+                    </div>
+                  </div>
+                )}
                 <h3 className="font-semibold mb-4 text-lg flex items-center gap-2">
                   <BookOpen className="h-5 w-5" />
                   Course Curriculum
