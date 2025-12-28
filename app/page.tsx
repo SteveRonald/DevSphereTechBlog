@@ -98,9 +98,13 @@ export default async function Home() {
               <Rocket className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               <span>start your tech journey right now</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-              Learn Modern Tech Skills with<br className="hidden sm:inline" />
-              <span className="text-gradient">CodeCraft Academy</span>
+            <h1 className="font-extrabold tracking-tight leading-tight">
+              <span className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
+                Learn Modern Tech Skills with
+              </span>
+              <span className="block mt-2 sm:mt-3 md:mt-4 pl-0 sm:pl-6 md:pl-12 text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-gradient">
+                CodeCraft Academy
+              </span>
             </h1>
             <p className="mx-auto max-w-[600px] text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed px-2">
               Free short courses and guided learning paths to help beginners build real tech skills — fast, practical, and beginner-friendly.

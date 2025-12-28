@@ -80,19 +80,23 @@ export default function CourseLearnPage() {
 
         // Check enrollment and progress if user is logged in
         if (user) {
-          const { data: enrollment } = await supabase
+          const { data: enrollment, error: enrollmentError } = await supabase
             .from("user_course_enrollments")
             .select("*")
             .eq("user_id", user.id)
             .eq("course_id", courseData.id)
-            .single();
+            .maybeSingle();
 
-          if (enrollment) {
+          if (enrollment && !enrollmentError) {
             setEnrolled(true);
             setEnrollment({
               is_completed: enrollment.is_completed || false,
               is_passed: enrollment.is_passed || false,
             });
+          } else {
+            // Explicitly set to false if no enrollment found
+            setEnrolled(false);
+            setEnrollment(null);
           }
 
           // Fetch completed lessons

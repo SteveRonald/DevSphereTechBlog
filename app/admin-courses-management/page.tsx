@@ -144,7 +144,36 @@ export default function AdminCoursesPage() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setCourses(data || []);
+
+      if (!data || data.length === 0) {
+        setCourses([]);
+        return;
+      }
+
+      // Fetch all enrollments to get real-time counts for all courses at once
+      // This is more efficient than querying each course individually
+      const courseIds = data.map((c) => c.id);
+      const { data: enrollments, error: enrollmentsError } = await supabase
+        .from("user_course_enrollments")
+        .select("course_id")
+        .in("course_id", courseIds);
+
+      // Count enrollments per course
+      const enrollmentCounts = new Map<string, number>();
+      if (!enrollmentsError && enrollments) {
+        enrollments.forEach((enrollment: any) => {
+          const courseId = enrollment.course_id;
+          enrollmentCounts.set(courseId, (enrollmentCounts.get(courseId) || 0) + 1);
+        });
+      }
+
+      // Map real-time enrollment counts to courses
+      const coursesWithRealCounts = data.map((course) => ({
+        ...course,
+        enrollment_count: enrollmentCounts.get(course.id) || 0,
+      }));
+
+      setCourses(coursesWithRealCounts);
     } catch (error) {
       console.error("Error fetching courses:", error);
       toast({

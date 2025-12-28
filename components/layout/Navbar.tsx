@@ -93,27 +93,43 @@ export function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center px-4 md:px-6">
-        <div className="mr-4 flex md:hidden">
-          <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
+      <div className="container flex h-14 sm:h-16 md:h-18 items-center justify-between px-3 sm:px-4 md:px-6 lg:px-8 gap-2">
+        {/* Left section: Menu + Logo */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 min-w-0">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-9 w-9 md:hidden shrink-0"
+            onClick={() => setIsOpen(!isOpen)}
+          >
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle menu</span>
           </Button>
+          
+          <Link href="/" className="flex items-center hover:opacity-90 transition-opacity group shrink-0 min-w-0">
+            {/* Responsive logo sizing - smaller on mobile */}
+            <Image 
+              src="/logo.png" 
+              alt="CodeCraft Academy Logo" 
+              width={240} 
+              height={60} 
+              className="h-7 xs:h-8 sm:h-10 md:h-14 lg:h-16 w-auto shrink-0 logo-theme-optimized transition-all duration-300 group-hover:scale-105" 
+              priority
+              style={{ 
+                maxHeight: '64px',
+                objectFit: 'contain'
+              }}
+            />
+          </Link>
         </div>
-        
-        <Link href="/" className="mr-6 flex items-center space-x-2">
-          <Image src="/logo.png" alt="CodeCraft Logo" width={32} height={32} className="rounded-lg" />
-          <span className="hidden font-bold sm:inline-block text-lg tracking-tight">
-            CodeCraft <span className="text-primary">Academy</span>
-          </span>
-        </Link>
 
-        <div className="hidden md:flex md:gap-x-6 lg:gap-x-8">
+        {/* Navigation links - better spacing and balance with flex-1 for proper distribution */}
+        <div className="hidden md:flex items-center gap-x-4 lg:gap-x-6 xl:gap-x-8 flex-1 max-w-3xl mx-4">
           {navLinks.map((link) => (
             <Link 
               key={link.href} 
               href={link.href}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
+              className={`text-sm lg:text-base font-medium transition-colors hover:text-primary whitespace-nowrap px-1 ${
                 pathname === link.href ? "text-foreground" : "text-foreground/60"
               }`}
             >
@@ -122,12 +138,14 @@ export function Navbar() {
           ))}
           <BlogDropdown />
           {isStudio && (
-            <span className="text-sm font-medium text-primary">• CMS Studio</span>
+            <span className="text-sm lg:text-base font-medium text-primary ml-2">• CMS Studio</span>
           )}
         </div>
 
-        <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
-          <div className="hidden md:flex md:w-auto">
+        {/* Right section: Search, Auth, Theme, Social */}
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 shrink-0">
+          {/* Desktop Search */}
+          <div className="hidden md:flex">
             <Button 
               variant="outline" 
               className="relative h-9 justify-start rounded-[0.5rem] bg-background text-sm font-normal text-muted-foreground shadow-none w-40 lg:w-64"
@@ -142,18 +160,19 @@ export function Navbar() {
             </Button>
           </div>
           
-          {/* Mobile Search Icon Button */}
+          {/* Mobile Search Icon */}
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-9 w-9 md:hidden"
+            className="h-9 w-9 md:hidden shrink-0"
             onClick={() => setSearchOpen(true)}
           >
             <Search className="h-4 w-4" />
             <span className="sr-only">Search</span>
           </Button>
           
-          <nav className="flex items-center gap-1 md:gap-2">
+          {/* Auth, Social, Theme */}
+          <nav className="flex items-center gap-0.5 sm:gap-1 md:gap-2">
             {!authLoading && (
               <>
                 {isStudio && isAdmin === true ? (
@@ -189,13 +208,13 @@ export function Navbar() {
                   <UserMenu />
                 ) : (
                   <>
-                    <Link href="/auth">
-                      <Button variant="ghost" size="sm" className="hidden sm:flex">
+                    <Link href="/auth" className="hidden xs:flex">
+                      <Button variant="ghost" size="sm" className="h-8 text-xs sm:h-9 sm:text-sm">
                         Sign In
                       </Button>
                     </Link>
-                    <Link href="/auth">
-                      <Button size="sm" className="hidden sm:flex">
+                    <Link href="/auth" className="hidden xs:flex">
+                      <Button size="sm" className="h-8 text-xs sm:h-9 sm:text-sm">
                         Sign Up
                       </Button>
                     </Link>
@@ -204,14 +223,15 @@ export function Navbar() {
               </>
             )}
             <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
-            <Link href="https://github.com" target="_blank" rel="noreferrer">
-              <Button variant="ghost" size="icon" className="h-9 w-9">
+            {/* Social links - hide on very small screens */}
+            <Link href="https://github.com" target="_blank" rel="noreferrer" className="hidden xs:flex">
+              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
                 <Github className="h-4 w-4" />
                 <span className="sr-only">GitHub</span>
               </Button>
             </Link>
-            <Link href="https://twitter.com" target="_blank" rel="noreferrer">
-              <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Link href="https://twitter.com" target="_blank" rel="noreferrer" className="hidden xs:flex">
+              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
                 <Twitter className="h-4 w-4" />
                 <span className="sr-only">Twitter</span>
               </Button>
@@ -219,7 +239,7 @@ export function Navbar() {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9"
+              className="h-8 w-8 sm:h-9 sm:w-9 shrink-0"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
               {mounted && theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

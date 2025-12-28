@@ -230,7 +230,7 @@ export function CourseCertificatePageClient({ slug, user }: CourseCertificatePag
           {/* Certificate Header */}
           <div className="certificate-header">
             <div className="certificate-logo">
-              <img src="/logo.png" alt="CodeCraft Academy Logo" />
+              <img src="/logo.png" alt="CodeCraft Academy Logo" className="logo-theme-optimized" style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))' }} />
               <div>
                 <h2 className="certificate-title">CodeCraft Academy</h2>
                 <p className="certificate-subtitle">Certificate of Completion</p>

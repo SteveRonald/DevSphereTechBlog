@@ -130,7 +130,7 @@ export default function FreeCoursesPage() {
       // Fetch categories and courses in parallel
       Promise.all([
         fetchCategories(),
-        fetchCourses({ replace: true, nextOffset: 0, override: { search: urlSearch, category: urlCategory, difficulty: urlDifficulty, sort: urlSort, duration: urlDuration, minRating: urlRating } })
+        fetchCourses({ replace: true, nextOffset: 0, showLoading: true, override: { search: urlSearch, category: urlCategory, difficulty: urlDifficulty, sort: urlSort, duration: urlDuration, minRating: urlRating } })
       ]).then(() => {
         setInitialLoad(false);
         hasInitialized.current = true;
@@ -144,11 +144,14 @@ export default function FreeCoursesPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    // Debounce search/filters
+    // Skip if initial load hasn't completed yet
+    if (!hasInitialized.current) return;
+    
+    // Debounce search/filters - don't show loading spinner to prevent blinking
     const timer = setTimeout(() => {
       setOffset(0);
       syncUrl();
-      fetchCourses({ replace: true, nextOffset: 0 });
+      fetchCourses({ replace: true, nextOffset: 0, showLoading: false });
     }, 300);
 
     return () => clearTimeout(timer);
@@ -214,13 +217,19 @@ export default function FreeCoursesPage() {
   const fetchCourses = async (opts?: {
     replace?: boolean;
     nextOffset?: number;
+    showLoading?: boolean;
     override?: { search?: string; category?: string; difficulty?: string; sort?: string; duration?: string; minRating?: string };
   }) => {
     const replace = opts?.replace ?? true;
     const nextOffset = opts?.nextOffset ?? offset;
     const override = opts?.override;
+    const showLoading = opts?.showLoading ?? false;
 
-    setLoading(true);
+    // Only show loading spinner on initial load or explicit request
+    // This prevents blinking during search/filter changes
+    if (showLoading || initialLoad) {
+      setLoading(true);
+    }
     try {
       const params = new URLSearchParams();
       const effectiveSearch = override?.search ?? searchQuery;

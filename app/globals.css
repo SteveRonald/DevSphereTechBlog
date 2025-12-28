@@ -88,6 +88,23 @@
 }
 
 @layer utilities {
+  /* Logo optimization for theme switching - maintains clarity */
+  /* Full logo (with text) and favicon (icon-only) both use this class */
+  .logo-theme-optimized {
+    transition: filter 0.3s ease-in-out;
+    /* Preserves original clarity - minimal filtering */
+  }
+  
+  /* Light mode: very subtle enhancement */
+  :root .logo-theme-optimized {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05));
+  }
+  
+  /* Dark mode: subtle brightness boost for visibility without losing clarity */
+  .dark .logo-theme-optimized {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25)) brightness(1.1) contrast(1.08);
+  }
+  
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent;
   }

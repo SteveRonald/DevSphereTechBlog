@@ -41,8 +41,7 @@ export const dynamic = 'force-dynamic';
 async function getCourse(slug: string): Promise<Course | null> {
   const supabase = createServerClient(undefined);
   
-  // Fetch course with enrollment_count from database (maintained by trigger)
-  // Same approach as admin panel - trust the database column value
+  // Fetch course data
   const { data: course, error } = await supabase
     .from("courses")
     .select("*")
@@ -54,9 +53,20 @@ async function getCourse(slug: string): Promise<Course | null> {
     return null;
   }
 
-  // Use enrollment_count directly from database (updated by trigger)
-  // The trigger update_course_enrollment_count() keeps this accurate
-  return course as Course;
+  // Fetch real-time enrollment count directly from enrollments table
+  // This ensures we always get accurate, up-to-date count (same approach as admin panel)
+  const { count, error: countError } = await supabase
+    .from("user_course_enrollments")
+    .select("*", { count: "exact", head: true })
+    .eq("course_id", course.id);
+
+  // Use real-time count if available, otherwise fall back to database column
+  const enrollmentCount = countError ? (course.enrollment_count || 0) : (count || 0);
+
+  return {
+    ...course,
+    enrollment_count: enrollmentCount,
+  } as Course;
 }
 
 async function getLessons(courseId: string): Promise<Lesson[]> {
