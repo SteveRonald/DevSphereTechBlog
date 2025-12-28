@@ -50,7 +50,7 @@ export async function GET(
       count: count || 0 
     }, {
       headers: {
-        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60'
+        'Cache-Control': 'no-store, must-revalidate' // Always fetch fresh data for accurate counts
       }
     });
   } catch (error: any) {

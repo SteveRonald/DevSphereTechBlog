@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import Link from "next/link";
 import { CourseRating } from "@/components/courses/CourseRating";
+import { EnrollmentCount } from "@/components/courses/EnrollmentCount";
 
 type DifficultyLevel = "beginner" | "intermediate" | "advanced";
 
@@ -189,10 +190,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   <span className="font-medium text-base sm:text-sm">{course.rating.toFixed(1)}</span>
                   <span className="text-xs sm:text-sm">({course.total_ratings} ratings)</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
-                  <span className="text-base sm:text-sm">{course.enrollment_count} students</span>
-                </div>
+                <EnrollmentCount courseId={course.id} initialCount={course.enrollment_count} />
                 <div className="flex items-center gap-1.5">
                   <Clock className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
                   <span className="text-base sm:text-sm break-words">{formatDuration(course.estimated_duration)}</span>
