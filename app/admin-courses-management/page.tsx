@@ -152,7 +152,7 @@ export default function AdminCoursesPage() {
 
       // Fetch all enrollments to get real-time counts for all courses at once
       // This is more efficient than querying each course individually
-      const courseIds = data.map((c) => c.id);
+      const courseIds = data.map((c: AdminCourse) => c.id);
       const { data: enrollments, error: enrollmentsError } = await supabase
         .from("user_course_enrollments")
         .select("course_id")
@@ -168,7 +168,7 @@ export default function AdminCoursesPage() {
       }
 
       // Map real-time enrollment counts to courses
-      const coursesWithRealCounts = data.map((course) => ({
+      const coursesWithRealCounts = data.map((course: AdminCourse) => ({
         ...course,
         enrollment_count: enrollmentCounts.get(course.id) || 0,
       }));

@@ -78,7 +78,7 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                 .limit(5);
               
               if (error) return [];
-              return (data || []).map(course => ({
+              return (data || []).map((course: { id: string; title: string; slug: string; short_description?: string }) => ({
                 ...course,
                 type: "course" as const
               }));
