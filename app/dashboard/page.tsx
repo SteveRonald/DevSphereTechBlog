@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, memo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
@@ -29,11 +29,16 @@ import {
   XCircle,
   RefreshCw,
   Eye,
-  Zap
+  Zap,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { DashboardErrorBoundary } from "@/components/dashboard/ErrorBoundary";
+import { DashboardSkeleton, CourseCardSkeleton } from "@/components/dashboard/DashboardSkeleton";
+import { CourseSearchFilter } from "@/components/dashboard/CourseSearchFilter";
 
 type DashboardCourseRow = {
   enrollment: any;
@@ -62,15 +67,27 @@ type PendingSubmission = {
   status: "pending_review";
 };
 
+type SortOption = "progress-desc" | "progress-asc" | "name-asc" | "name-desc" | "date-desc" | "date-asc";
+type FilterOption = "all" | "in-progress" | "completed" | "passed" | "failed" | "pending-review";
+
+const COURSES_PER_PAGE = 6;
+
 export default function StudentDashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<DashboardCourseRow[]>([]);
   const [pendingSubmissions, setPendingSubmissions] = useState<PendingSubmission[]>([]);
   const [activeTab, setActiveTab] = useState<"overview" | "courses" | "activities">("overview");
+  
+  // Search, filter, sort, and pagination
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("progress-desc");
+  const [filterBy, setFilterBy] = useState<FilterOption>("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => setMounted(true), []);
 
@@ -80,9 +97,10 @@ export default function StudentDashboardPage() {
     }
   }, [user, authLoading, router, mounted]);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const supabase = createClient();
       const {
         data: { session },
@@ -183,18 +201,19 @@ export default function StudentDashboardPage() {
         setPendingSubmissions([]);
       }
     } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Failed to load", variant: "destructive" });
+      const errorMessage = e?.message || "Failed to load dashboard";
+      setError(errorMessage);
+      toast({ title: "Error", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     if (mounted && !authLoading && user) {
       void load();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, authLoading, user?.id]);
+  }, [mounted, authLoading, user?.id, load]);
 
   const stats = useMemo(() => {
     const total = rows.length;
@@ -228,16 +247,90 @@ export default function StudentDashboardPage() {
     }).slice(0, 4);
   }, [rows, pendingSubmissions]);
 
+  // Filtered, sorted, and paginated courses
+  const filteredAndSortedCourses = useMemo(() => {
+    let filtered = rows;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((r) => {
+        const course = r?.enrollment?.courses;
+        return course?.title?.toLowerCase().includes(query) || 
+               course?.category?.toLowerCase().includes(query);
+      });
+    }
+
+    // Apply status filter
+    if (filterBy !== "all") {
+      filtered = filtered.filter((r) => {
+        const hasPending = pendingSubmissions.some((s) => s.course_id === r.enrollment?.course_id);
+        switch (filterBy) {
+          case "in-progress":
+            return !r.enrollment?.is_completed && r.progress > 0 && r.progress < 100;
+          case "completed":
+            return r.enrollment?.is_completed;
+          case "passed":
+            return r.passed;
+          case "failed":
+            return r.enrollment?.is_completed && !r.passed;
+          case "pending-review":
+            return hasPending;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Apply sorting
+    filtered = [...filtered].sort((a, b) => {
+      const courseA = a?.enrollment?.courses;
+      const courseB = b?.enrollment?.courses;
+      
+      switch (sortBy) {
+        case "progress-desc":
+          return b.progress - a.progress;
+        case "progress-asc":
+          return a.progress - b.progress;
+        case "name-asc":
+          return (courseA?.title || "").localeCompare(courseB?.title || "");
+        case "name-desc":
+          return (courseB?.title || "").localeCompare(courseA?.title || "");
+        case "date-desc":
+          const aDate = new Date(a.enrollment?.last_accessed_at || a.enrollment?.enrolled_at || 0).getTime();
+          const bDate = new Date(b.enrollment?.last_accessed_at || b.enrollment?.enrolled_at || 0).getTime();
+          return bDate - aDate;
+        case "date-asc":
+          const aDateAsc = new Date(a.enrollment?.last_accessed_at || a.enrollment?.enrolled_at || 0).getTime();
+          const bDateAsc = new Date(b.enrollment?.last_accessed_at || b.enrollment?.enrolled_at || 0).getTime();
+          return aDateAsc - bDateAsc;
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [rows, searchQuery, filterBy, sortBy, pendingSubmissions]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAndSortedCourses.length / COURSES_PER_PAGE);
+  const paginatedCourses = useMemo(() => {
+    const startIndex = (currentPage - 1) * COURSES_PER_PAGE;
+    return filteredAndSortedCourses.slice(startIndex, startIndex + COURSES_PER_PAGE);
+  }, [filteredAndSortedCourses, currentPage]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterBy, sortBy]);
+
   if (!mounted || authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <DashboardErrorBoundary>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <div className="container max-w-7xl mx-auto px-4 md:px-6 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
@@ -254,26 +347,27 @@ export default function StudentDashboardPage() {
             onClick={() => void load()} 
             disabled={loading}
             className="gap-2"
+            aria-label="Refresh dashboard data"
           >
             {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
             )}
             Refresh
           </Button>
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-shadow">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8" role="region" aria-label="Dashboard statistics">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-shadow" role="article" aria-label={`${stats.total} courses enrolled`}>
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-blue-600 mb-1 truncate">Enrolled</p>
-                  <p className="text-xl sm:text-2xl font-bold text-blue-700">{stats.total}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-700" aria-live="polite">{stats.total}</p>
                 </div>
-                <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 opacity-60 shrink-0 ml-2" />
+                <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 opacity-60 shrink-0 ml-2" aria-hidden="true" />
               </div>
             </CardContent>
           </Card>
@@ -620,16 +714,26 @@ export default function StudentDashboardPage() {
           {/* All Courses Tab */}
           <TabsContent value="courses" className="space-y-6">
             {loading ? (
-              <Card>
+              <div className="grid gap-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <CourseCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : error ? (
+              <Card className="border-destructive">
                 <CardContent className="py-12 text-center">
-                  <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-                  <p className="text-muted-foreground">Loading courses...</p>
+                  <AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive" />
+                  <p className="text-muted-foreground mb-4">{error}</p>
+                  <Button onClick={() => void load()}>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Try Again
+                  </Button>
                 </CardContent>
               </Card>
             ) : rows.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" aria-hidden="true" />
                   <p className="text-muted-foreground mb-4">No courses enrolled yet.</p>
                   <Button asChild>
                     <Link href="/free-courses">Browse Courses</Link>
@@ -637,8 +741,18 @@ export default function StudentDashboardPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-6">
-                {rows.map((r) => {
+              <>
+                <CourseSearchFilter
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  sortBy={sortBy}
+                  onSortChange={setSortBy}
+                  filterBy={filterBy}
+                  onFilterChange={setFilterBy}
+                  resultCount={filteredAndSortedCourses.length}
+                />
+                <div className="grid gap-6" role="list" aria-label="Course list">
+                  {paginatedCourses.map((r) => {
                   const course = r?.enrollment?.courses;
                   const slug = course?.slug;
                   const g = r.grades;
@@ -649,7 +763,8 @@ export default function StudentDashboardPage() {
 
                   return (
                     <Card 
-                      key={r.enrollment?.id || slug} 
+                      key={r.enrollment?.id || slug}
+                      role="listitem"
                       className={cn(
                         "transition-all duration-200 hover:shadow-lg",
                         r.passed 
@@ -846,7 +961,65 @@ export default function StudentDashboardPage() {
                     </Card>
                   );
                 })}
-              </div>
+                </div>
+                
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-4" role="navigation" aria-label="Course pagination">
+                    <div className="text-sm text-muted-foreground">
+                      Showing {((currentPage - 1) * COURSES_PER_PAGE) + 1} to {Math.min(currentPage * COURSES_PER_PAGE, filteredAndSortedCourses.length)} of {filteredAndSortedCourses.length} courses
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        aria-label="Previous page"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                      </Button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={currentPage === pageNum ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(pageNum)}
+                              aria-label={`Go to page ${pageNum}`}
+                              aria-current={currentPage === pageNum ? "page" : undefined}
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        aria-label="Next page"
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
 
@@ -969,6 +1142,7 @@ export default function StudentDashboardPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+      </div>
+    </DashboardErrorBoundary>
   );
 }
