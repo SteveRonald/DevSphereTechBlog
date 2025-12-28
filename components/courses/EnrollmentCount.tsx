@@ -10,68 +10,49 @@ interface EnrollmentCountProps {
 
 export function EnrollmentCount({ courseId, initialCount }: EnrollmentCountProps) {
   const [count, setCount] = useState(initialCount);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Fetch updated enrollment count
+    // Fetch count function
     const fetchCount = async () => {
       try {
-        setIsLoading(true);
         const response = await fetch(`/api/courses/${courseId}/enrollment-count?t=${Date.now()}`, {
           cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache',
-          },
         });
-        
         if (response.ok) {
           const data = await response.json();
-          const newCount = data.count ?? 0;
-          setCount(newCount);
+          if (data.count !== undefined) {
+            setCount(data.count);
+          }
         }
       } catch (error) {
         console.error("Error fetching enrollment count:", error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    // Fetch immediately on mount (with small delay to ensure page is ready)
-    const initialTimeout = setTimeout(() => {
+    // Check sessionStorage once on mount (for immediate enrollment updates)
+    const key = `enrollment-${courseId}`;
+    const enrollmentTime = sessionStorage.getItem(key);
+    if (enrollmentTime) {
       fetchCount();
-    }, 100);
+      sessionStorage.removeItem(key);
+    }
 
-    // Poll every 2 seconds for immediate updates
-    const interval = setInterval(fetchCount, 2000);
-
-    // Refresh when page becomes visible
+    // Only update when page becomes visible (user navigates back from learn page)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         fetchCount();
       }
     };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Check sessionStorage every second for enrollment events
-    const checkStorage = setInterval(() => {
-      const key = `enrollment-${courseId}`;
-      const value = sessionStorage.getItem(key);
-      if (value) {
-        fetchCount();
-        sessionStorage.removeItem(key);
-      }
-    }, 1000);
 
     // Listen for custom enrollment events
     const handleEnrollment = () => {
       fetchCount();
     };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener(`enrollment-${courseId}`, handleEnrollment);
 
     return () => {
-      clearTimeout(initialTimeout);
-      clearInterval(interval);
-      clearInterval(checkStorage);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener(`enrollment-${courseId}`, handleEnrollment);
     };
@@ -80,9 +61,7 @@ export function EnrollmentCount({ courseId, initialCount }: EnrollmentCountProps
   return (
     <div className="flex items-center gap-1.5">
       <Users className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
-      <span className="text-base sm:text-sm">
-        {isLoading ? "..." : `${count} students`}
-      </span>
+      <span className="text-base sm:text-sm">{count} students</span>
     </div>
   );
 }
