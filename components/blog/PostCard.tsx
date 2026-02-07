@@ -3,7 +3,6 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
-import { urlFor } from "@/lib/sanity";
 import { format } from "date-fns";
 
 export interface Post {
@@ -13,8 +12,8 @@ export interface Post {
   slug: {
     current: string;
   };
-  mainImage?: {
-    asset: any;
+  mainImage?: string | {
+    asset?: any;
     alt?: string;
   };
   publishedAt: string;
@@ -40,7 +39,33 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, featured = false }: PostCardProps) {
-  const imageUrl = post.mainImage ? urlFor(post.mainImage).width(800).height(600).url() : "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070&auto=format&fit=crop";
+  const getImageUrl = () => {
+    const fallback = "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070&auto=format&fit=crop";
+    
+    if (!post.mainImage) {
+      return fallback;
+    }
+    
+    if (typeof post.mainImage === 'string') {
+      // Validate string URL
+      if (post.mainImage.startsWith('http://') || post.mainImage.startsWith('https://') || post.mainImage.startsWith('/')) {
+        return post.mainImage;
+      }
+      return fallback;
+    }
+    
+    if (post.mainImage.asset) {
+      const url = post.mainImage.asset.url || post.mainImage.asset._ref || "";
+      // Validate URL format
+      if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/'))) {
+        return url;
+      }
+    }
+    
+    return fallback;
+  };
+
+  const imageUrl = getImageUrl();
   const categoryTitle = post.categories?.[0]?.title || "Uncategorized";
   const formattedDate = post.publishedAt ? format(new Date(post.publishedAt), "MMM dd, yyyy") : "";
   const readTime = `${post.readTime || 5} min read`;
@@ -53,7 +78,7 @@ export function PostCard({ post, featured = false }: PostCardProps) {
             <div className="md:col-span-3 relative h-64 md:h-full overflow-hidden">
               <Image 
                 src={imageUrl} 
-                alt={post.mainImage?.alt || post.title} 
+                alt={typeof post.mainImage === 'object' ? (post.mainImage?.alt || post.title) : post.title} 
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
@@ -88,10 +113,10 @@ export function PostCard({ post, featured = false }: PostCardProps) {
   return (
     <Link href={`/blog/${post.slug.current}`}>
       <Card className="group overflow-hidden border-border h-full flex flex-col cursor-pointer transition-all hover:shadow-md hover:-translate-y-1">
-        <div className="relative aspect-video overflow-hidden bg-muted">
+            <div className="relative aspect-video overflow-hidden bg-muted">
           <Image 
             src={imageUrl} 
-            alt={post.mainImage?.alt || post.title} 
+            alt={typeof post.mainImage === 'object' ? (post.mainImage?.alt || post.title) : post.title} 
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />

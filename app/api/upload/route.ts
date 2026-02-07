@@ -4,7 +4,7 @@ import { createServerClient } from "@/lib/supabase-server";
 // POST: Upload file to Supabase Storage
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     // Check admin
     const authHeader = request.headers.get("authorization");

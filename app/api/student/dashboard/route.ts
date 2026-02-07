@@ -4,7 +4,7 @@ import { computeCourseGradeSummary } from "@/lib/course-grading";
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;

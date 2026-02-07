@@ -1,67 +1,175 @@
 import { notFound } from "next/navigation";
-import { sanityClient } from "@/lib/sanity";
-import { postBySlugQuery } from "@/lib/sanity.queries";
-import { urlFor } from "@/lib/sanity";
-import { Sidebar } from "@/components/blog/Sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock } from "lucide-react";
+import { CommentForm } from "@/components/blog/CommentForm";
 import { PostActions } from "@/components/blog/PostActions";
 import Image from "next/image";
 import { format } from "date-fns";
-import { PortableText, type PortableTextBlock } from "@portabletext/react";
-import { portableTextComponents } from "@/components/blog/PortableTextComponents";
+import { RichMarkdown } from "@/components/RichMarkdown";
+import { PortableTextRenderer } from "@/components/PortableTextRenderer";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Post {
-  _id: string;
+  id: string;
   title: string;
-  excerpt: string;
-  slug: {
-    current: string;
-  };
-  mainImage?: {
-    asset: any;
-    alt?: string;
-  };
-  publishedAt: string;
-  readTime: number;
+  excerpt?: string;
+  slug: string;
+  content?: string;
+  body?: any[];
+  content_type?: string;
+  main_image_url?: string;
+  main_image_alt?: string;
+  mainImage?: any;
+  published_at?: string;
+  publishedAt?: string;
+  read_time: number;
   featured?: boolean;
-  body: PortableTextBlock[];
   tags?: string[];
-  author?: {
-    name: string;
-    image?: {
-      asset: any;
-    };
-    role?: string;
-    bio?: PortableTextBlock[];
-    socialLinks?: {
-      twitter?: string;
-      github?: string;
-      linkedin?: string;
-    };
+  blog_categories?: {
+    title: string;
+    slug: string;
   };
   categories?: Array<{
     title: string;
-    slug: {
-      current: string;
-    };
+    slug: string;
   }>;
+  blog_authors?: {
+    id: string;
+    name: string;
+    image_url?: string;
+    role?: string;
+    bio?: string;
+    bio_html?: string;
+  };
+  author?: {
+    name: string;
+    image?: string;
+    role?: string;
+  };
+  user_profiles?: {
+    display_name?: string;
+    first_name?: string;
+    last_name?: string;
+  };
+  source?: 'supabase';
+}
+
+type RelatedLink = {
+  title: string;
+  slug: string;
+};
+
+async function getRelatedPosts(post: Post): Promise<RelatedLink[]> {
+  try {
+    const { createServerClient } = await import("@/lib/supabase-server");
+    const supabase = await createServerClient(undefined);
+    const categorySlug = post.blog_categories?.slug;
+    if (!categorySlug) return [];
+
+    const { data: category } = await supabase
+      .from("blog_categories")
+      .select("id")
+      .eq("slug", categorySlug)
+      .single();
+
+    if (!category?.id) return [];
+
+    const { data: related } = await supabase
+      .from("blog_posts")
+      .select("title,slug")
+      .eq("published", true)
+      .eq("category_id", category.id)
+      .neq("slug", post.slug)
+      .order("published_at", { ascending: false })
+      .limit(4);
+
+    return (related || []).map((p: any) => ({ title: p.title, slug: p.slug }));
+  } catch (e) {
+    console.error("Error fetching related posts:", e);
+    return [];
+  }
 }
 
 async function getPost(slug: string): Promise<Post | null> {
   try {
-    const post = await sanityClient.fetch<Post>(postBySlugQuery, { slug });
-    return post || null;
+    const { createServerClient } = await import("@/lib/supabase-server");
+    const supabase = await createServerClient(undefined);
+    const { data: post, error } = await supabase
+      .from("blog_posts")
+      .select(`
+        *,
+        blog_categories (
+          title,
+          slug
+        ),
+        blog_authors:blog_author_id (
+          id,
+          name,
+          image_url,
+          role,
+          bio,
+          bio_html
+        )
+      `)
+      .eq("slug", slug)
+      .eq("published", true)
+      .single();
+
+    if (error || !post) {
+      return null;
+    }
+
+    // Transform Supabase data to unified Post format
+    return {
+      ...post,
+      author: post.blog_authors ? {
+        name: post.blog_authors.name,
+        image: post.blog_authors.image_url,
+        role: post.blog_authors.role,
+      } : {
+        name: "CodeCraft Academy",
+      },
+      source: 'supabase',
+    };
   } catch (error) {
-    console.error("Error fetching post:", error);
+    console.error("Error fetching Supabase post:", error);
     return null;
   }
 }
 
-// Revalidate every 60 seconds to show fresh content from Sanity
+// Revalidate every 60 seconds to show fresh content
 export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+
+// Generate static params for better performance and SEO
+export async function generateStaticParams() {
+  try {
+    const params: { slug: string }[] = [];
+    
+    // Get Supabase posts
+    try {
+      const { createServerClient } = await import("@/lib/supabase-server");
+      const supabase = await createServerClient(undefined);
+      const { data } = await supabase
+        .from("blog_posts")
+        .select("slug")
+        .eq("published", true);
+      if (data) {
+        params.push(...data.map((p: { slug: string }) => ({ slug: p.slug })));
+      }
+    } catch (e) {
+      console.error("Error fetching Supabase slugs for static params:", e);
+    }
+    
+    return params;
+  } catch (error) {
+    console.error("Error generating static params:", error);
+    return [];
+  }
+}
 
 export default async function BlogPostPage({
   params,
@@ -75,11 +183,18 @@ export default async function BlogPostPage({
     notFound();
   }
 
-  const imageUrl = post.mainImage ? urlFor(post.mainImage).width(1200).height(600).url() : "";
-  const categoryTitle = post.categories?.[0]?.title || "Uncategorized";
-  const formattedDate = post.publishedAt ? format(new Date(post.publishedAt), "MMM dd, yyyy") : "";
-  const readTime = `${post.readTime || 5} min read`;
-  const authorImageUrl = post.author?.image ? urlFor(post.author.image).width(100).height(100).url() : "";
+  const imageUrl = post.main_image_url || "";
+  const categoryTitle = post.blog_categories?.title || post.categories?.[0]?.title || "Uncategorized";
+  const publishedDate = post.published_at || post.publishedAt;
+  const formattedDate = publishedDate ? format(new Date(publishedDate), "MMM dd, yyyy") : "";
+  const readTime = `${post.read_time || 5} min read`;
+  
+  // Unified author handling
+  const authorName = post.blog_authors?.name || post.author?.name || "CodeCraft Academy";
+  const authorRole = post.blog_authors?.role || post.author?.role;
+  const authorImage = post.blog_authors?.image_url || post.author?.image;
+  const authorBio = post.blog_authors?.bio_html || post.blog_authors?.bio;
+  const relatedPosts = await getRelatedPosts(post);
 
   return (
     <>
@@ -95,14 +210,12 @@ export default async function BlogPostPage({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 py-4 border-y border-border/50">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-10 w-10 border border-border">
-                  {authorImageUrl && <AvatarImage src={authorImageUrl} />}
-                  <AvatarFallback>{post.author?.name?.[0] || "A"}</AvatarFallback>
+                  {authorImage && <AvatarImage src={authorImage} alt={authorName} />}
+                  <AvatarFallback>{authorName[0] || "A"}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-semibold">{post.author?.name || "Anonymous"}</p>
-                  {post.author?.role && (
-                    <p className="text-xs text-muted-foreground">{post.author.role}</p>
-                  )}
+                  <p className="text-sm font-semibold">{authorName}</p>
+                  {authorRole && <p className="text-xs text-muted-foreground">{authorRole}</p>}
                 </div>
               </div>
               
@@ -120,7 +233,7 @@ export default async function BlogPostPage({
             <div className="max-w-6xl mx-auto -mt-6 rounded-xl overflow-hidden shadow-xl">
               <Image 
                 src={imageUrl} 
-                alt={post.mainImage?.alt || post.title} 
+                alt={post.main_image_alt || post.title} 
                 width={1200}
                 height={600}
                 className="w-full h-[400px] md:h-[500px] object-cover"
@@ -135,12 +248,14 @@ export default async function BlogPostPage({
           
           {/* Main Content */}
           <article className="lg:col-span-8">
-            <div className="prose prose-slate dark:prose-invert max-w-none prose-lg
-              prose-headings:font-bold prose-headings:tracking-tight
-              prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-              prose-img:rounded-lg prose-pre:bg-muted prose-pre:text-foreground
-              prose-p:leading-relaxed prose-li:leading-relaxed">
-              <PortableText value={post.body} components={portableTextComponents} />
+            <div className="prose-content">
+              {post.content ? (
+                <RichMarkdown content={post.content} />
+              ) : post.body ? (
+                <PortableTextRenderer value={post.body} />
+              ) : (
+                <p className="text-muted-foreground">No content available</p>
+              )}
             </div>
             
             {/* Tags & Share */}
@@ -153,39 +268,64 @@ export default async function BlogPostPage({
                 </div>
               )}
               
-              <PostActions postSlug={post.slug.current} />
+              <PostActions postSlug={post.slug} />
             </div>
 
             {/* Author Bio Box */}
-            {post.author && (
+            {authorBio && (
               <div className="mt-10 p-6 bg-muted/30 rounded-lg border border-border flex items-start gap-4">
-                <Avatar className="h-16 w-16 border border-border">
-                  {authorImageUrl && <AvatarImage src={authorImageUrl} />}
-                  <AvatarFallback>{post.author.name?.[0] || "A"}</AvatarFallback>
+                <Avatar className="h-16 w-16 border border-border shrink-0">
+                  {authorImage && <AvatarImage src={authorImage} alt={authorName} />}
+                  <AvatarFallback>{authorName[0] || "A"}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-bold text-lg mb-1">{post.author.name}</h3>
-                  {post.author.bio && (
-                    <div className="text-muted-foreground text-sm mb-3">
-                      <PortableText value={post.author.bio} />
-                    </div>
-                  )}
-                  {post.author.socialLinks?.twitter && (
-                    <Button variant="link" className="p-0 h-auto text-primary" asChild>
-                      <a href={post.author.socialLinks.twitter} target="_blank" rel="noopener noreferrer">
-                        Follow on Twitter
-                      </a>
-                    </Button>
+                  <h3 className="font-bold text-lg mb-1">{authorName}</h3>
+                  {post.blog_authors?.bio_html ? (
+                    <div className="text-muted-foreground text-sm prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: authorBio }} />
+                  ) : (
+                    <p className="text-muted-foreground text-sm">{authorBio}</p>
                   )}
                 </div>
               </div>
             )}
 
+            {/* Comments Section */}
+            <div id="comments-section" className="mt-12">
+              <CommentForm postId={post.id} onCommentAdded={() => {}} />
+            </div>
+
           </article>
 
-          {/* Sidebar */}
+          {/* Related */}
           <aside className="lg:col-span-4 space-y-8">
-            <Sidebar />
+            <Card className="shadow-none">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-google-sans">Related Posts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {relatedPosts.length > 0 ? (
+                  <div className="space-y-3">
+                    {relatedPosts.map((p) => (
+                      <Link
+                        key={p.slug}
+                        href={`/blog/${p.slug}`}
+                        className="block text-sm font-google-sans text-foreground/80 hover:text-primary transition-colors"
+                      >
+                        {p.title}
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground font-google-sans">No related posts yet</p>
+                )}
+
+                <div className="mt-4">
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link href="/blog">Browse all posts</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </aside>
         </div>
       </div>

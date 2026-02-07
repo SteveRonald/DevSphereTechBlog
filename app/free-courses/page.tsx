@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Sidebar } from "@/components/blog/Sidebar";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Search, Filter, X } from "lucide-react";
+import { BookOpen, Search, Filter, X, ChevronDown, ChevronUp } from "lucide-react";
 import { CourseCard, type Course } from "@/components/courses/CourseCard";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 import {
   Select,
   SelectContent,
@@ -22,6 +22,7 @@ export default function FreeCoursesPage() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const searchParamsString = searchParams.toString();
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +34,7 @@ export default function FreeCoursesPage() {
   const [selectedSort, setSelectedSort] = useState<string>("newest");
   const [selectedDuration, setSelectedDuration] = useState<string>("all");
   const [selectedMinRating, setSelectedMinRating] = useState<string>("all");
+  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
   const [categories, setCategories] = useState<Array<{ name: string; count: number }>>(() => {
     // Try to restore categories from sessionStorage
     if (typeof window !== "undefined") {
@@ -42,7 +44,8 @@ export default function FreeCoursesPage() {
           const data = JSON.parse(cached);
           const cacheTime = data.timestamp || 0;
           const now = Date.now();
-          if (now - cacheTime < 5 * 60 * 1000) {
+          // Cache for 2 minutes (categories don't change often)
+          if (now - cacheTime < 2 * 60 * 1000) {
             return data.categories || [];
           }
         } catch (e) {
@@ -76,8 +79,14 @@ export default function FreeCoursesPage() {
   });
   const [offset, setOffset] = useState(0);
   const limit = 12;
+  const lastInitParamsString = useRef<string | null>(null);
 
   useEffect(() => {
+    // Avoid re-running initialization if query string didn't actually change.
+    // (useSearchParams can produce a new object identity on rerenders)
+    if (lastInitParamsString.current === searchParamsString) return;
+    lastInitParamsString.current = searchParamsString;
+
     // Initialize filters from URL (deep link support)
     const urlSearch = searchParams.get("search") || "";
     const urlCategory = searchParams.get("category") || "all";
@@ -141,7 +150,7 @@ export default function FreeCoursesPage() {
       fetchEnrollments();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParamsString, user]);
 
   useEffect(() => {
     // Skip if initial load hasn't completed yet
@@ -178,7 +187,12 @@ export default function FreeCoursesPage() {
     }
 
     const qs = params.toString();
-    router.replace(qs ? `/free-courses?${qs}` : "/free-courses");
+    const nextUrl = qs ? `/free-courses?${qs}` : "/free-courses";
+    if (typeof window !== "undefined") {
+      const currentUrl = `${window.location.pathname}${window.location.search}`;
+      if (currentUrl === nextUrl) return;
+    }
+    router.replace(nextUrl, { scroll: false });
   };
 
   const fetchCategories = async () => {
@@ -384,76 +398,90 @@ export default function FreeCoursesPage() {
 
   return (
     <>
-      <div className="bg-muted/30 py-8 sm:py-10 md:py-12 border-b border-border">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-            <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Free Courses</h1>
+      <div className="bg-gradient-to-br from-primary/20 via-background to-background py-10 sm:py-14 md:py-16 border-b border-border">
+        <div className="container max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <BookOpen className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary" />
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-google-sans">Courses</h1>
           </div>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-3xl leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-4xl leading-relaxed font-google-sans">
             Step-by-step guides and free courses to help you learn new technologies, frameworks, and best practices. 
             From beginner-friendly introductions to advanced techniques.
           </p>
         </div>
       </div>
 
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-10">
-        <Card className="mb-6 sm:mb-8 border-amber-500/30 dark:border-amber-400/40 bg-gradient-to-br from-amber-50/80 via-amber-50/40 to-transparent dark:from-amber-950/40 dark:via-amber-950/20 dark:to-transparent shadow-sm">
-          <CardContent className="p-4 sm:p-5 md:p-6">
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="flex-shrink-0 mt-0.5">
-                <div className="rounded-full bg-amber-100 dark:bg-amber-900/50 p-1.5 sm:p-2">
-                  <svg className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 md:py-12">
+        <Card className="mb-8 sm:mb-10 border-amber-500/30 dark:border-amber-400/40 bg-gradient-to-br from-amber-50/80 via-amber-50/40 to-transparent dark:from-amber-950/40 dark:via-amber-950/20 dark:to-transparent shadow-lg">
+          <CardContent className="p-4 sm:p-6">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setIsDisclaimerOpen(!isDisclaimerOpen);
+              }}
+              type="button"
+              className="w-full flex items-center justify-between gap-4 text-left hover:opacity-80 transition-opacity"
+            >
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="flex-shrink-0">
+                  <div className="rounded-full bg-amber-100 dark:bg-amber-900/50 p-2 sm:p-3">
+                    <svg className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
                 </div>
+                <h3 className="font-semibold text-amber-900 dark:text-amber-100 text-base sm:text-lg font-google-sans">Free Courses Disclaimer</h3>
               </div>
-              <div className="flex-1 space-y-2 sm:space-y-3">
-                <h3 className="font-semibold text-amber-900 dark:text-amber-100 text-base sm:text-lg">Free Courses Disclaimer</h3>
-                <div className="text-xs sm:text-sm text-amber-800/90 dark:text-amber-200/90 space-y-1.5 sm:space-y-2 leading-relaxed">
-                  <p>
-                    All free courses on CodeCraft Academy may include embedded educational resources from third-party
-                    platforms, such as YouTube.
-                  </p>
-                  <p>These materials are used strictly for learning and reference purposes.</p>
-                  <p>
-                    CodeCraft Academy does not own any third-party video content and does not claim authorship of such
-                    materials.
-                  </p>
-                  <p>
-                    All rights remain with the original creators, and proper attribution is provided where applicable.
-                  </p>
-                  <p>
-                    If you are a content owner and believe any material has been used inappropriately, please{" "}
-                    <a 
-                      href="/contact" 
-                      className="text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 underline font-medium transition-colors"
-                    >
-                      contact us
-                    </a>
-                    {" "}for prompt review or removal.
-                  </p>
-                </div>
+              {isDisclaimerOpen ? (
+                <ChevronUp className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+              )}
+            </button>
+            {isDisclaimerOpen && (
+              <div className="mt-4 pl-11 sm:pl-14 text-sm text-amber-800/90 dark:text-amber-200/90 space-y-2 leading-relaxed font-google-sans">
+                <p>
+                  All free courses on CodeCraft Academy may include embedded educational resources from third-party
+                  platforms, such as YouTube.
+                </p>
+                <p>These materials are used strictly for learning and reference purposes.</p>
+                <p>
+                  CodeCraft Academy does not own any third-party video content and does not claim authorship of such
+                  materials.
+                </p>
+                <p>
+                  All rights remain with the original creators, and proper attribution is provided where applicable.
+                </p>
+                <p>
+                  If you are a content owner and believe any material has been used inappropriately, please{" "}
+                  <a 
+                    href="/contact" 
+                    className="text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 underline font-medium transition-colors"
+                  >
+                    contact us
+                  </a>
+                  {" "}for prompt review or removal.
+                </p>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Search and Filters */}
-        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="mb-8 sm:mb-10 flex flex-col sm:flex-row gap-4 sm:gap-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search courses..."
-              className="pl-10 h-10 sm:h-11"
+              className="pl-12 h-12 sm:h-14 text-base font-google-sans border-2 border-border/50 hover:border-primary/30 focus:border-primary transition-colors duration-300"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full sm:w-[180px] h-10 sm:h-11">
-              <Filter className="h-4 w-4 mr-2" />
+            <SelectTrigger className="w-full sm:w-[200px] h-12 sm:h-14 text-base font-google-sans border-2 border-border/50 hover:border-primary/30 focus:border-primary transition-colors duration-300">
+              <Filter className="h-5 w-5 mr-3" />
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
@@ -466,7 +494,7 @@ export default function FreeCoursesPage() {
             </SelectContent>
           </Select>
           <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
-            <SelectTrigger className="w-full sm:w-[180px] h-10 sm:h-11">
+            <SelectTrigger className="w-full sm:w-[200px] h-12 sm:h-14 text-base font-google-sans border-2 border-border/50 hover:border-primary/30 focus:border-primary transition-colors duration-300">
               <SelectValue placeholder="All Levels" />
             </SelectTrigger>
             <SelectContent>
@@ -478,7 +506,7 @@ export default function FreeCoursesPage() {
           </Select>
 
           <Select value={selectedSort} onValueChange={setSelectedSort}>
-            <SelectTrigger className="w-full sm:w-[180px] h-10 sm:h-11">
+            <SelectTrigger className="w-full sm:w-[200px] h-12 sm:h-14 text-base font-google-sans border-2 border-border/50 hover:border-primary/30 focus:border-primary transition-colors duration-300">
               <SelectValue placeholder="Sort" />
             </SelectTrigger>
             <SelectContent>
@@ -490,7 +518,7 @@ export default function FreeCoursesPage() {
           </Select>
 
           <Select value={selectedDuration} onValueChange={setSelectedDuration}>
-            <SelectTrigger className="w-full sm:w-[180px] h-10 sm:h-11">
+            <SelectTrigger className="w-full sm:w-[200px] h-12 sm:h-14 text-base font-google-sans border-2 border-border/50 hover:border-primary/30 focus:border-primary transition-colors duration-300">
               <SelectValue placeholder="Duration" />
             </SelectTrigger>
             <SelectContent>
@@ -502,7 +530,7 @@ export default function FreeCoursesPage() {
           </Select>
 
           <Select value={selectedMinRating} onValueChange={setSelectedMinRating}>
-            <SelectTrigger className="w-full sm:w-[180px] h-10 sm:h-11">
+            <SelectTrigger className="w-full sm:w-[200px] h-12 sm:h-14 text-base font-google-sans border-2 border-border/50 hover:border-primary/30 focus:border-primary transition-colors duration-300">
               <SelectValue placeholder="Rating" />
             </SelectTrigger>
             <SelectContent>
@@ -514,8 +542,8 @@ export default function FreeCoursesPage() {
           </Select>
 
           {hasActiveFilters && (
-            <Button variant="outline" onClick={clearFilters} className="gap-2 w-full sm:w-auto h-10 sm:h-11">
-              <X className="h-4 w-4" />
+            <Button variant="outline" onClick={clearFilters} className="gap-3 w-full sm:w-auto h-12 sm:h-14 text-base font-google-sans font-medium border-2 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300">
+              <X className="h-5 w-5" />
               Clear
             </Button>
           )}
@@ -530,10 +558,10 @@ export default function FreeCoursesPage() {
               </div>
             ) : courses.length > 0 ? (
               <>
-                <div className="mb-4 sm:mb-5 text-xs sm:text-sm text-muted-foreground">
+                <div className="mb-6 text-sm text-muted-foreground font-google-sans">
                   Showing {courses.length} of {total} course{total !== 1 ? "s" : ""}
                 </div>
-                <div className="grid sm:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
+                <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
                   {courses.map((course) => (
                     <CourseCard
                       key={course.id}
@@ -558,16 +586,16 @@ export default function FreeCoursesPage() {
                 )}
               </>
             ) : (
-              <div className="text-center py-12 sm:py-16 text-muted-foreground">
-                <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-base sm:text-lg font-medium mb-2">No courses found</p>
-                <p className="text-xs sm:text-sm mb-4">
+              <div className="text-center py-16 sm:py-20 text-muted-foreground">
+                <BookOpen className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-6 opacity-50" />
+                <p className="text-lg sm:text-xl font-medium mb-3 font-google-sans">No courses found</p>
+                <p className="text-sm sm:text-base mb-6 font-google-sans">
                   {hasActiveFilters
                     ? "Try adjusting your filters"
                     : "Check back soon for new free courses!"}
                 </p>
                 {hasActiveFilters && (
-                  <Button variant="outline" onClick={clearFilters} className="w-full sm:w-auto">
+                  <Button variant="outline" onClick={clearFilters} className="w-full sm:w-auto h-12 text-base font-google-sans font-medium border-2 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300">
                     Clear Filters
                   </Button>
                 )}
@@ -576,7 +604,24 @@ export default function FreeCoursesPage() {
           </div>
 
           <aside className="lg:col-span-4">
-            <Sidebar />
+            <div className="space-y-6">
+              <Card className="shadow-none">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg font-google-sans">Quick Links</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button variant="outline" className="w-full justify-start h-10 text-sm font-google-sans" asChild>
+                    <Link href="/free-courses">Courses</Link>
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start h-10 text-sm font-google-sans" asChild>
+                    <Link href="/reviews">Reviews</Link>
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start h-10 text-sm font-google-sans" asChild>
+                    <Link href="/career">Career</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </aside>
         </div>
       </div>

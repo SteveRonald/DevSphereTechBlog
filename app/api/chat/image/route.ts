@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check authentication
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     const {
       data: { user },
     } = await supabase.auth.getUser();

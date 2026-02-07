@@ -4,7 +4,7 @@ import { createServerClient } from "@/lib/supabase-server";
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const courseId = params.id;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;

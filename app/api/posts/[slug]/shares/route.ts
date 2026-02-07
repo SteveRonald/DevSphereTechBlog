@@ -7,7 +7,7 @@ export async function POST(
 ) {
   try {
     const { slug } = await params;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     
     const body = await request.json();
     const { platform } = body; // 'twitter', 'facebook', 'linkedin', 'copy', etc.
@@ -86,7 +86,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     
     // Get total shares count
     const { count, error: countError } = await supabase

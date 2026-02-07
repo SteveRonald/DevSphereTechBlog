@@ -20,7 +20,7 @@ const normalizeUrls = (value: any): string[] => {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     const authHeader = request.headers.get("authorization");
     const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;

@@ -2,7 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   BookOpen, 
   Code, 
-  Users
+  Users,
+  Rocket,
+  DollarSign
 } from "lucide-react";
 
 interface Feature {
@@ -13,19 +15,24 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    icon: <BookOpen className="h-6 w-6" />,
-    title: "Free Short Courses",
-    description: "Structured lessons designed for busy learners — learn fast, stay consistent, and build real momentum.",
+    icon: <Users className="h-6 w-6" />,
+    title: "Beginner-friendly",
+    description: "Clear steps from zero",
+  },
+  {
+    icon: <Rocket className="h-6 w-6" />,
+    title: "Short and practical",
+    description: "Learn in minutes",
   },
   {
     icon: <Code className="h-6 w-6" />,
-    title: "Practical, Real Examples",
-    description: "Hands-on explanations and code you can copy, run, and understand — focused on skills that matter.",
+    title: "Project-based",
+    description: "Build real skills",
   },
   {
-    icon: <Users className="h-6 w-6" />,
-    title: "Built for Beginners",
-    description: "Clear steps, simple language, and guided progression — perfect if you’re not sure where to start.",
+    icon: <DollarSign className="h-6 w-6" />,
+    title: "Free to start",
+    description: "No paywalls",
   },
 ];
 
@@ -42,19 +49,19 @@ export function WhyChooseUs() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 max-w-6xl mx-auto">
           {features.map((feature, index) => (
-            <Card key={index} className="border-border hover:shadow-md transition-shadow">
+            <Card key={index} className="border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-md transition-shadow">
               <CardHeader className="p-5 sm:p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
                     {feature.icon}
                   </div>
-                  <CardTitle className="text-base sm:text-lg md:text-xl">{feature.title}</CardTitle>
                 </div>
+                <CardTitle className="text-base sm:text-lg text-center">{feature.title}</CardTitle>
               </CardHeader>
               <CardContent className="p-5 sm:p-6 pt-0">
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                <p className="text-sm text-muted-foreground text-center leading-relaxed">
                   {feature.description}
                 </p>
               </CardContent>

@@ -7,7 +7,7 @@ export const revalidate = 5;
 // GET: Fetch published courses with optional filters
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     const { searchParams } = new URL(request.url);
     
     const category = searchParams.get("category");

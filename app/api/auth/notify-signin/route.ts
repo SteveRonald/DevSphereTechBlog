@@ -44,7 +44,7 @@ export async function POST(request: Request) {
                       "Desktop";
 
     // Check if this is a new device/location
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { data: profile } = await supabase
       .from("user_profiles")
       .select("last_device, last_ip, last_signin_at")

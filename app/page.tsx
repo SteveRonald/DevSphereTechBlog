@@ -1,10 +1,7 @@
-import { Layout } from "@/components/layout/Layout";
 import { PostCard } from "@/components/blog/PostCard";
-import { Sidebar } from "@/components/blog/Sidebar";
+import { SidebarMinimal } from "@/components/blog/SidebarMinimal";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Rocket, Sparkles } from "lucide-react";
-import { sanityClient } from "@/lib/sanity";
-import { featuredPostsQuery, recentPostsQuery, categoriesQuery } from "@/lib/sanity.queries";
+import { ArrowRight, BookOpen, Users, Award, Rocket, TrendingUp, Target, Zap, Search, Sparkles } from "lucide-react";
 import type { Post } from "@/components/blog/PostCard";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -15,10 +12,37 @@ import { Testimonials } from "@/components/home/Testimonials";
 import { WhyChooseUs } from "@/components/home/WhyChooseUs";
 import { createServerClient } from "@/lib/supabase-server";
 import { CourseCard } from "@/components/courses/CourseCard";
+import { Input } from "@/components/ui/input";
 
 async function getFeaturedPosts(): Promise<Post[]> {
   try {
-    const posts = await sanityClient.fetch<Post[]>(featuredPostsQuery);
+    const supabase = await createServerClient(undefined);
+    const { data: posts } = await supabase
+      .from("blog_posts")
+      .select(`
+        id,
+        title,
+        slug,
+        excerpt,
+        main_image_url,
+        published_at,
+        read_time,
+        featured,
+        blog_categories (
+          id,
+          title,
+          slug
+        ),
+        blog_authors (
+          name,
+          role
+        )
+      `)
+      .eq("published", true)
+      .eq("featured", true)
+      .order("published_at", { ascending: false })
+      .limit(3);
+
     return posts || [];
   } catch (error) {
     console.error("Error fetching featured posts:", error);
@@ -28,7 +52,31 @@ async function getFeaturedPosts(): Promise<Post[]> {
 
 async function getRecentPosts(): Promise<Post[]> {
   try {
-    const posts = await sanityClient.fetch<Post[]>(recentPostsQuery);
+    const supabase = await createServerClient(undefined);
+    const { data: posts } = await supabase
+      .from("blog_posts")
+      .select(`
+        id,
+        title,
+        slug,
+        excerpt,
+        main_image_url,
+        published_at,
+        read_time,
+        blog_categories (
+          id,
+          title,
+          slug
+        ),
+        blog_authors (
+          name,
+          role
+        )
+      `)
+      .eq("published", true)
+      .order("published_at", { ascending: false })
+      .limit(6);
+
     return posts || [];
   } catch (error) {
     console.error("Error fetching recent posts:", error);
@@ -38,7 +86,12 @@ async function getRecentPosts(): Promise<Post[]> {
 
 async function getCategories() {
   try {
-    const categories = await sanityClient.fetch(categoriesQuery);
+    const supabase = await createServerClient(undefined);
+    const { data: categories } = await supabase
+      .from("blog_categories")
+      .select("id, title, slug")
+      .order("title", { ascending: true });
+
     return categories || [];
   } catch (error) {
     console.error("Error fetching categories:", error);
@@ -48,7 +101,7 @@ async function getCategories() {
 
 async function getFeaturedCourses() {
   try {
-    const supabase = createServerClient(undefined);
+    const supabase = await createServerClient(undefined);
     const { data, error } = await supabase
       .from("courses")
       .select("*")
@@ -62,7 +115,11 @@ async function getFeaturedCourses() {
       return [];
     }
 
-    return data || [];
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    return data;
   } catch (error) {
     console.error("Error fetching featured courses:", error);
     return [];
@@ -85,158 +142,226 @@ export default async function Home() {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-background pt-20 sm:pt-24 md:pt-32 pb-16 sm:pb-20 md:pb-24">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
-           <div className="absolute top-[-10%] right-[-5%] w-64 h-64 sm:w-96 sm:h-96 bg-primary/20 rounded-full blur-3xl opacity-50" />
-           <div className="absolute bottom-[-10%] left-[-10%] w-80 h-80 sm:w-[500px] sm:h-[500px] bg-secondary/20 rounded-full blur-3xl opacity-50" />
+      {/* Search Bar Above Hero */}
+      <section className="bg-background border-b border-border">
+        <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search courses, articles, and more..."
+                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    window.location.href = `/search?q=${encodeURIComponent(e.currentTarget.value)}`;
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Hero Section with Animation */}
+      <div className="relative bg-gradient-to-br from-primary/20 via-background to-background py-16 sm:py-20 md:py-24 border-b border-border overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-[-20%] right-[-10%] w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-60 animate-pulse" />
+          <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-secondary/10 rounded-full blur-3xl opacity-60 animate-pulse" style={{ animationDelay: "1s" }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent/5 rounded-full blur-2xl opacity-40" />
+          {/* Learning-themed background image */}
+          <div 
+            className="absolute inset-0 opacity-[0.3] bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: "url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80&auto=format&fit=crop')",
+              filter: "brightness(1.1) contrast(1.1)"
+            }}
+          />
         </div>
 
-        <div className="container max-w-5xl mx-auto relative z-10 px-4 sm:px-6 text-center">
-          <div className="mx-auto max-w-3xl space-y-6 sm:space-y-8">
-            <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-primary backdrop-blur-sm">
-              <Rocket className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-              <span>start your tech journey right now</span>
+        <div className="container max-w-6xl mx-auto relative z-10 px-4 sm:px-6">
+          <div className="text-center space-y-8 sm:space-y-10">
+            {/* Trust badge */}
+            <div className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 backdrop-blur-sm px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-medium text-primary shadow-lg">
+              <Rocket className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="font-google-sans font-medium">Join 5,000+ learners</span>
             </div>
-            <h1 className="font-extrabold tracking-tight leading-tight">
-              <span className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
-                Learn Modern Tech Skills with
-              </span>
-              <span className="block mt-2 sm:mt-3 md:mt-4 pl-0 sm:pl-6 md:pl-12 text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-gradient">
-                CodeCraft Academy
-              </span>
-            </h1>
-            <p className="mx-auto max-w-[600px] text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed px-2">
-              Free short courses and guided learning paths to help beginners build real tech skills — fast, practical, and beginner-friendly.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-2 sm:pt-4">
-              <Button size="lg" className="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base w-full sm:w-auto" asChild>
+            
+            {/* Main heading */}
+            <div className="space-y-4 sm:space-y-6">
+              <h1 className="font-extrabold tracking-tight leading-tight">
+                <span className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-google-sans font-bold">
+                  Learn Modern Tech Skills with
+                </span>
+                <span className="block mt-3 sm:mt-4 md:mt-6 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-google-sans font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                  CodeCraft Academy
+                </span>
+              </h1>
+              <p className="mx-auto max-w-3xl text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed font-google-sans font-normal px-4">
+                Short, practical lessons to help you build real skills. No hype. Just clear steps you can follow.
+              </p>
+            </div>
+            
+            {/* CTA buttons */}
+            <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 pt-4 sm:pt-6">
+              <Button size="lg" className="h-12 sm:h-14 px-7 sm:px-9 text-base font-google-sans font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105" asChild>
                 <Link href="/free-courses">
-                  Start Free Courses <ArrowRight className="ml-2 h-4 w-4" />
+                  Start Free Courses <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base w-full sm:w-auto" asChild>
+              <Button size="lg" variant="outline" className="h-12 sm:h-14 px-7 sm:px-9 text-base font-google-sans font-semibold border-2 hover:bg-accent/10 transition-all duration-300" asChild>
                 <Link href="/free-courses?difficulty=beginner">
                   View Beginner Roadmap
                 </Link>
               </Button>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground pt-2 sm:pt-4 px-4">
-              Start your journey in Internet, Python Programming, Web Development, or AI — no prior experience required.
-            </p>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Value Bar */}
-      <section className="container max-w-7xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16 md:pb-20">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-5 text-center">
-            <p className="text-sm sm:text-base font-semibold">Beginner-friendly</p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">Clear steps from zero</p>
+      <section className="container max-w-7xl mx-auto px-4 sm:px-6 pb-16 sm:pb-20 md:pb-24">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="group rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 sm:p-8 text-center hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 hover:shadow-lg">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+              <Rocket className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+            </div>
+            <p className="text-base sm:text-lg font-semibold font-google-sans">Beginner-friendly</p>
+            <p className="text-sm sm:text-base text-muted-foreground mt-2 font-google-sans">Clear steps from zero</p>
           </div>
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-5 text-center">
-            <p className="text-sm sm:text-base font-semibold">Short & practical</p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">Learn in minutes</p>
+          <div className="group rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 sm:p-8 text-center hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 hover:shadow-lg">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 rounded-full bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors">
+              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-secondary" />
+            </div>
+            <p className="text-base sm:text-lg font-semibold font-google-sans">Short & practical</p>
+            <p className="text-sm sm:text-base text-muted-foreground mt-2 font-google-sans">Learn in minutes</p>
           </div>
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-5 text-center">
-            <p className="text-sm sm:text-base font-semibold">Project-based</p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">Build real skills</p>
+          <div className="group rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 sm:p-8 text-center hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 hover:shadow-lg">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+              <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
+            </div>
+            <p className="text-base sm:text-lg font-semibold font-google-sans">Project-based</p>
+            <p className="text-sm sm:text-base text-muted-foreground mt-2 font-google-sans">Build real skills</p>
           </div>
-          <div className="rounded-lg border border-border bg-card p-4 sm:p-5 text-center">
-            <p className="text-sm sm:text-base font-semibold">Free to start</p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">No paywalls</p>
+          <div className="group rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 sm:p-8 text-center hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 hover:shadow-lg">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 rounded-full bg-green-500/10 flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
+              <span className="text-green-600 font-bold text-base sm:text-lg font-google-sans">$0</span>
+            </div>
+            <p className="text-base sm:text-lg font-semibold font-google-sans">Free to start</p>
+            <p className="text-sm sm:text-base text-muted-foreground mt-2 font-google-sans">No paywalls</p>
           </div>
         </div>
       </section>
 
       {/* Featured Courses */}
-      <section className="container max-w-7xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16 md:pb-20">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 md:mb-10">
-          <div className="space-y-2">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Start Learning With These Free Courses</h2>
-            <p className="text-sm sm:text-base text-muted-foreground">Choose a short, structured course and build skills step-by-step.</p>
+      <section className="container max-w-7xl mx-auto px-4 sm:px-6 pb-16 sm:pb-20 md:pb-24">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 mb-8 sm:mb-10 md:mb-12">
+          <div className="space-y-3">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight font-google-sans">Start Learning With These Free Courses</h2>
+            <p className="text-base sm:text-lg text-muted-foreground font-google-sans max-w-2xl">Choose a short, structured course and build skills step-by-step.</p>
           </div>
-          <Button variant="outline" className="w-full sm:w-auto" asChild>
+          <Button variant="outline" className="w-full sm:w-auto h-12 px-6 font-google-sans font-semibold border-2 hover:bg-primary/5 transition-all duration-300" asChild>
             <Link href="/free-courses">Browse All Courses</Link>
           </Button>
         </div>
 
         {featuredCourses.length > 0 ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-10">
             {featuredCourses.map((course: any) => (
               <CourseCard key={course.id} course={course} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 sm:py-16 text-muted-foreground">
-            <p className="text-sm sm:text-base">No courses published yet. Add your first course in the admin dashboard.</p>
+          <div className="text-center py-16 sm:py-20 text-muted-foreground">
+            <p className="text-base sm:text-lg font-google-sans">No courses published yet. Add your first course in the admin dashboard.</p>
           </div>
         )}
       </section>
 
-      {/* Course Categories */}
-      <section id="course-categories" className="container max-w-7xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16 md:pb-20">
-        <div className="text-center mb-6 sm:mb-8 md:mb-10">
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-3 sm:mb-4">Explore by Category</h2>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto px-4">
-            Pick a track and start learning in minutes.
+      {/* Trust Indicators Section */}
+      <section className="container max-w-7xl mx-auto px-4 sm:px-6 pb-16 sm:pb-20 md:pb-24">
+        <div className="text-center mb-8 sm:mb-10 md:mb-12">
+          <div className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 backdrop-blur-sm px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-medium text-primary shadow-lg mb-4">
+            <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="font-google-sans font-medium">TRUSTED BY LEARNERS WORLDWIDE</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-3 sm:mb-4 font-google-sans">Why Choose CodeCraft Academy</h2>
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto font-google-sans">
+            Join thousands of learners who have already started their tech journey with us.
           </p>
         </div>
 
-        {featuredCourses.length > 0 ? (
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 px-4">
-            {(() => {
-              const categories = featuredCourses
-                .map((c: any) => (typeof c?.category === "string" ? c.category.trim() : ""))
-                .filter((c: string) => c.length > 0);
-              const uniqueCategories = Array.from(new Set<string>(categories));
-
-              return uniqueCategories.map((category) => (
-              <Button key={category} variant="outline" size="sm" asChild className="hover:scale-105 transition-transform duration-200 text-xs sm:text-sm">
-                <Link href={`/free-courses?category=${encodeURIComponent(category)}`}>{category}</Link>
-              </Button>
-              ));
-            })()}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+          <div className="text-center group">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <span className="text-xl sm:text-2xl font-bold text-primary font-google-sans">5K+</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold mb-2 font-google-sans">Active Learners</h3>
+            <p className="text-sm text-muted-foreground font-google-sans">Students actively learning and growing</p>
           </div>
-        ) : (
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/free-courses">Browse Courses</Link>
-            </Button>
+          
+          <div className="text-center group">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <span className="text-xl sm:text-2xl font-bold text-secondary font-google-sans">25+</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold mb-2 font-google-sans">Free Courses</h3>
+            <p className="text-sm text-muted-foreground font-google-sans">Comprehensive courses covering modern tech</p>
           </div>
-        )}
+          
+          <div className="text-center group">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <span className="text-xl sm:text-2xl font-bold text-accent font-google-sans">4.8</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold mb-2 font-google-sans">Average Rating</h3>
+            <p className="text-sm text-muted-foreground font-google-sans">Highly rated by our community</p>
+          </div>
+          
+          <div className="text-center group">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-green-500/20 to-green-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <span className="text-xl sm:text-2xl font-bold text-green-600 font-google-sans">100%</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold mb-2 font-google-sans">Free to Start</h3>
+            <p className="text-sm text-muted-foreground font-google-sans">No credit card required</p>
+          </div>
+        </div>
       </section>
 
       {/* How It Works */}
-      <section className="container max-w-7xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16 md:pb-20">
-        <div className="text-center mb-6 sm:mb-8 md:mb-10">
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-3 sm:mb-4">How Learning Works</h2>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto px-4">
+      <section className="container max-w-7xl mx-auto px-4 sm:px-6 pb-16 sm:pb-20 md:pb-24">
+        <div className="text-center mb-8 sm:mb-10 md:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-3 sm:mb-4 font-google-sans">How Learning Works</h2>
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4 font-google-sans">
             A simple flow that keeps you moving and building confidence.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6 max-w-5xl mx-auto">
-          <div className="rounded-lg border border-border bg-card p-5 sm:p-6">
-            <p className="text-xs sm:text-sm font-semibold text-primary mb-2 sm:mb-3">Step 1</p>
-            <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">Pick a Course</h3>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Choose a beginner-friendly course and enroll for free.</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10 max-w-6xl mx-auto">
+          <div className="group text-center">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
+              <span className="text-xl sm:text-2xl font-bold text-primary font-google-sans">1</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-semibold mb-4 font-google-sans">Pick a Course</h3>
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-google-sans">Choose a beginner-friendly course and enroll for free.</p>
           </div>
-          <div className="rounded-lg border border-border bg-card p-5 sm:p-6">
-            <p className="text-xs sm:text-sm font-semibold text-primary mb-2 sm:mb-3">Step 2</p>
-            <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">Learn by Doing</h3>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Short lessons, videos, quizzes, and mini projects that unlock step-by-step.</p>
+          <div className="group text-center">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-6 rounded-full bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors duration-300">
+              <span className="text-xl sm:text-2xl font-bold text-secondary font-google-sans">2</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-semibold mb-4 font-google-sans">Learn by Doing</h3>
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-google-sans">Short lessons, videos, quizzes, and mini projects that unlock step-by-step.</p>
           </div>
-          <div className="rounded-lg border border-border bg-card p-5 sm:p-6">
-            <p className="text-xs sm:text-sm font-semibold text-primary mb-2 sm:mb-3">Step 3</p>
-            <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">Build Skills & Momentum</h3>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">Track progress and keep improving with new courses and tutorials.</p>
+          <div className="group text-center">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-6 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors duration-300">
+              <span className="text-xl sm:text-2xl font-bold text-accent font-google-sans">3</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-semibold mb-4 font-google-sans">Build Skills & Momentum</h3>
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-google-sans">Track progress and keep improving with new courses and tutorials.</p>
           </div>
         </div>
 
-        <div className="mt-8 sm:mt-10 flex justify-center">
-          <Button size="lg" className="w-full sm:w-auto" asChild>
+        <div className="mt-10 sm:mt-12 flex justify-center">
+          <Button size="lg" className="h-12 sm:h-14 px-7 sm:px-9 text-base font-google-sans font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105" asChild>
             <Link href="/free-courses">Start Learning Now</Link>
           </Button>
         </div>
@@ -257,12 +382,23 @@ export default async function Home() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10">
           {/* Main Feed */}
-          <div className="lg:col-span-8" id="blog-categories">
+          <div className="lg:col-span-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">From the Knowledge Base</h2>
-              <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 w-full sm:w-auto" asChild>
-                <Link href="/blog">View all</Link>
-              </Button>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight font-google-sans">From the Knowledge Base</h2>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <form action="/blog" method="get" className="relative flex-1 sm:flex-initial">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    name="search"
+                    type="search"
+                    placeholder="Search articles..."
+                    className="pl-10 h-10 text-sm border-2 border-border/50 hover:border-primary/30 focus:border-primary transition-colors duration-300"
+                  />
+                </form>
+                <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 whitespace-nowrap" asChild>
+                  <Link href="/blog">View all</Link>
+                </Button>
+              </div>
             </div>
             
             {latestPosts.length > 0 ? (
@@ -271,12 +407,12 @@ export default async function Home() {
               </Suspense>
             ) : (
               <div className="text-center py-12 sm:py-16 text-muted-foreground">
-                <p className="text-sm sm:text-base">No posts yet. Check back soon!</p>
+                <p className="text-sm sm:text-base font-google-sans">No posts yet. Check back soon!</p>
               </div>
             )}
 
             <div className="mt-8 sm:mt-10 flex justify-center">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto" asChild>
+              <Button variant="outline" size="lg" className="w-full sm:w-auto h-12 text-base font-google-sans font-medium border-2 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300" asChild>
                 <Link href="/blog">View All Posts</Link>
               </Button>
             </div>
@@ -284,73 +420,10 @@ export default async function Home() {
 
           {/* Sidebar */}
           <aside className="lg:col-span-4">
-            <Sidebar />
+            <SidebarMinimal />
           </aside>
         </div>
       </section>
-
-      {/* Final CTA */}
-      <section className="container max-w-7xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16 md:pb-20">
-        <div className="rounded-2xl border border-border bg-muted/30 p-6 sm:p-8 md:p-10 text-center">
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-3 sm:mb-4">Start Learning Today — It's Free</h2>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed px-2">
-            No long courses. No fluff. Just practical, hands-on tech learning made simple for beginners.
-          </p>
-          <div className="mt-6 sm:mt-8 flex justify-center">
-            <Button size="lg" className="w-full sm:w-auto" asChild>
-              <Link href="/free-courses">Start Free Courses</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* About CodeCraft Academy Section - For Google OAuth Verification */}
-      <section className="relative overflow-hidden bg-muted/30 py-12 sm:py-16 md:py-20">
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-          <div className="absolute top-0 right-0 w-64 h-64 sm:w-96 sm:h-96 bg-primary/10 rounded-full blur-3xl opacity-50" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 sm:w-96 sm:h-96 bg-secondary/10 rounded-full blur-3xl opacity-50" />
-        </div>
-        <div className="container max-w-5xl mx-auto px-4 sm:px-6 relative z-10">
-          <div className="text-center mb-6 sm:mb-8">
-            <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs sm:text-sm font-medium text-primary backdrop-blur-sm mb-3 sm:mb-4">
-              <Sparkles className="mr-2 h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              <span>About Us</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 sm:mb-6">
-              About <span className="text-gradient">CodeCraft Academy</span>
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-center">
-            <div className="space-y-4 text-left">
-              <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">CodeCraft Academy</strong> is a beginner-focused tech learning platform built around free short courses, guided learning paths, and practical tutorials.
-              </p>
-              <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
-                Learn step-by-step with structured lessons, quizzes, and real examples — plus a knowledge base of tutorials, reviews, and snippets that support what you're learning.
-              </p>
-            </div>
-            <div className="space-y-4 text-left">
-              <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
-                Our mission is to make quality tech education accessible and practical — especially for beginners who want a clear path from zero to real skills.
-              </p>
-              <div className="flex flex-wrap gap-2 pt-2">
-                <span className="px-2 py-1 sm:px-3 sm:py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium">Web Development</span>
-                <span className="px-2 py-1 sm:px-3 sm:py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium">Free Courses</span>
-                <span className="px-2 py-1 sm:px-3 sm:py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium">Career Advice</span>
-                <span className="px-2 py-1 sm:px-3 sm:py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium">AI & ML</span>
-              </div>
-            </div>
-          </div>
-          <div className="mt-6 sm:mt-8 text-center">
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link> | <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us Section */}
-      <WhyChooseUs />
 
       {/* Testimonials Section */}
       <Testimonials />

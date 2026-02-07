@@ -1,8 +1,10 @@
-import { Sidebar } from "@/components/blog/Sidebar";
+import { SidebarMinimal } from "@/components/blog/SidebarMinimal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Github, Twitter, Linkedin, Code, BookOpen, Zap, Target, Users, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Github, Twitter, Linkedin, Code, BookOpen, Zap, Target, Users, TrendingUp, Rocket, GraduationCap } from "lucide-react";
+import Link from "next/link";
 
 export default function About() {
   const team = [
@@ -31,9 +33,9 @@ export default function About() {
   ];
 
   const stats = [
-    { label: "Articles Published", value: "100+", icon: BookOpen},
-    { label: "Active Readers", value: "10K+", icon: Users },
-    { label: "Categories", value: "15+", icon: Code },
+    { label: "Articles Published", value: "50+", icon: BookOpen},
+    { label: "Active Readers", value: "5K+", icon: Users },
+    { label: "Categories", value: "8+", icon: Code },
   ];
 
   const values = [
@@ -87,82 +89,83 @@ export default function About() {
   return (
     <>
       {/* Hero Section with Animation */}
-      <div className="relative bg-gradient-to-br from-primary/20 via-background to-background py-20 md:py-32 border-b border-border overflow-hidden">
+      <div className="relative bg-gradient-to-br from-primary/20 via-background to-background py-16 sm:py-20 md:py-24 border-b border-border overflow-hidden">
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-        <div className="container max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+        <div className="container max-w-6xl mx-auto px-4 md:px-6 relative z-10">
           <div className="max-w-5xl mx-auto text-center space-y-8">
-            <Badge variant="secondary" className="mb-4 text-sm px-4 py-1.5">
-              <Target className="h-3 w-3 mr-2" />
+            <Badge variant="secondary" className="mb-6 text-sm px-6 py-2.5 font-google-sans font-medium shadow-lg">
+              <Target className="h-4 w-4 mr-2" />
               About Us
             </Badge>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight">
-              <span className="bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+              <span className="bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent font-google-sans">
                 About CodeCraft Academy
               </span>
             </h1>
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed px-4 font-google-sans">
               We are a community of developers dedicated to mastering modern tech skills through free courses and in-depth reviews.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Stats Section with Icons */}
-      <div className="container max-w-7xl mx-auto px-4 md:px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
+      {/* Stats Section */}
+      <section className="container max-w-7xl mx-auto px-4 md:px-6 py-12 sm:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <Card key={stat.label} className="text-center border-2 hover:border-primary/50 transition-colors">
+              <Card key={stat.label} className="text-center border-2 border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:scale-105 bg-card/50 backdrop-blur-sm">
                 <CardContent className="pt-8 pb-6">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                    <Icon className="h-8 w-8 text-primary" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 rounded-2xl bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors duration-300">
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-secondary" />
                   </div>
-                  <div className="text-4xl font-bold text-primary mb-2">{stat.value}</div>
-                  <div className="text-sm font-medium text-muted-foreground">{stat.label}</div>
+                  <div className="text-4xl font-bold text-primary mb-2 font-google-sans">{stat.value}</div>
+                  <div className="text-base font-medium text-muted-foreground font-google-sans">{stat.label}</div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
+      </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-7xl mx-auto">
+      {/* Main Content with Sidebar */}
+      <section className="container max-w-7xl mx-auto px-4 md:px-6 pb-16 sm:pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-12">
           <div className="lg:col-span-8 space-y-16">
             {/* Mission Section */}
-            <section className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-1 w-12 bg-primary"></div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Our Mission</h2>
+            <section className="space-y-8">
+              <div className="flex items-center gap-4 mb-8">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight font-google-sans">Our Mission</h2>
               </div>
-              <div className="prose prose-slate dark:prose-invert max-w-none space-y-6">
-                <p className="text-lg text-muted-foreground leading-relaxed">
+              <div className="prose prose-slate dark:prose-invert max-w-none space-y-8">
+                <p className="text-lg text-muted-foreground leading-relaxed font-google-sans">
                   The tech landscape is evolving faster than ever. At <strong className="text-foreground">CodeCraft Academy</strong>, our mission is to cut through the noise and provide high-quality, actionable educational content that helps you advance your career.
                 </p>
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-lg text-muted-foreground leading-relaxed font-google-sans">
                   Whether you're just starting with HTML & CSS or you're an experienced engineer looking to integrate LLMs into your applications, we have resources for you.
                 </p>
               </div>
             </section>
 
             {/* What We Cover */}
-            <section className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-1 w-12 bg-primary"></div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">What We Cover</h2>
+            <section className="space-y-8">
+              <div className="flex items-center gap-4 mb-8">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight font-google-sans">What We Cover</h2>
               </div>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-8">
                 {topics.map((topic) => {
                   const Icon = topic.icon;
                   return (
-                    <Card key={topic.title} className={`bg-gradient-to-br ${topic.gradient} border-2 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]`}>
-                      <CardContent className="pt-6">
-                        <div className="flex items-start gap-4">
-                          <div className="p-3 rounded-lg bg-background/50">
-                            <Icon className="h-6 w-6 text-primary" />
+                    <Card key={topic.title} className={`bg-gradient-to-br ${topic.gradient} border-2 border-border/50 hover:shadow-xl transition-all duration-300 hover:scale-[1.03] hover:border-primary/30 bg-card/50 backdrop-blur-sm`}>
+                      <CardContent className="pt-8">
+                        <div className="flex items-start gap-6">
+                          <div className="p-4 rounded-2xl bg-background/70 hover:bg-primary/10 transition-colors duration-300">
+                            <Icon className="h-8 w-8 text-primary" />
                           </div>
                           <div className="flex-1">
-                            <h3 className="font-bold text-lg mb-2">{topic.title}</h3>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
+                            <h3 className="font-bold text-lg mb-2 font-google-sans">{topic.title}</h3>
+                            <p className="text-base text-muted-foreground leading-relaxed font-google-sans">
                               {topic.description}
                             </p>
                           </div>
@@ -175,23 +178,22 @@ export default function About() {
             </section>
 
             {/* Values */}
-            <section className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-1 w-12 bg-primary"></div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Our Values</h2>
+            <section className="space-y-8">
+              <div className="flex items-center gap-4 mb-8">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight font-google-sans">Our Values</h2>
               </div>
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid md:grid-cols-3 gap-8">
                 {values.map((value) => {
                   const Icon = value.icon;
                   return (
-                    <Card key={value.title} className="border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
-                      <CardContent className="pt-6">
-                        <div className="flex flex-col items-center text-center space-y-4">
-                          <div className={`p-4 rounded-full bg-primary/10 ${value.color}`}>
+                    <Card key={value.title} className="border-2 border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:scale-105 bg-card/50 backdrop-blur-sm">
+                      <CardContent className="pt-8">
+                        <div className="flex flex-col items-center text-center space-y-6">
+                          <div className={`p-5 rounded-2xl bg-primary/10 ${value.color} hover:bg-primary/20 transition-colors duration-300`}>
                             <Icon className="h-8 w-8" />
                           </div>
-                          <h3 className="font-bold text-lg">{value.title}</h3>
-                          <p className="text-sm text-muted-foreground leading-relaxed">
+                          <h3 className="font-bold text-lg font-google-sans">{value.title}</h3>
+                          <p className="text-base text-muted-foreground leading-relaxed font-google-sans">
                             {value.description}
                           </p>
                         </div>
@@ -203,41 +205,40 @@ export default function About() {
             </section>
 
             {/* Team Section */}
-            <section className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-1 w-12 bg-primary"></div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">Meet the Team</h2>
+            <section className="space-y-8">
+              <div className="flex items-center gap-4 mb-8">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight font-google-sans">Meet the Team</h2>
               </div>
-              <div className="grid md:grid-cols-2 gap-8">
+              <div className="grid md:grid-cols-2 gap-10">
                 {team.map((member) => (
-                  <Card key={member.name} className="overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
+                  <Card key={member.name} className="overflow-hidden border-2 border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:scale-105 bg-card/50 backdrop-blur-sm">
                     <CardContent className="p-8">
-                      <div className="flex flex-col items-center text-center space-y-6">
+                      <div className="flex flex-col items-center text-center space-y-8">
                         <div className="relative">
-                          <Avatar className="h-32 w-32 border-4 border-primary/20 shadow-lg">
+                          <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-2xl">
                             <AvatarImage src={member.avatar} className="object-cover" />
-                            <AvatarFallback className="text-3xl bg-primary/10">
+                            <AvatarFallback className="text-2xl bg-primary/10 font-google-sans font-bold">
                               {member.name.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-primary rounded-full border-4 border-background"></div>
+                          <div className="absolute -bottom-3 -right-3 w-10 h-10 bg-primary rounded-full border-4 border-background shadow-lg"></div>
                         </div>
-                        <div className="space-y-2">
-                          <h3 className="font-bold text-2xl">{member.name}</h3>
-                          <Badge variant="secondary" className="text-sm px-4 py-1">
+                        <div className="space-y-4">
+                          <h3 className="font-bold text-xl font-google-sans">{member.name}</h3>
+                          <Badge variant="secondary" className="text-base px-6 py-2 font-google-sans font-medium">
                             {member.role}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
+                        <p className="text-base text-muted-foreground max-w-md leading-relaxed font-google-sans">
                           {member.bio}
                         </p>
-                        <div className="flex gap-3 pt-2">
+                        <div className="flex gap-4 pt-4">
                           <a 
                             href={member.social.twitter} 
                             target="_blank" 
                             rel="noopener noreferrer" 
                             aria-label={`${member.name} on Twitter`}
-                            className="p-3 rounded-full hover:bg-accent transition-colors border border-border hover:border-primary"
+                            className="p-3 rounded-full hover:bg-accent transition-all duration-300 border border-border hover:border-primary hover:scale-110"
                           >
                             <Twitter className="h-5 w-5" />
                           </a>
@@ -246,7 +247,7 @@ export default function About() {
                             target="_blank" 
                             rel="noopener noreferrer" 
                             aria-label={`${member.name} on GitHub`}
-                            className="p-3 rounded-full hover:bg-accent transition-colors border border-border hover:border-primary"
+                            className="p-3 rounded-full hover:bg-accent transition-all duration-300 border border-border hover:border-primary hover:scale-110"
                           >
                             <Github className="h-5 w-5" />
                           </a>
@@ -255,7 +256,7 @@ export default function About() {
                             target="_blank" 
                             rel="noopener noreferrer" 
                             aria-label={`${member.name} on LinkedIn`}
-                            className="p-3 rounded-full hover:bg-accent transition-colors border border-border hover:border-primary"
+                            className="p-3 rounded-full hover:bg-accent transition-all duration-300 border border-border hover:border-primary hover:scale-110"
                           >
                             <Linkedin className="h-5 w-5" />
                           </a>
@@ -266,13 +267,61 @@ export default function About() {
                 ))}
               </div>
             </section>
+
+            {/* Call to Action Section */}
+            <section className="mt-20">
+              <Card className="overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-background to-secondary/10 backdrop-blur-sm">
+                <CardContent className="p-12 md:p-16 text-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
+                    <Rocket className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                  </div>
+                  <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent font-google-sans">
+                    Ready to Level Up Your Skills?
+                  </h2>
+                  <p className="text-xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed font-google-sans">
+                    Join thousands of developers learning modern web development, AI engineering, and career skills through our free courses and in-depth tutorials.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                    <Button size="lg" asChild className="w-full sm:w-auto min-w-[250px] h-14 text-base font-google-sans font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                      <Link href="/free-courses">
+                        <GraduationCap className="h-6 w-6 mr-3" />
+                        Browse Free Courses
+                      </Link>
+                    </Button>
+                    <Button size="lg" variant="outline" asChild className="w-full sm:w-auto min-w-[250px] h-14 text-base font-google-sans font-semibold border-2 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300">
+                      <Link href="/blog">
+                        <BookOpen className="h-6 w-6 mr-3" />
+                        Read Our Blog
+                      </Link>
+                    </Button>
+                  </div>
+                  <div className="mt-12 pt-12 border-t border-border/50">
+                    <div className="grid grid-cols-3 gap-6 max-w-md mx-auto">
+                      <div className="text-center">
+                        <div className="text-3xl md:text-4xl font-bold text-primary mb-2 font-google-sans">50+</div>
+                        <div className="text-sm md:text-base text-muted-foreground font-google-sans">Articles</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-3xl md:text-4xl font-bold text-primary mb-2 font-google-sans">5K+</div>
+                        <div className="text-sm md:text-base text-muted-foreground font-google-sans">Readers</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-3xl md:text-4xl font-bold text-primary mb-2 font-google-sans">Free</div>
+                        <div className="text-sm md:text-base text-muted-foreground font-google-sans">Always</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
           </div>
           
+          {/* Sidebar */}
           <aside className="lg:col-span-4">
-            <Sidebar />
+            <SidebarMinimal />
           </aside>
         </div>
-      </div>
+      </section>
     </>
   );
 }

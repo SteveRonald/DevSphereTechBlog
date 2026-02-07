@@ -9,7 +9,7 @@ export async function PUT(
   try {
     const { id } = params;
     const body = await request.json();
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     // Check admin
     const authHeader = request.headers.get("authorization");
@@ -109,7 +109,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = params;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     // Check admin
     const authHeader = request.headers.get("authorization");

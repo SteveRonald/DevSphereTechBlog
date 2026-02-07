@@ -10,7 +10,10 @@ import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { Analytics } from "@/components/analytics/GoogleAnalytics";
 import { Chatbot } from "@/components/chat/Chatbot";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "CodeCraft Academy - Master Modern Tech",
@@ -45,11 +48,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
+          forcedTheme="light"
           disableTransitionOnChange
         >
           <TooltipProvider>

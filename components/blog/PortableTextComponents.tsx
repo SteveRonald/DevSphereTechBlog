@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { urlFor } from "@/lib/sanity";
 import type { PortableTextComponents } from "@portabletext/react";
 
 export const portableTextComponents: PortableTextComponents = {
@@ -9,12 +8,17 @@ export const portableTextComponents: PortableTextComponents = {
         return null;
       }
       
-      const imageUrl = urlFor(value)
-        .width(800)
-        .height(600)
-        .fit("max")
-        .auto("format")
-        .url();
+      let imageUrl = value.asset.url || value.asset._ref || "";
+      
+      // Validate URL - if it's a Sanity asset reference without proper URL, use fallback
+      if (imageUrl && !imageUrl.startsWith('http://') && !imageUrl.startsWith('https://') && !imageUrl.startsWith('/')) {
+        console.warn('Invalid image URL format:', imageUrl);
+        imageUrl = "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070&auto=format&fit=crop";
+      }
+      
+      if (!imageUrl) {
+        return null;
+      }
       
       return (
         <div className="my-8">

@@ -39,6 +39,9 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+
+    --font-inter: var(--font-inter);
+    --font-google-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
   }
 
   .dark {
@@ -111,6 +114,11 @@
   
   .bg-gradient-primary {
     @apply bg-gradient-to-r from-primary to-secondary;
+  }
+
+  /* Google Sans font utility classes */
+  .font-google-sans {
+    font-family: var(--font-google-sans), system-ui, -apple-system, sans-serif;
   }
 
   /* Better container utilization */

@@ -1,9 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 
-export function createServerClient(request?: NextRequest) {
-  const cookieStore = cookies();
+export async function createServerClient(request?: NextRequest) {
+  // Dynamic import of cookies to avoid build-time issues
+  const { cookies } = await import("next/headers");
+  const cookieStore = await cookies();
   
   // Get access token from Authorization header if present
   let accessTokenFromHeader: string | undefined;

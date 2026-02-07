@@ -22,6 +22,11 @@ import {
   BarChart3,
   Settings,
   Users,
+  FileText,
+  FolderOpen,
+  Briefcase,
+  GraduationCap,
+  Star,
 } from "lucide-react";
 
 interface AdminShellProps {
@@ -56,26 +61,61 @@ export function AdminShell({
 
   const groups: NavGroup[] = [
     {
-      title: "Manage",
+      title: "Dashboard",
       items: [
         {
-          label: "Dashboard",
+          label: "Overview",
           href: "/admin-courses-management",
           icon: <LayoutDashboard className="h-4 w-4" />,
         },
         {
+          label: "Analytics",
+          href: "/admin-analytics",
+          icon: <BarChart3 className="h-4 w-4" />,
+        },
+      ],
+    },
+    {
+      title: "Content",
+      items: [
+        {
+          label: "Blog Posts",
+          href: "/admin-blog-management",
+          icon: <FileText className="h-4 w-4" />,
+        },
+        {
+          label: "Careers",
+          href: "/admin-career-management",
+          icon: <Briefcase className="h-4 w-4" />,
+        },
+        {
+          label: "Reviews",
+          href: "/admin-review-management",
+          icon: <Star className="h-4 w-4" />,
+        },
+        {
+          label: "Authors",
+          href: "/admin-author-management",
+          icon: <Users className="h-4 w-4" />,
+        },
+        {
+          label: "Categories",
+          href: "/admin-category-management",
+          icon: <FolderOpen className="h-4 w-4" />,
+        },
+      ],
+    },
+    {
+      title: "Courses",
+      items: [
+        {
           label: "Courses",
           href: "/admin-courses-management",
-          icon: <BookOpen className="h-4 w-4" />,
+          icon: <GraduationCap className="h-4 w-4" />,
         },
         {
           label: "Quiz Reviews",
           href: "/admin-quiz-reviews",
-          icon: <FileCheck className="h-4 w-4" />,
-        },
-        {
-          label: "Final Exam Reviews",
-          href: "/admin-final-exam-reviews",
           icon: <FileCheck className="h-4 w-4" />,
         },
         {
@@ -86,7 +126,7 @@ export function AdminShell({
       ],
     },
     {
-      title: "People",
+      title: "Users",
       items: [
         {
           label: "Users",
@@ -101,17 +141,12 @@ export function AdminShell({
       ],
     },
     {
-      title: "System",
+      title: "Settings",
       items: [
         {
           label: "Settings",
           href: "/admin-settings",
           icon: <Settings className="h-4 w-4" />,
-        },
-        {
-          label: "Analytics",
-          href: "/admin-analytics",
-          icon: <BarChart3 className="h-4 w-4" />,
         },
       ],
     },
@@ -138,8 +173,8 @@ export function AdminShell({
             <LayoutDashboard className="h-5 w-5 text-primary" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold truncate">Admin</p>
-            <p className="text-xs text-muted-foreground truncate">CodeCraft Academy</p>
+            <p className="text-sm font-semibold truncate font-google-sans">Admin</p>
+            <p className="text-xs text-muted-foreground truncate font-google-sans">CodeCraft Academy</p>
           </div>
         </div>
       </div>
@@ -149,7 +184,7 @@ export function AdminShell({
       <div className="flex-1 overflow-y-auto px-2 py-3">
         {groups.map((group) => (
           <div key={group.title} className="mb-4">
-            <p className="px-3 text-xs font-medium text-muted-foreground mb-2">
+            <p className="px-3 text-xs font-medium text-muted-foreground mb-2 font-google-sans">
               {group.title}
             </p>
             <div className="space-y-1">

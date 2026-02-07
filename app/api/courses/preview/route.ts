@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "slug is required" }, { status: 400 });
     }
 
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     const { data: course, error: courseError } = await supabase
       .from("courses")

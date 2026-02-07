@@ -39,7 +39,7 @@ interface Lesson {
 export const dynamic = 'force-dynamic';
 
 async function getCourse(slug: string): Promise<Course | null> {
-  const supabase = createServerClient(undefined);
+  const supabase = await createServerClient(undefined);
   
   // Fetch course data
   const { data: course, error } = await supabase
@@ -53,9 +53,6 @@ async function getCourse(slug: string): Promise<Course | null> {
     return null;
   }
 
-  // Use enrollment_count from courses table (same as course cards)
-  // This column is automatically updated by database trigger when enrollments are created/deleted
-  // This matches how course cards get their count, ensuring consistency
   return {
     ...course,
     enrollment_count: course.enrollment_count || 0,
@@ -63,7 +60,7 @@ async function getCourse(slug: string): Promise<Course | null> {
 }
 
 async function getLessons(courseId: string): Promise<Lesson[]> {
-  const supabase = createServerClient(undefined);
+  const supabase = await createServerClient(undefined);
   
   const { data: lessons, error } = await supabase
     .from("lessons")
@@ -95,7 +92,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
   const lessons = await getLessons(course.id);
 
   // Check if user is enrolled - always fetch fresh data (no cache)
-  const supabase = createServerClient(undefined);
+  const supabase = await createServerClient(undefined);
   let isEnrolled = false;
   try {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -206,74 +203,112 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
       {/* Course Content */}
       <div className="container max-w-7xl mx-auto px-4 md:px-6 py-8">
-        <div className="grid lg:grid-cols-12 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-8">
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold mb-4">Course Curriculum</h2>
-                <div className="space-y-2">
-                  {lessons.length > 0 ? (
-                    lessons.map((lesson: Lesson, index: number) => (
-                      <div
-                        key={lesson.id}
-                        className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex-shrink-0">
-                          {index === 0 ? (
-                            <PlayCircle className="h-5 w-5 text-primary" />
-                          ) : (
-                            <Lock className="h-5 w-5 text-muted-foreground" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-xs font-medium text-muted-foreground">
-                            Module {lesson.step_number}
-                          </p>
-                          <h3 className="font-semibold">{lesson.title}</h3>
-                          {lesson.description && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {lesson.description}
-                            </p>
-                          )}
-                        </div>
-                        {lesson.duration && (
-                          <div className="text-sm text-muted-foreground">
-                            {lesson.duration}m
-                          </div>
+          <div className="lg:col-span-2 space-y-8">
+            {/* About This Course */}
+            <section>
+              <h2 className="text-2xl font-bold mb-4 font-google-sans flex items-center gap-2">
+                <BookOpen className="h-6 w-6 text-primary" />
+                About This Course
+              </h2>
+              <div className="prose prose-slate dark:prose-invert max-w-none">
+                <p className="text-foreground/80 dark:text-foreground/90 leading-relaxed">
+                  {course.description || course.short_description || "This course will teach you essential skills and practical knowledge to advance your learning journey."}
+                </p>
+              </div>
+            </section>
+
+
+            {/* Course Content */}
+            <section>
+              <h2 className="text-2xl font-bold mb-4 font-google-sans flex items-center gap-2">
+                <PlayCircle className="h-6 w-6 text-primary" />
+                Course Content
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                {lessons.length} {lessons.length === 1 ? 'lesson' : 'lessons'} • {lessons.reduce((acc, l) => acc + (l.duration || 0), 0)} min total
+              </p>
+              <div className="space-y-2">
+                {lessons.length > 0 ? (
+                  lessons.map((lesson: Lesson, index: number) => (
+                    <div
+                      key={lesson.id}
+                      className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex-shrink-0">
+                        {index === 0 ? (
+                          <PlayCircle className="h-5 w-5 text-primary" />
+                        ) : (
+                          <Lock className="h-5 w-5 text-muted-foreground" />
                         )}
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>No lessons available yet. Check back soon!</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Day {lesson.step_number}
+                        </p>
+                        <h3 className="font-semibold text-foreground dark:text-foreground truncate">{lesson.title}</h3>
+                      </div>
+                      {lesson.duration && (
+                        <div className="text-sm text-muted-foreground flex items-center gap-1 flex-shrink-0">
+                          <Clock className="h-4 w-4" />
+                          {lesson.duration} min
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No lessons available yet. Check back soon!</p>
+                  </div>
+                )}
               </div>
-            </div>
+            </section>
+
+            {/* Requirements */}
+            <section>
+              <h2 className="text-2xl font-bold mb-4 font-google-sans">Requirements</h2>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2 text-sm text-foreground/80 dark:text-foreground/90">
+                  <span className="text-green-500 mt-1 flex-shrink-0">✓</span>
+                  <span>A smartphone, tablet, or computer</span>
+                </li>
+                <li className="flex items-start gap-2 text-sm text-foreground/80 dark:text-foreground/90">
+                  <span className="text-green-500 mt-1 flex-shrink-0">✓</span>
+                  <span>Stable internet connection</span>
+                </li>
+              </ul>
+            </section>
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-1">
             <div className="sticky top-20 space-y-6">
               <div className="border border-border rounded-lg p-6 bg-card">
-                <h3 className="font-semibold mb-4">What you'll learn</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">✓</span>
-                    <span>Master the fundamentals</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">✓</span>
-                    <span>Build real-world projects</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">✓</span>
-                    <span>Get hands-on experience</span>
-                  </li>
-                </ul>
+                <div className="text-center mb-6">
+                  <div className="text-3xl font-bold text-primary mb-2">Free</div>
+                  <p className="text-sm text-muted-foreground">Lifetime access - Certificate included</p>
+                </div>
+                <Button size="lg" className="w-full mb-4" asChild>
+                  <Link href={`/courses/${slug}/learn`}>
+                    {isEnrolled ? "Continue Learning" : "Enroll Now — Free"}
+                  </Link>
+                </Button>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span>{formatDuration(course.estimated_duration)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    <span>{course.enrollment_count} students</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span>{course.rating.toFixed(1)} ({course.total_ratings} ratings)</span>
+                  </div>
+                </div>
               </div>
               <CourseRating
                 courseId={course.id}

@@ -24,8 +24,45 @@ export function BlogDropdown() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const cats = await sanityClient.fetch<Category[]>(categoriesQuery);
-        setCategories(cats || []);
+        // Fetch from both Sanity and Supabase
+        const allCategories: Category[] = [];
+        
+        // 1. Fetch Sanity categories
+        try {
+          const sanityCats = await sanityClient.fetch<Category[]>(categoriesQuery);
+          allCategories.push(...(sanityCats || []));
+        } catch (sanityError) {
+          console.error("Error fetching Sanity categories:", sanityError);
+        }
+        
+        // 2. Fetch Supabase categories
+        try {
+          const { createClient } = await import("@/lib/supabase");
+          const supabase = createClient();
+          const { data: supabaseCats } = await supabase
+            .from("blog_categories")
+            .select("id, title, slug")
+            .order("title", { ascending: true });
+          
+          if (supabaseCats) {
+            // Transform Supabase categories to match Sanity format
+            const transformedCats = supabaseCats.map((cat: any) => ({
+              _id: cat.id,
+              title: cat.title,
+              slug: { current: cat.slug }
+            }));
+            allCategories.push(...transformedCats);
+          }
+        } catch (supabaseError) {
+          console.error("Error fetching Supabase categories:", supabaseError);
+        }
+        
+        // Deduplicate by slug
+        const uniqueCategories = Array.from(
+          new Map(allCategories.map(cat => [cat.slug.current, cat])).values()
+        ).sort((a, b) => a.title.localeCompare(b.title));
+        
+        setCategories(uniqueCategories);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }

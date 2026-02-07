@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     
     // Get total likes count
     const { count, error: countError } = await supabase
@@ -59,7 +59,7 @@ export async function POST(
 ) {
   try {
     const { slug } = await params;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     
     // Try getSession first, if that fails try getUser (which uses Authorization header)
     let user;
@@ -147,7 +147,7 @@ export async function DELETE(
 ) {
   try {
     const { slug } = await params;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     
     // Try getSession first, if that fails try getUser (which uses Authorization header)
     let user;

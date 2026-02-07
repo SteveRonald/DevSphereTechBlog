@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     
     // Get all active newsletter subscribers
     const { data: subscribers, error: subscribersError } = await supabase

@@ -4,7 +4,7 @@ import { createServerClient } from "@/lib/supabase-server";
 // GET: Fetch conversation history for logged-in users
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     
     // Try to get user - check Authorization header first, then session
     let user;

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "course_id is required" }, { status: 400 });
     }
 
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     if (includeDrafts) {
       const authHeader = request.headers.get("authorization");
       const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     // Check admin
     const authHeader = request.headers.get("authorization");

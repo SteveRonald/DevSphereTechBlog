@@ -183,8 +183,8 @@ export function CoursePlayer({
       {showCelebration && <CelebrationVariants variant={celebrationVariant} />}
 
       {/* Progress Bar */}
-      <div className="sticky top-14 sm:top-16 z-10 bg-background border-b border-border shadow-sm">
-        <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 overflow-x-hidden">
+      <div className="sticky top-14 sm:top-16 z-10 bg-background border-b border-border shadow-sm mb-6">
+        <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 overflow-x-hidden">
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <span className="text-sm sm:text-base font-medium text-base">Course Progress</span>
@@ -296,12 +296,12 @@ export function CoursePlayer({
         </div>
       </div>
 
-      <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 overflow-x-hidden">
+      <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-8 lg:py-10 overflow-x-hidden">
         <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content Area */}
           <div className="lg:col-span-8 min-w-0">
-            <Card className="mb-4 sm:mb-6 overflow-hidden shadow-sm">
-              <CardContent className="p-4 sm:p-5 lg:p-6 overflow-x-hidden">
+            <Card className="mb-4 sm:mb-6 overflow-visible shadow-sm">
+              <CardContent className="p-5 sm:p-6 lg:p-8 overflow-x-hidden">
                 <div className="mb-4 sm:mb-5 overflow-x-hidden">
                   <p className="text-sm font-medium text-muted-foreground mb-2">Module {currentLesson.step_number}</p>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">

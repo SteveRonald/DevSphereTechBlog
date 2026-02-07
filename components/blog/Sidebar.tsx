@@ -1,16 +1,48 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Github, Twitter, Linkedin, ExternalLink } from "lucide-react";
-import { sanityClient } from "@/lib/sanity";
-import { categoriesQuery } from "@/lib/sanity.queries";
-import { NewsletterForm } from "@/components/newsletter/NewsletterForm";
+import { createServerClient } from "@/lib/supabase-server";
 import Link from "next/link";
 
 async function getCategories() {
   try {
-    const categories = await sanityClient.fetch(categoriesQuery);
-    return categories || [];
+    const supabase = await createServerClient(undefined);
+    
+    // Get all categories from Supabase
+    const { data: allCategories, error: catError } = await supabase
+      .from("blog_categories")
+      .select("*")
+      .order("title");
+
+    if (catError) {
+      console.error("Error fetching categories:", catError);
+      return [];
+    }
+
+    // Count posts per category from both sources
+    const categoryCounts = new Map<string, number>();
+
+    // 1. Count Supabase posts
+    const { data: supabasePosts, error: postsError } = await supabase
+      .from("blog_posts")
+      .select("category_id")
+      .eq("published", true);
+
+    if (postsError) {
+      console.error("Error fetching Supabase posts:", postsError);
+    } else {
+      supabasePosts?.forEach((post: any) => {
+        if (post.category_id) {
+          categoryCounts.set(post.category_id, (categoryCounts.get(post.category_id) || 0) + 1);
+        }
+      });
+    }
+
+
+    return (allCategories || []).map((cat: any) => ({
+      id: cat.id,
+      title: cat.title,
+      slug: cat.slug,
+      count: categoryCounts.get(cat.id) || 0,
+    }));
   } catch (error) {
     console.error("Error fetching categories:", error);
     return [];
@@ -19,101 +51,30 @@ async function getCategories() {
 
 export async function Sidebar() {
   const categories = await getCategories();
-
-  const tools = [
-    { name: "Hostinger", desc: "Best Hosting", link: "#" },
-    { name: "Udemy", desc: "Learn Code", link: "#" },
-    { name: "GitHub Copilot", desc: "AI Assistant", link: "#" },
-  ];
+  const visibleCategories = (categories || []).filter((c: any) => (c?.count || 0) > 0).slice(0, 6);
 
   return (
     <div className="space-y-6">
-      {/* Newsletter Widget */}
-      <Card className="bg-primary/5 border-primary/20 shadow-none">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Join the Newsletter</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Get the latest tutorials and tech news delivered to your inbox weekly.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <NewsletterForm />
-        </CardContent>
-      </Card>
-
       {/* Categories */}
       <Card className="shadow-none">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Categories</CardTitle>
+          <CardTitle className="text-lg font-google-sans">Categories</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-1">
-            {categories.length > 0 ? (
-              categories.map((cat: any) => (
+            {visibleCategories.length > 0 ? (
+              visibleCategories.map((cat: any) => (
                 <Link
-                  key={cat._id}
-                  href={`/blog/category/${cat.slug.current}`}
+                  key={cat.id || cat._id}
+                  href={`/blog/category/${cat.slug || cat.slug?.current}`}
                   className="flex items-center justify-between py-2 text-sm hover:text-primary cursor-pointer group transition-colors"
                 >
-                  <span className="font-medium">{cat.title}</span>
-                  <Badge variant="secondary" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    {cat.count || 0}
-                  </Badge>
+                  <span className="font-medium font-google-sans">{cat.title}</span>
                 </Link>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground">No categories yet</p>
+              <p className="text-sm text-muted-foreground font-google-sans">No categories yet</p>
             )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recommended Tools (Affiliate Mock) */}
-      <Card className="shadow-none">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Recommended Tools</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {tools.map((tool) => (
-              <a 
-                key={tool.name} 
-                href={tool.link} 
-                className="flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors group"
-              >
-                <div>
-                  <div className="font-semibold text-sm">{tool.name}</div>
-                  <div className="text-xs text-muted-foreground">{tool.desc}</div>
-                </div>
-                <ExternalLink className="h-4 w-4 opacity-50 group-hover:opacity-100" />
-              </a>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Social Links */}
-      <Card className="shadow-none">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Follow Us</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-center space-x-4">
-            <Button variant="outline" size="icon" className="rounded-full hover:text-primary hover:border-primary" asChild>
-              <a href="https://twitter.com/Stevegmail98" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Twitter">
-                <Twitter className="h-4 w-4" />
-              </a>
-            </Button>
-            <Button variant="outline" size="icon" className="rounded-full hover:text-primary hover:border-primary" asChild>
-              <a href="https://github.com/SteveRonald" target="_blank" rel="noopener noreferrer" aria-label="Follow us on GitHub">
-                <Github className="h-4 w-4" />
-              </a>
-            </Button>
-            <Button variant="outline" size="icon" className="rounded-full hover:text-primary hover:border-primary" asChild>
-              <a href="https://www.linkedin.com/in/steve-ronald-432775255" target="_blank" rel="noopener noreferrer" aria-label="Follow us on LinkedIn">
-                <Linkedin className="h-4 w-4" />
-              </a>
-            </Button>
           </div>
         </CardContent>
       </Card>

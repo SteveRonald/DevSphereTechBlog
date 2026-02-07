@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = params;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     // Check if user is admin
     const authHeader = request.headers.get("authorization");
@@ -78,7 +78,7 @@ export async function PUT(
       notify_subscribers_about_update,
       ...coursePatch
     } = (body || {}) as Record<string, any>;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     // Check admin
     const authHeader = request.headers.get("authorization");
@@ -237,7 +237,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = params;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     // Check admin
     const authHeader = request.headers.get("authorization");

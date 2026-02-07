@@ -7,7 +7,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user;
@@ -89,7 +89,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user;

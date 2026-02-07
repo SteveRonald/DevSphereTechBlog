@@ -7,7 +7,7 @@ export async function POST(
 ) {
   try {
     const { id: courseId } = await params;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     // Try to get user - check Authorization header first, then session
     let user;
@@ -176,7 +176,7 @@ export async function GET(
 ) {
   try {
     const { id: courseId } = await params;
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     // Try to get user - check Authorization header first, then session
     let user;

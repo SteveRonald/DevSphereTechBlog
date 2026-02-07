@@ -5,7 +5,7 @@ import { createServerClient } from "@/lib/supabase-server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
 
     // Check admin
     const authHeader = request.headers.get("authorization");

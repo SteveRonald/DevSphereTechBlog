@@ -23,7 +23,7 @@ export function createAdminClient() {
 }
 
 export async function requireAdmin(request: NextRequest) {
-  const supabase = createServerClient(request);
+  const supabase = await createServerClient(request);
 
   const authHeader = request.headers.get("authorization");
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;

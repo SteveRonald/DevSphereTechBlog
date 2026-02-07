@@ -214,13 +214,15 @@ export function CourseCertificatePageClient({ slug, user }: CourseCertificatePag
   });
 
   return (
-    <div className="container max-w-5xl mx-auto px-4 md:px-6 py-10">
-      <div className="flex items-center justify-between gap-4 mb-6 no-print">
+    <div className="container max-w-5xl mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-10">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 no-print">
         <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold">Certificate</h1>
-          <p className="text-sm text-muted-foreground">Print or save this certificate for your records.</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Certificate</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Print or save this certificate for your records.</p>
         </div>
-        <CertificateActions />
+        <div className="flex-shrink-0">
+          <CertificateActions />
+        </div>
       </div>
 
       <div className="certificate-container relative">
@@ -289,8 +291,8 @@ export function CourseCertificatePageClient({ slug, user }: CourseCertificatePag
         </div>
       </div>
 
-      <div className="mt-6 flex justify-center no-print">
-        <Button variant="outline" asChild>
+      <div className="mt-4 sm:mt-6 flex justify-center no-print">
+        <Button variant="outline" className="w-full sm:w-auto" asChild>
           <a href={`/courses/${course.slug}`}>Back to Course</a>
         </Button>
       </div>

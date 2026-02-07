@@ -57,7 +57,7 @@ export function CourseCard({ course, enrolled = false, progress = 0 }: CourseCar
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 border-border overflow-hidden">
+    <Card className="group hover:shadow-xl transition-all duration-300 border-border/50 overflow-hidden bg-card/50 backdrop-blur-sm hover:border-primary/30">
       <Link href={`/courses/${course.slug}`}>
         <div className="relative aspect-video w-full overflow-hidden bg-muted">
           {course.thumbnail_url ? (
@@ -65,28 +65,32 @@ export function CourseCard({ course, enrolled = false, progress = 0 }: CourseCar
               src={course.thumbnail_url}
               alt={course.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
-              <PlayCircle className="h-16 w-16 text-primary/50" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10">
+              <PlayCircle className="h-16 w-16 text-primary/40" />
             </div>
           )}
+          
+          {/* Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
           {enrolled && (
-            <div className="absolute top-2 right-2">
-              <Badge variant="default" className="bg-primary">
+            <div className="absolute top-3 right-3">
+              <Badge variant="default" className="bg-primary shadow-lg">
                 Enrolled
               </Badge>
             </div>
           )}
 
-          <div className="absolute bottom-2 left-2">
+          <div className="absolute bottom-3 left-3">
             <Button
               type="button"
               variant="secondary"
               size="sm"
-              className="h-8 px-3 text-xs"
+              className="h-8 px-3 text-xs font-google-sans font-medium shadow-md hover:shadow-lg"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -99,49 +103,49 @@ export function CourseCard({ course, enrolled = false, progress = 0 }: CourseCar
         </div>
       </Link>
 
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <Link href={`/courses/${course.slug}`}>
-            <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <Link href={`/courses/${course.slug}`} className="flex-1">
+            <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors font-google-sans leading-tight">
               {course.title}
             </h3>
           </Link>
         </div>
 
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 font-google-sans leading-relaxed">
           {course.short_description || course.description || "No description available"}
         </p>
 
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <Badge variant="outline" className={difficultyColors[course.difficulty_level]}>
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <Badge variant="outline" className={`font-google-sans font-medium ${difficultyColors[course.difficulty_level]}`}>
             {difficultyLabels[course.difficulty_level]}
           </Badge>
           {course.category && (
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs font-google-sans">
               {course.category}
             </Badge>
           )}
         </div>
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
           <div className="flex items-center gap-1">
             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            <span className="font-medium">{course.rating.toFixed(1)}</span>
+            <span className="font-medium font-google-sans">{course.rating.toFixed(1)}</span>
             <span className="text-xs">({course.total_ratings})</span>
           </div>
           <div className="flex items-center gap-1">
             <Users className="h-4 w-4" />
-            <span>{course.enrollment_count}</span>
+            <span className="font-google-sans">{course.enrollment_count}</span>
           </div>
           <div className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
-            <span>{formatDuration(course.estimated_duration)}</span>
+            <span className="font-google-sans">{formatDuration(course.estimated_duration)}</span>
           </div>
         </div>
 
         {enrolled && progress > 0 && (
-          <div className="mb-3">
-            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+          <div className="mb-4">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 font-google-sans">
               <span>Progress</span>
               <span>{Math.round(progress)}%</span>
             </div>
@@ -150,10 +154,10 @@ export function CourseCard({ course, enrolled = false, progress = 0 }: CourseCar
         )}
       </CardContent>
 
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="p-5 pt-0">
         <Link href={`/courses/${course.slug}`} className="w-full">
-          <Button className="w-full" variant={enrolled ? "outline" : "default"}>
-            {enrolled ? "Continue Learning" : "Enroll Now"}
+          <Button className="w-full h-11 text-base font-google-sans font-semibold shadow-sm hover:shadow-md transition-all duration-300">
+            {enrolled ? "Continue Learning" : "Start Learning"}
           </Button>
         </Link>
       </CardFooter>

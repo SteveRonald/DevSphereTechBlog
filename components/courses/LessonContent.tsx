@@ -57,7 +57,7 @@ export function LessonContent({ lesson, isCompleted, onComplete }: LessonContent
 
   const renderMarkdown = (value: string) => {
     return (
-      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert overflow-x-hidden break-words prose-headings:text-foreground prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-strong:text-foreground prose-strong:font-semibold prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-ul:text-base prose-ol:text-base prose-li:text-base">
+      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert overflow-x-hidden break-words prose-headings:text-foreground prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-strong:text-foreground prose-strong:font-semibold prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-ul:text-base prose-ol:text-base prose-li:text-base prose-p:text-foreground/80 dark:prose-p:text-foreground/90 prose-li:text-foreground/80 dark:prose-li:text-foreground/90 prose-blockquote:text-foreground/80 dark:prose-blockquote:text-foreground/90">
         <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
           {value}
         </ReactMarkdown>

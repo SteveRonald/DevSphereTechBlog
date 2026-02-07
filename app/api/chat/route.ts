@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check authentication
-    const supabase = createServerClient(request);
+    const supabase = await createServerClient(request);
     
     // Try to get user - check Authorization header first, then session
     let user;
