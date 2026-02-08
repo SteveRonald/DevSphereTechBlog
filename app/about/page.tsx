@@ -25,7 +25,7 @@ export default function About() {
       avatar: "https://api.dicebear.com/8.x/lorelei/svg?seed=DianaOdindo&flip=true&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf",
       social: {
         twitter: "https://twitter.com/Stevegmail98",
-        github: "https://github.com",
+        github: "https://github.com/SteveRonald",
         linkedin: "https://www.linkedin.com/in/steve-ronald-432775255"
       }
     }
