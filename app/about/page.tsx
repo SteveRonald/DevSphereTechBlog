@@ -24,7 +24,7 @@ export default function About() {
       bio: "Machine Learning engineer focused on making AI accessible to web developers. Expert in LLM integration and vector databases.",
       avatar: "https://api.dicebear.com/8.x/lorelei/svg?seed=DianaOdindo&flip=true&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf",
       social: {
-        twitter: "https://twitter.com",
+        twitter: "https://twitter.com/Stevegmail98",
         github: "https://github.com",
         linkedin: "https://linkedin.com"
       }
