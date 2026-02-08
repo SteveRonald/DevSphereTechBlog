@@ -1,7 +1,7 @@
 import { PostCard } from "@/components/blog/PostCard";
 import { SidebarMinimal } from "@/components/blog/SidebarMinimal";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, Users, Award, Rocket, TrendingUp, Target, Zap, Search, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, Users, Award, Rocket, TrendingUp, Target, Zap, Sparkles } from "lucide-react";
 import type { Post } from "@/components/blog/PostCard";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -12,7 +12,7 @@ import { Testimonials } from "@/components/home/Testimonials";
 import { WhyChooseUs } from "@/components/home/WhyChooseUs";
 import { createServerClient } from "@/lib/supabase-server";
 import { CourseCard } from "@/components/courses/CourseCard";
-import { Input } from "@/components/ui/input";
+import { SearchBar } from "@/components/search/SearchBar";
 
 async function getFeaturedPosts(): Promise<Post[]> {
   try {
@@ -126,7 +126,7 @@ async function getFeaturedCourses() {
   }
 }
 
-// Revalidate every 60 seconds to show fresh content from Sanity
+// Revalidate every 60 seconds to show fresh content from Supabase
 export const revalidate = 60;
 
 export default async function Home() {
@@ -146,19 +146,7 @@ export default async function Home() {
       <section className="bg-background border-b border-border">
         <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-4">
           <div className="max-w-2xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search courses, articles, and more..."
-                className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    window.location.href = `/search?q=${encodeURIComponent(e.currentTarget.value)}`;
-                  }
-                }}
-              />
-            </div>
+            <SearchBar />
           </div>
         </div>
       </section>
