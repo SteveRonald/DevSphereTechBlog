@@ -26,7 +26,7 @@ export default function About() {
       social: {
         twitter: "https://twitter.com/Stevegmail98",
         github: "https://github.com",
-        linkedin: "https://linkedin.com"
+        linkedin: "https://www.linkedin.com/in/steve-ronald-432775255"
       }
     }
   ];
