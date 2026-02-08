@@ -6,13 +6,13 @@
   "outputDirectory": ".next",
   "regions": ["iad1"],
   "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key",
-    "NEXT_PUBLIC_SANITY_PROJECT_ID": "@sanity-project-id",
-    "NEXT_PUBLIC_SANITY_DATASET": "@sanity-dataset",
-    "NEXT_PUBLIC_SANITY_API_VERSION": "@sanity-api-version",
-    "NEXT_PUBLIC_SITE_URL": "@site-url"
+    "NEXT_PUBLIC_SUPABASE_URL": "https://nhrvdjosaympphzbozqd.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ocnZkam9zYXltcHBoemJvenFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3Mzc5NDAsImV4cCI6MjA4MTMxMzk0MH0.efx1HX7NFpb_TlbIW5PSiSGfMGtVAc5OeKWmDtMPpmA",
+    "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ocnZkam9zYXltcHBoemJvenFkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTczNzk0MCwiZXhwIjoyMDgxMzEzOTQwfQ.oEbMrslht-ukDMo95TlZ12U1uQSkAxEVyxuWdkkMUn8",
+    "NEXT_PUBLIC_SANITY_PROJECT_ID": "6vr227ju",
+    "NEXT_PUBLIC_SANITY_DATASET": "production",
+    "NEXT_PUBLIC_SANITY_API_VERSION": "2023-06-21",
+    "NEXT_PUBLIC_SITE_URL": "https://your-project.vercel.app"
   },
   "headers": [
     {
