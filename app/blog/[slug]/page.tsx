@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock } from "lucide-react";
-import { CommentForm } from "@/components/blog/CommentForm";
+import { CommentSection } from "@/components/blog/CommentSection";
 import { PostActions } from "@/components/blog/PostActions";
 import Image from "next/image";
 import { format } from "date-fns";
@@ -147,24 +147,17 @@ export const dynamic = 'force-dynamic';
 // Generate static params for better performance and SEO
 export async function generateStaticParams() {
   try {
-    const params: { slug: string }[] = [];
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { data } = await supabase
+      .from("blog_posts")
+      .select("slug")
+      .eq("published", true);
     
-    // Get Supabase posts
-    try {
-      const { createServerClient } = await import("@/lib/supabase-server");
-      const supabase = await createServerClient(undefined);
-      const { data } = await supabase
-        .from("blog_posts")
-        .select("slug")
-        .eq("published", true);
-      if (data) {
-        params.push(...data.map((p: { slug: string }) => ({ slug: p.slug })));
-      }
-    } catch (e) {
-      console.error("Error fetching Supabase slugs for static params:", e);
-    }
-    
-    return params;
+    return (data || []).map((p: { slug: string }) => ({ slug: p.slug }));
   } catch (error) {
     console.error("Error generating static params:", error);
     return [];
@@ -291,7 +284,7 @@ export default async function BlogPostPage({
 
             {/* Comments Section */}
             <div id="comments-section" className="mt-12">
-              <CommentForm postId={post.id} onCommentAdded={() => {}} />
+              <CommentSection postSlug={post.slug} />
             </div>
 
           </article>

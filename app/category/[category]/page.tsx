@@ -1,22 +1,51 @@
-import { sanityClient } from "@/lib/sanity";
-import { postsByCategoryQuery } from "@/lib/sanity.queries";
+import { createServerClient } from "@/lib/supabase-server";
 import { PostCard, type Post } from "@/components/blog/PostCard";
 import { Sidebar } from "@/components/blog/Sidebar";
 import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
 
-async function getPostsByCategory(category: string): Promise<Post[]> {
+async function getPostsByCategory(categorySlug: string): Promise<Post[]> {
   try {
-    const posts = await sanityClient.fetch<Post[]>(postsByCategoryQuery, { category });
-    return posts || [];
+    const supabase = await createServerClient(undefined);
+    const { data: category } = await supabase
+      .from("blog_categories")
+      .select("id")
+      .eq("slug", categorySlug)
+      .single();
+
+    if (!category) return [];
+
+    const { data: posts } = await supabase
+      .from("blog_posts")
+      .select(`
+        id, title, excerpt, slug, main_image_url, published_at, read_time, featured,
+        blog_categories (id, title, slug),
+        blog_authors:blog_author_id (name, role)
+      `)
+      .eq("published", true)
+      .eq("category_id", category.id)
+      .order("published_at", { ascending: false });
+
+    return (posts || []).map((post: any) => ({
+      id: post.id,
+      title: post.title,
+      excerpt: post.excerpt || "",
+      slug: post.slug,
+      main_image_url: post.main_image_url || undefined,
+      published_at: post.published_at,
+      read_time: post.read_time || 5,
+      featured: post.featured || false,
+      blog_categories: post.blog_categories || undefined,
+      blog_authors: post.blog_authors || undefined,
+    }));
   } catch (error) {
     console.error("Error fetching posts by category:", error);
     return [];
   }
 }
 
-// Revalidate every 60 seconds to show fresh content from Sanity
 export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export default async function CategoryPage({
   params,
@@ -50,7 +79,7 @@ export default async function CategoryPage({
               <>
                 <div className="grid md:grid-cols-2 gap-6">
                   {posts.map((post) => (
-                    <PostCard key={post._id} post={post} />
+                    <PostCard key={post.id} post={post} />
                   ))}
                 </div>
                 

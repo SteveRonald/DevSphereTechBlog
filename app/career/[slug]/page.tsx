@@ -3,9 +3,8 @@ import { createServerClient } from "@/lib/supabase-server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Briefcase, MapPin, Clock, DollarSign, Calendar, ArrowLeft, ExternalLink } from "lucide-react";
+import { Briefcase, MapPin, Clock, DollarSign, ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { format } from "date-fns";
 import { RichMarkdown } from "@/components/RichMarkdown";
 
@@ -92,14 +91,17 @@ export const dynamic = 'force-dynamic';
 // Generate static params for better performance
 export async function generateStaticParams() {
   try {
-    const { createServerClient } = await import("@/lib/supabase-server");
-    const supabase = await createServerClient(undefined);
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
     const { data } = await supabase
       .from("career_listings")
       .select("slug")
       .eq("published", true);
     
-    return data?.map((career: { slug: string }) => ({ slug: career.slug })) || [];
+    return (data || []).map((career: { slug: string }) => ({ slug: career.slug }));
   } catch (error) {
     console.error("Error generating static params for careers:", error);
     return [];
@@ -176,74 +178,37 @@ export default async function CareerDetailPage({
 
       <div className="container max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
         <div className="max-w-5xl mx-auto space-y-8">
-          {/* Description */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Excerpt</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RichMarkdown content={career.description} />
+          {/* Career Details Frame */}
+          <Card className="border border-border/60 shadow-sm overflow-hidden">
+            <CardContent className="p-6 sm:p-8 md:p-10 space-y-8">
+              {/* Description */}
+              <div className="prose prose-slate dark:prose-invert max-w-none">
+                <RichMarkdown content={career.description} />
+              </div>
+
+              {/* Main Content */}
+              <div className="prose prose-slate dark:prose-invert max-w-none">
+                <RichMarkdown content={career.responsibilities} />
+              </div>
+
+              {/* Apply button */}
+              {!isDeadlinePassed && career.application_url && (
+                <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-border/40">
+                  <Link href={career.application_url} target="_blank" rel="noopener noreferrer">
+                    <Button size="lg" className="shadow-md hover:shadow-lg transition-all duration-300">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Apply Now
+                    </Button>
+                  </Link>
+                  {career.application_deadline && (
+                    <p className="text-sm text-muted-foreground">
+                      Deadline: {format(new Date(career.application_deadline), "MMMM dd, yyyy")}
+                    </p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
-
-          {/* Content */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Content</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RichMarkdown content={career.responsibilities} />
-            </CardContent>
-          </Card>
-
-          {/* Benefits */}
-          {career.benefits && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Benefits</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <RichMarkdown content={career.benefits} />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Application Section */}
-          {!isDeadlinePassed && (
-            <Card className="bg-primary/5 border-primary/20">
-              <CardHeader>
-                <CardTitle>Ready to Apply?</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground">
-                  Ready to take the next step? Click below to submit your application.
-                </p>
-                {(career.application_url || career.application_email) && (
-                  <div className="flex flex-wrap gap-4">
-                    {career.application_url && (
-                      <Link href={career.application_url} target="_blank" rel="noopener noreferrer">
-                        <Button size="lg">
-                          Apply Now
-                        </Button>
-                      </Link>
-                    )}
-                    {career.application_email && (
-                      <Link href={`mailto:${career.application_email}`}>
-                        <Button variant="outline" size="lg">
-                          Email Application
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                )}
-                {career.application_deadline && (
-                  <p className="text-sm text-muted-foreground">
-                    Application deadline: {format(new Date(career.application_deadline), "MMMM dd, yyyy")}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
           <Card className="shadow-none">
             <CardHeader>

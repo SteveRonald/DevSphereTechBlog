@@ -2,6 +2,7 @@ import { PostCard, type Post } from "@/components/blog/PostCard";
 import { SidebarMinimal } from "@/components/blog/SidebarMinimal";
 import { Button } from "@/components/ui/button";
 import { BookOpen } from "lucide-react";
+import { PageSearch } from "@/components/search/PageSearch";
 
 async function getAllPosts(): Promise<Post[]> {
   try {
@@ -100,6 +101,9 @@ export default async function BlogPage() {
           <p className="text-base text-muted-foreground mt-4 font-google-sans">
             {posts.length} {posts.length === 1 ? "post" : "posts"} total
           </p>
+          <div className="mt-6 max-w-md">
+            <PageSearch placeholder="Search articles, tutorials, snippets..." searchPath="/blog" />
+          </div>
         </div>
       </div>
 

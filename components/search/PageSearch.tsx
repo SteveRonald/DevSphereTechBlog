@@ -7,26 +7,31 @@ import { useRouter } from "next/navigation";
 interface PageSearchProps {
   placeholder?: string;
   className?: string;
+  searchPath?: string;
+  onSearch?: (query: string) => void;
 }
 
 export function PageSearch({ 
   placeholder = "Search...", 
-  className = "" 
+  className = "",
+  searchPath = "/search",
+  onSearch,
 }: PageSearchProps) {
   const [query, setQuery] = useState("");
   const router = useRouter();
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+  const executeSearch = () => {
+    if (!query.trim()) return;
+    if (onSearch) {
+      onSearch(query.trim());
+    } else {
+      router.push(`${searchPath}?q=${encodeURIComponent(query.trim())}`);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-    }
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    executeSearch();
   };
 
   return (
@@ -37,8 +42,7 @@ export function PageSearch({
         placeholder={placeholder}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
       />
     </form>
   );

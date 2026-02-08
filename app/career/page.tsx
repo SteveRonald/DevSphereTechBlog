@@ -6,6 +6,7 @@ import { Briefcase, MapPin, Clock, DollarSign, Calendar } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { format } from "date-fns";
+import { PageSearch } from "@/components/search/PageSearch";
 
 interface Career {
   id: string;
@@ -78,6 +79,9 @@ export default async function CareerPage() {
           <p className="text-sm text-muted-foreground mt-2">
             {careers.length} {careers.length === 1 ? "position" : "positions"} available
           </p>
+          <div className="mt-6 max-w-md">
+            <PageSearch placeholder="Search jobs by title, company, location..." searchPath="/career" />
+          </div>
         </div>
       </div>
 

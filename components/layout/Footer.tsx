@@ -9,7 +9,7 @@ export function Footer() {
     { name: 'Facebook', url: process.env.NEXT_PUBLIC_FACEBOOK_URL, icon: <Facebook className="h-4 w-4" /> },
     { name: 'LinkedIn', url: process.env.NEXT_PUBLIC_LINKEDIN_URL, icon: <Linkedin className="h-4 w-4" /> },
     { name: 'YouTube', url: process.env.NEXT_PUBLIC_YOUTUBE_URL, icon: <Youtube className="h-4 w-4" /> },
-    { name: 'Website', url: process.env.NEXT_PUBLIC_PERSONAL_WEBSITE_URL, icon: <Globe className="h-4 w-4" /> },
+    { name: 'Personal Website', url: process.env.NEXT_PUBLIC_PERSONAL_WEBSITE_URL, icon: <Globe className="h-4 w-4" /> },
     { name: 'Twitter', url: process.env.NEXT_PUBLIC_TWITTER_URL, icon: <Twitter className="h-4 w-4" /> },
     { name: 'GitHub', url: process.env.NEXT_PUBLIC_GITHUB_URL, icon: <Github className="h-4 w-4" /> },
   ].filter(link => link.url);
@@ -17,31 +17,16 @@ export function Footer() {
   return (
     <footer className="border-t border-border/40 bg-black text-white">
       <div className="container max-w-7xl mx-auto py-12 px-4 md:px-6">
-        {/* Top: Brand + Social */}
+        {/* Top: Brand */}
         <div className="mb-10">
           <h3 className="text-xl font-bold mb-3 font-google-sans">CodeCraft Academy</h3>
-          <p className="text-sm text-gray-400 max-w-lg leading-relaxed font-google-sans mb-5">
+          <p className="text-sm text-gray-400 max-w-lg leading-relaxed font-google-sans">
             Empowering developers with free courses, in-depth reviews, and modern tech skills. Join our community today.
           </p>
-          <div className="flex flex-wrap items-center gap-3">
-            {socialLinks.map((social) => (
-              <Link key={social.name} href={social.url || "#"} target="_blank" rel="noreferrer">
-                <Button variant="outline" size="icon" className="h-9 w-9 border-gray-700 text-gray-400 hover:bg-white/10 hover:text-white hover:border-white/30 transition-all duration-300">
-                  {social.icon}
-                  <span className="sr-only">{social.name}</span>
-                </Button>
-              </Link>
-            ))}
-            <Link href="/donate">
-              <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
-                <Heart className="h-4 w-4 mr-2" /> Support Us
-              </Button>
-            </Link>
-          </div>
         </div>
 
         {/* Links Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 pb-10 border-b border-gray-800">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8 pb-10 border-b border-gray-800">
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-wider text-white mb-4 font-google-sans">Quick Links</h4>
             <ul className="space-y-2.5 text-sm">
@@ -80,6 +65,35 @@ export function Footer() {
               <li><Link href="/faq" className="text-gray-400 hover:text-white transition-colors font-google-sans">FAQ</Link></li>
               <li><Link href="/support" className="text-gray-400 hover:text-white transition-colors font-google-sans">Support</Link></li>
             </ul>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-white mb-4 font-google-sans">Socials</h4>
+            <ul className="space-y-2.5 text-sm">
+              {socialLinks.map((social) => (
+                <li key={social.name}>
+                  <Link
+                    href={social.url || "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors font-google-sans group"
+                  >
+                    <span className="group-hover:text-primary transition-colors">{social.icon}</span>
+                    {social.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-white mb-4 font-google-sans">Support</h4>
+            <p className="text-sm text-gray-400 mb-4 font-google-sans">Help us keep content free for everyone.</p>
+            <Link href="/donate">
+              <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto">
+                <Heart className="h-4 w-4 mr-2" /> Support Us
+              </Button>
+            </Link>
           </div>
         </div>
 

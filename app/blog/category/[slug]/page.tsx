@@ -72,25 +72,16 @@ export const dynamic = 'force-dynamic';
 // Generate static params for category pages
 export async function generateStaticParams() {
   try {
-    const params: { slug: string }[] = [];
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { data } = await supabase
+      .from("blog_categories")
+      .select("slug");
     
-    // Get Supabase categories only
-    try {
-      const { createServerClient } = await import("@/lib/supabase-server");
-      const supabase = await createServerClient(undefined);
-      const { data } = await supabase
-        .from("blog_categories")
-        .select("slug");
-      if (data) {
-        params.push(...data.map((c: { slug: string }) => ({ slug: c.slug })));
-      }
-    } catch (e) {
-      console.error("Error fetching Supabase category slugs:", e);
-    }
-    
-    // Deduplicate by slug
-    const uniqueSlugs = Array.from(new Set(params.map(p => p.slug)));
-    return uniqueSlugs.map(slug => ({ slug }));
+    return (data || []).map((c: { slug: string }) => ({ slug: c.slug }));
   } catch (error) {
     console.error("Error generating static params for categories:", error);
     return [];

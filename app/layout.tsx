@@ -8,7 +8,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { Analytics } from "@/components/analytics/GoogleAnalytics";
-import { Chatbot } from "@/components/chat/Chatbot";
+// Old chatbot disabled - replaced by Chatbase
+// import { Chatbot } from "@/components/chat/Chatbot";
+import { ChatbaseWidget } from "@/components/chat/ChatbaseWidget";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -69,7 +71,9 @@ export default function RootLayout({
           </TooltipProvider>
         </ThemeProvider>
         <Analytics />
-        <Chatbot />
+        {/* Old chatbot disabled - replaced by Chatbase */}
+        {/* <Chatbot /> */}
+        <ChatbaseWidget />
       </body>
     </html>
   );
