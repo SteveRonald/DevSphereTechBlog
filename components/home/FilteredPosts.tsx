@@ -5,11 +5,9 @@ import { CategoryTabs } from "./CategoryTabs";
 import { useState, useMemo } from "react";
 
 interface Category {
-  _id: string;
+  id: string;
   title: string;
-  slug: {
-    current: string;
-  };
+  slug: string;
 }
 
 interface FilteredPostsProps {
@@ -24,9 +22,13 @@ export function FilteredPosts({ posts, categories }: FilteredPostsProps) {
     if (!activeCategory) {
       return posts;
     }
-    return posts.filter((post) =>
-      post.categories?.some((cat) => cat.slug.current === activeCategory)
-    );
+    return posts.filter((post) => {
+      if (!post.blog_categories) return false;
+      if (Array.isArray(post.blog_categories)) {
+        return post.blog_categories.some((cat) => cat.slug === activeCategory);
+      }
+      return post.blog_categories.slug === activeCategory;
+    });
   }, [posts, activeCategory]);
 
   return (
@@ -39,7 +41,7 @@ export function FilteredPosts({ posts, categories }: FilteredPostsProps) {
       {filteredPosts.length > 0 ? (
         <div className="grid md:grid-cols-2 gap-6">
           {filteredPosts.map((post) => (
-            <PostCard key={post._id} post={post} />
+            <PostCard key={post.id} post={post} />
           ))}
         </div>
       ) : (

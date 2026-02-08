@@ -6,31 +6,27 @@ import { Calendar, Clock, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 
 export interface Post {
-  _id: string;
+  id: string;
   title: string;
-  excerpt: string;
-  slug: {
-    current: string;
-  };
-  mainImage?: string | {
-    asset?: any;
-    alt?: string;
-  };
-  publishedAt: string;
-  readTime: number;
+  excerpt?: string;
+  slug: string;
+  main_image_url?: string;
+  published_at: string;
+  read_time?: number;
   featured?: boolean;
-  author?: {
-    name: string;
-    image?: {
-      asset: any;
-    };
-  };
-  categories?: Array<{
+  blog_categories?: {
+    id: string;
     title: string;
-    slug: {
-      current: string;
-    };
-  }>;
+    slug: string;
+  } | {
+    id: string;
+    title: string;
+    slug: string;
+  }[];
+  blog_authors?: {
+    name: string;
+    role?: string;
+  };
 }
 
 interface PostCardProps {
@@ -42,43 +38,40 @@ export function PostCard({ post, featured = false }: PostCardProps) {
   const getImageUrl = () => {
     const fallback = "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070&auto=format&fit=crop";
     
-    if (!post.mainImage) {
+    if (!post.main_image_url) {
       return fallback;
     }
     
-    if (typeof post.mainImage === 'string') {
-      // Validate string URL
-      if (post.mainImage.startsWith('http://') || post.mainImage.startsWith('https://') || post.mainImage.startsWith('/')) {
-        return post.mainImage;
-      }
-      return fallback;
-    }
-    
-    if (post.mainImage.asset) {
-      const url = post.mainImage.asset.url || post.mainImage.asset._ref || "";
-      // Validate URL format
-      if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/'))) {
-        return url;
-      }
-    }
-    
-    return fallback;
+    // Validate string URL
+    return post.main_image_url.startsWith('http') ? post.main_image_url : fallback;
   };
 
   const imageUrl = getImageUrl();
-  const categoryTitle = post.categories?.[0]?.title || "Uncategorized";
-  const formattedDate = post.publishedAt ? format(new Date(post.publishedAt), "MMM dd, yyyy") : "";
-  const readTime = `${post.readTime || 5} min read`;
+  
+  // Handle categories (could be single object or array)
+  const getCategoryTitle = () => {
+    if (!post.blog_categories) return "Uncategorized";
+    
+    if (Array.isArray(post.blog_categories)) {
+      return post.blog_categories[0]?.title || "Uncategorized";
+    } else {
+      return post.blog_categories.title || "Uncategorized";
+    }
+  };
+  
+  const categoryTitle = getCategoryTitle();
+  const formattedDate = post.published_at ? format(new Date(post.published_at), "MMM dd, yyyy") : "";
+  const readTime = `${post.read_time || 5} min read`;
 
   if (featured) {
     return (
-      <Link href={`/blog/${post.slug.current}`}>
+      <Link href={`/blog/${post.slug}`}>
         <div className="group relative overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer h-full">
           <div className="grid md:grid-cols-5 gap-0 h-full">
             <div className="md:col-span-3 relative h-64 md:h-full overflow-hidden">
               <Image 
                 src={imageUrl} 
-                alt={typeof post.mainImage === 'object' ? (post.mainImage?.alt || post.title) : post.title} 
+                alt={post.title} 
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
@@ -111,43 +104,39 @@ export function PostCard({ post, featured = false }: PostCardProps) {
   }
 
   return (
-    <Link href={`/blog/${post.slug.current}`}>
+    <Link href={`/blog/${post.slug}`}>
       <Card className="group overflow-hidden border-border h-full flex flex-col cursor-pointer transition-all hover:shadow-md hover:-translate-y-1">
-            <div className="relative aspect-video overflow-hidden bg-muted">
+        <div className="relative aspect-video overflow-hidden bg-muted">
           <Image 
             src={imageUrl} 
-            alt={typeof post.mainImage === 'object' ? (post.mainImage?.alt || post.title) : post.title} 
+            alt={post.title} 
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
-        <CardHeader className="p-5 pb-2">
-          <div className="flex justify-between items-center mb-2">
-            <Badge variant="outline" className="text-xs font-normal border-primary/20 text-primary bg-primary/5">
-              {categoryTitle}
-            </Badge>
-            <span className="text-xs text-muted-foreground">{readTime}</span>
+        <CardHeader className="pb-3">
+          <Badge variant="secondary" className="w-fit bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+            {categoryTitle}
+          </Badge>
+          <div className="flex items-center text-xs text-muted-foreground space-x-2">
+            <span className="flex items-center"><Calendar className="h-3 w-3 mr-1" /> {formattedDate}</span>
+            <span className="flex items-center"><Clock className="h-3 w-3 mr-1" /> {readTime}</span>
           </div>
-          <h3 className="text-xl font-bold leading-tight group-hover:text-primary transition-colors">
+        </CardHeader>
+        <CardContent className="flex-1">
+          <h3 className="text-lg font-semibold tracking-tight mb-2 group-hover:text-primary transition-colors line-clamp-2">
             {post.title}
           </h3>
-        </CardHeader>
-        <CardContent className="p-5 pt-2 flex-1">
-          <p className="text-muted-foreground text-sm line-clamp-3">
+          <p className="text-sm text-muted-foreground line-clamp-3">
             {post.excerpt}
           </p>
         </CardContent>
-        <CardFooter className="p-5 pt-0 mt-auto">
-          <div className="flex items-center text-xs text-muted-foreground w-full border-t border-border/50 pt-4">
-            <span className="font-medium text-foreground">{post.author?.name || "Anonymous"}</span>
-            <span className="mx-2">•</span>
-            <span>{formattedDate}</span>
+        <CardFooter className="pt-3">
+          <div className="flex items-center text-sm font-medium text-primary">
+            Read Article <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </div>
         </CardFooter>
       </Card>
     </Link>
   );
 }
-
-
-

@@ -260,16 +260,7 @@ export default function AdminCareerPage() {
                 <Card key={career.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex flex-col sm:flex-row gap-4">
-                      {career.thumbnail_url && (
-                        <div className="w-full sm:w-32 h-32 rounded-lg overflow-hidden bg-muted shrink-0">
-                          <img
-                            src={career.thumbnail_url}
-                            alt={career.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
+                                            <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
                           <div className="flex-1 min-w-0">
                             <h3 className="text-lg font-semibold mb-1 line-clamp-2">{career.title}</h3>

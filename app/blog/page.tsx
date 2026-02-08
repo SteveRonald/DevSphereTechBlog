@@ -19,8 +19,8 @@ async function getAllPosts(): Promise<Post[]> {
     
     // Sort by published date
     allPosts.sort((a, b) => {
-      const dateA = new Date(a.publishedAt);
-      const dateB = new Date(b.publishedAt);
+      const dateA = new Date(a.published_at);
+      const dateB = new Date(b.published_at);
       return dateB.getTime() - dateA.getTime();
     });
     
@@ -61,36 +61,16 @@ async function getSupabasePosts(): Promise<Post[]> {
 
     // Transform Supabase data to Post format
     return (posts || []).map((post: any) => ({
-      _id: post.id,
+      id: post.id,
       title: post.title,
       excerpt: post.excerpt || "",
-      slug: {
-        current: post.slug,
-      },
-      mainImage: post.main_image_url ? {
-        asset: {
-          _ref: post.main_image_url,
-          _type: "image",
-        },
-        alt: post.main_image_alt,
-      } : undefined,
-      publishedAt: post.published_at || post.created_at,
-      readTime: post.read_time || 5,
+      slug: post.slug,
+      main_image_url: post.main_image_url || undefined,
+      published_at: post.published_at || post.created_at,
+      read_time: post.read_time || 5,
       featured: post.featured || false,
-      tags: post.tags || [],
-      author: post.blog_authors ? {
-        name: post.blog_authors.name,
-        image: post.blog_authors.image_url,
-      } : {
-        name: "CodeCraft Academy",
-      },
-      categories: post.blog_categories ? [{
-        title: post.blog_categories.title,
-        slug: {
-          current: post.blog_categories.slug,
-        },
-      }] : [],
-      source: 'supabase',
+      blog_categories: post.blog_categories || undefined,
+      blog_authors: post.blog_authors || undefined,
     }));
   } catch (error) {
     console.error("Error fetching Supabase posts:", error);
@@ -130,7 +110,7 @@ export default async function BlogPage() {
               <>
                 <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
                   {posts.map((post) => (
-                    <PostCard key={post._id} post={post} />
+                    <PostCard key={post.id} post={post} />
                   ))}
                 </div>
                 

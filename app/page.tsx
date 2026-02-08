@@ -1,7 +1,7 @@
 import { PostCard } from "@/components/blog/PostCard";
 import { SidebarMinimal } from "@/components/blog/SidebarMinimal";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, Users, Award, Rocket, TrendingUp, Target, Zap, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, Users, Award, Rocket, TrendingUp, Target, Zap, Sparkles, Search } from "lucide-react";
 import type { Post } from "@/components/blog/PostCard";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -12,6 +12,7 @@ import { Testimonials } from "@/components/home/Testimonials";
 import { WhyChooseUs } from "@/components/home/WhyChooseUs";
 import { createServerClient } from "@/lib/supabase-server";
 import { CourseCard } from "@/components/courses/CourseCard";
+import { Input } from "@/components/ui/input";
 import { SearchBar } from "@/components/search/SearchBar";
 
 async function getFeaturedPosts(): Promise<Post[]> {

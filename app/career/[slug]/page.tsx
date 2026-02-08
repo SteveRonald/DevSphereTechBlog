@@ -169,18 +169,6 @@ export default async function CareerDetailPage({
                   <span>{career.salary_range}</span>
                 </div>
               )}
-              {career.application_deadline && (
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span className={
-                    new Date(career.application_deadline) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-                      ? "text-red-600 font-semibold"
-                      : ""
-                  }>
-                    Apply by {format(new Date(career.application_deadline), "MMM dd, yyyy")}
-                  </span>
-                </div>
-              )}
             </div>
           </div>
         </div>

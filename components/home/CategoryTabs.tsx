@@ -4,11 +4,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface Category {
-  _id: string;
+  id: string;
   title: string;
-  slug: {
-    current: string;
-  };
+  slug: string;
 }
 
 interface CategoryTabsProps {
@@ -33,13 +31,13 @@ export function CategoryTabs({ categories, onCategoryChange, activeCategory }: C
       </Button>
       {categories.map((category) => (
         <Button
-          key={category._id}
-          variant={activeCategory === category.slug.current ? "default" : "outline"}
+          key={category.id}
+          variant={activeCategory === category.slug ? "default" : "outline"}
           size="sm"
-          onClick={() => onCategoryChange(category.slug.current)}
+          onClick={() => onCategoryChange(category.slug)}
           className={cn(
             "rounded-full",
-            activeCategory === category.slug.current && "bg-primary text-primary-foreground"
+            activeCategory === category.slug && "bg-primary text-primary-foreground"
           )}
         >
           {category.title}

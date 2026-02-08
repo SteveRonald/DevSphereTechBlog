@@ -4,16 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
-import { sanityClient } from "@/lib/sanity";
-import { categoriesQuery } from "@/lib/sanity.queries";
 import { cn } from "@/lib/utils";
 
 interface Category {
-  _id: string;
+  id: string;
   title: string;
-  slug: {
-    current: string;
-  };
+  slug: string;
 }
 
 export function BlogDropdown() {
@@ -24,49 +20,20 @@ export function BlogDropdown() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // Fetch from both Sanity and Supabase
-        const allCategories: Category[] = [];
+        // Fetch from Supabase only
+        const { createClient } = await import("@/lib/supabase");
+        const supabase = createClient();
+        const { data: categories } = await supabase
+          .from("blog_categories")
+          .select("id, title, slug")
+          .order("title", { ascending: true });
         
-        // 1. Fetch Sanity categories
-        try {
-          const sanityCats = await sanityClient.fetch<Category[]>(categoriesQuery);
-          allCategories.push(...(sanityCats || []));
-        } catch (sanityError) {
-          console.error("Error fetching Sanity categories:", sanityError);
-        }
-        
-        // 2. Fetch Supabase categories
-        try {
-          const { createClient } = await import("@/lib/supabase");
-          const supabase = createClient();
-          const { data: supabaseCats } = await supabase
-            .from("blog_categories")
-            .select("id, title, slug")
-            .order("title", { ascending: true });
-          
-          if (supabaseCats) {
-            // Transform Supabase categories to match Sanity format
-            const transformedCats = supabaseCats.map((cat: any) => ({
-              _id: cat.id,
-              title: cat.title,
-              slug: { current: cat.slug }
-            }));
-            allCategories.push(...transformedCats);
-          }
-        } catch (supabaseError) {
-          console.error("Error fetching Supabase categories:", supabaseError);
-        }
-        
-        // Deduplicate by slug
-        const uniqueCategories = Array.from(
-          new Map(allCategories.map(cat => [cat.slug.current, cat])).values()
-        ).sort((a, b) => a.title.localeCompare(b.title));
-        
-        setCategories(uniqueCategories);
+        setCategories(categories || []);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
     };
+
     fetchCategories();
   }, []);
 
@@ -113,8 +80,8 @@ export function BlogDropdown() {
               <div className="space-y-1">
                 {categories.map((category) => (
                   <Link
-                    key={category._id}
-                    href={`/blog/category/${category.slug.current}`}
+                    key={category.id}
+                    href={`/blog/category/${category.slug}`}
                     className="block px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
                     onClick={() => setIsOpen(false)}
                   >

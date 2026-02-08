@@ -16,71 +16,81 @@ export function Footer() {
   
   return (
     <footer className="border-t border-border/40 bg-black text-white">
-      <div className="container py-12 px-4 md:px-6">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-          <div className="col-span-1 md:col-span-2">
-            <h3 className="text-xl font-bold mb-4 font-google-sans">CodeCraft Academy</h3>
-            <p className="text-sm text-muted-foreground max-w-md leading-relaxed font-google-sans">
-              Empowering developers with free courses, in-depth reviews, and modern tech skills. Join our community today.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="https://twitter.com/Stevegmail98" target="_blank" rel="noreferrer" className="group">
-                <Button variant="outline" size="icon" className="h-9 w-9 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 hover:scale-110">
-                  <Twitter className="h-4 w-4" />
-                  <span className="sr-only">Twitter</span>
+      <div className="container max-w-7xl mx-auto py-12 px-4 md:px-6">
+        {/* Top: Brand + Social */}
+        <div className="mb-10">
+          <h3 className="text-xl font-bold mb-3 font-google-sans">CodeCraft Academy</h3>
+          <p className="text-sm text-gray-400 max-w-lg leading-relaxed font-google-sans mb-5">
+            Empowering developers with free courses, in-depth reviews, and modern tech skills. Join our community today.
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            {socialLinks.map((social) => (
+              <Link key={social.name} href={social.url || "#"} target="_blank" rel="noreferrer">
+                <Button variant="outline" size="icon" className="h-9 w-9 border-gray-700 text-gray-400 hover:bg-white/10 hover:text-white hover:border-white/30 transition-all duration-300">
+                  {social.icon}
+                  <span className="sr-only">{social.name}</span>
                 </Button>
               </Link>
-              <Link href="https://github.com/SteveRonald" target="_blank" rel="noreferrer" className="group">
-                <Button variant="outline" size="icon" className="h-9 w-9 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 hover:scale-110">
-                  <Github className="h-4 w-4" />
-                  <span className="sr-only">GitHub</span>
-                </Button>
-              </Link>
-              <Link href="https://www.linkedin.com/in/steve-ronald-432775255" target="_blank" rel="noreferrer" className="group">
-                <Button variant="outline" size="icon" className="h-9 w-9 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300 hover:scale-110">
-                  <Linkedin className="h-4 w-4" />
-                  <span className="sr-only">LinkedIn</span>
-                </Button>
-              </Link>
-              <Link href="/donate">
-                <Button 
-                  className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  ❤️ Support Us
-                </Button>
-              </Link>
-            </div>
+            ))}
+            <Link href="/donate">
+              <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+                <Heart className="h-4 w-4 mr-2" /> Support Us
+              </Button>
+            </Link>
           </div>
-          
+        </div>
+
+        {/* Links Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 pb-10 border-b border-gray-800">
           <div>
-            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider font-google-sans">Categories</h4>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              <li><Link href="/blog/category/web-development" className="hover:text-primary transition-colors font-google-sans hover:underline">Web Development</Link></li>
-              <li><Link href="/blog/category/ai-engineering" className="hover:text-primary transition-colors font-google-sans hover:underline">AI Engineering</Link></li>
-              <li><Link href="/blog/category/productivity" className="hover:text-primary transition-colors font-google-sans hover:underline">Productivity</Link></li>
-              <li><Link href="/blog/category/career-growth" className="hover:text-primary transition-colors font-google-sans hover:underline">Career Growth</Link></li>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-white mb-4 font-google-sans">Quick Links</h4>
+            <ul className="space-y-2.5 text-sm">
+              <li><Link href="/blog" className="text-gray-400 hover:text-white transition-colors font-google-sans">Blog</Link></li>
+              <li><Link href="/free-courses" className="text-gray-400 hover:text-white transition-colors font-google-sans">Courses</Link></li>
+              <li><Link href="/career" className="text-gray-400 hover:text-white transition-colors font-google-sans">Careers</Link></li>
+              <li><Link href="/reviews" className="text-gray-400 hover:text-white transition-colors font-google-sans">Reviews</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider font-google-sans">Company</h4>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              <li><Link href="/about" className="hover:text-primary transition-colors font-google-sans hover:underline">About Us</Link></li>
-              <li><Link href="/contact" className="hover:text-primary transition-colors font-google-sans hover:underline">Contact</Link></li>
-              <li><Link href="/donate" className="hover:text-primary transition-colors font-google-sans hover:underline">Support Us</Link></li>
-              <li><Link href="/privacy" className="hover:text-primary transition-colors font-google-sans hover:underline">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-primary transition-colors font-google-sans hover:underline">Terms of Service</Link></li>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-white mb-4 font-google-sans">Company</h4>
+            <ul className="space-y-2.5 text-sm">
+              <li><Link href="/about" className="text-gray-400 hover:text-white transition-colors font-google-sans">About Us</Link></li>
+              <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors font-google-sans">Contact</Link></li>
+              <li><Link href="/donate" className="text-gray-400 hover:text-white transition-colors font-google-sans">Support Us</Link></li>
+              <li><Link href="/newsletter" className="text-gray-400 hover:text-white transition-colors font-google-sans">Newsletter</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-white mb-4 font-google-sans">Categories</h4>
+            <ul className="space-y-2.5 text-sm">
+              <li><Link href="/blog/category/web-development" className="text-gray-400 hover:text-white transition-colors font-google-sans">Web Development</Link></li>
+              <li><Link href="/blog/category/ai-engineering" className="text-gray-400 hover:text-white transition-colors font-google-sans">AI Engineering</Link></li>
+              <li><Link href="/blog/category/productivity" className="text-gray-400 hover:text-white transition-colors font-google-sans">Productivity</Link></li>
+              <li><Link href="/blog/category/career-growth" className="text-gray-400 hover:text-white transition-colors font-google-sans">Career Growth</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-white mb-4 font-google-sans">Resources</h4>
+            <ul className="space-y-2.5 text-sm">
+              <li><Link href="/privacy" className="text-gray-400 hover:text-white transition-colors font-google-sans">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="text-gray-400 hover:text-white transition-colors font-google-sans">Terms of Service</Link></li>
+              <li><Link href="/faq" className="text-gray-400 hover:text-white transition-colors font-google-sans">FAQ</Link></li>
+              <li><Link href="/support" className="text-gray-400 hover:text-white transition-colors font-google-sans">Support</Link></li>
             </ul>
           </div>
         </div>
-        
-        <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground font-google-sans">
+
+        {/* Bottom Bar */}
+        <div className="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-gray-500 font-google-sans">
             © {new Date().getFullYear()} CodeCraft Academy. All rights reserved.
           </p>
-          <div className="flex space-x-6 text-sm text-muted-foreground">
-             <span className="font-google-sans">Built with care by developers</span>
-          </div>
+          <p className="text-sm text-gray-500 font-google-sans">
+            Built with <Heart className="inline h-3 w-3 text-red-500 mx-1" /> by developers, for developers.
+          </p>
         </div>
       </div>
     </footer>
