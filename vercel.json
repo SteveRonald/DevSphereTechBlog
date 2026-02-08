@@ -12,7 +12,9 @@
     "NEXT_PUBLIC_SANITY_PROJECT_ID": "6vr227ju",
     "NEXT_PUBLIC_SANITY_DATASET": "production",
     "NEXT_PUBLIC_SANITY_API_VERSION": "2023-06-21",
-    "NEXT_PUBLIC_SITE_URL": "https://your-project.vercel.app"
+    "NEXT_PUBLIC_SITE_URL": "https://your-project.vercel.app",
+    "CHATBOT_IDENTITY_SECRET": "kk7rjneewj1ge3nedsc97fv1lozgf9uj",
+    "NEXT_PUBLIC_MAINTENANCE_MODE": "false"
   },
   "headers": [
     {

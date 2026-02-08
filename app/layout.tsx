@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { Analytics } from "@/components/analytics/GoogleAnalytics";
+import { MaintenanceBanner } from "@/components/ui/MaintenanceBanner";
 // Old chatbot disabled - replaced by Chatbase
 // import { Chatbot } from "@/components/chat/Chatbot";
 import { ChatbaseWidget } from "@/components/chat/ChatbaseWidget";
@@ -59,6 +60,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TooltipProvider>
+            <MaintenanceBanner />
             <div className="min-h-screen flex flex-col bg-background font-sans text-foreground">
               <NavigationProgress />
               <Navbar />
