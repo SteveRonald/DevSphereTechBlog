@@ -46,16 +46,21 @@ next-env.d.ts
 .replit
 .local
 
-# Scripts - allow useful scripts but ignore sensitive ones
-scripts/add-device-tracking-fields.js
-scripts/add-unsubscribe-fields.js
-scripts/notify-subscribers.js
-scripts/run-supabase-schema.js
+# Scripts - ignore all scripts except README
+scripts/
+!scripts/README.md
 
-# Supabase - ignore generated/temp files but keep SQL migrations
+# Database migrations and SQL files
+database/
+
+# Supabase - ignore all SQL migrations, config, and generated/temp files
+supabase/
 supabase/.temp/
 supabase/.branches/
-supabase/.temp/
+supabase/migrations/
+supabase/*.sql
+supabase/config.toml
+supabase/seed.sql
 
 # Documentation files - allow important docs
 *.md

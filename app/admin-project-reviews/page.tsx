@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase";
@@ -44,6 +44,7 @@ export default function AdminProjectReviewsPage() {
 
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending_review" | "approved" | "rejected">("all");
 
   useEffect(() => setMounted(true), []);
 
@@ -98,7 +99,7 @@ export default function AdminProjectReviewsPage() {
         data: { session },
       } = await supabase.auth.getSession();
 
-      const response = await fetch("/api/admin/project-submissions?status=pending_review", {
+      const response = await fetch("/api/admin/project-submissions?status=all", {
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
         },
@@ -140,6 +141,33 @@ export default function AdminProjectReviewsPage() {
     return u;
   };
 
+  const filteredSubmissions = useMemo(() => {
+    if (statusFilter === "all") return submissions;
+    return submissions.filter((s) => s.status === statusFilter);
+  }, [submissions, statusFilter]);
+
+  const pendingCount = useMemo(() => submissions.filter((s) => s.status === "pending_review").length, [submissions]);
+  const approvedCount = useMemo(() => submissions.filter((s) => s.status === "approved").length, [submissions]);
+  const rejectedCount = useMemo(() => submissions.filter((s) => s.status === "rejected").length, [submissions]);
+
+  const statusBadgeVariant = (status: string) => {
+    switch (status) {
+      case "pending_review": return "destructive" as const;
+      case "approved": return "default" as const;
+      case "rejected": return "secondary" as const;
+      default: return "outline" as const;
+    }
+  };
+
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case "pending_review": return "Pending Review";
+      case "approved": return "Approved";
+      case "rejected": return "Rejected";
+      default: return status;
+    }
+  };
+
   return (
     <AdminShell
       title="Project Reviews"
@@ -158,11 +186,47 @@ export default function AdminProjectReviewsPage() {
       ) : (
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between gap-4">
-              <CardTitle>Pending Project Reviews</CardTitle>
-              <Button variant="outline" size="sm" onClick={() => void loadSubmissions()} disabled={loadingSubmissions}>
-                {loadingSubmissions ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}
-              </Button>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <CardTitle>Project Submissions</CardTitle>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 rounded-lg border border-border p-1">
+                  <Button
+                    variant={statusFilter === "all" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setStatusFilter("all")}
+                  >
+                    All ({submissions.length})
+                  </Button>
+                  <Button
+                    variant={statusFilter === "pending_review" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setStatusFilter("pending_review")}
+                  >
+                    Pending ({pendingCount})
+                  </Button>
+                  <Button
+                    variant={statusFilter === "approved" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setStatusFilter("approved")}
+                  >
+                    Approved ({approvedCount})
+                  </Button>
+                  <Button
+                    variant={statusFilter === "rejected" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setStatusFilter("rejected")}
+                  >
+                    Rejected ({rejectedCount})
+                  </Button>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => void loadSubmissions()} disabled={loadingSubmissions}>
+                  {loadingSubmissions ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -182,17 +246,17 @@ export default function AdminProjectReviewsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {submissions.length === 0 ? (
+                  {filteredSubmissions.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center text-muted-foreground">
-                        No pending submissions
+                        {statusFilter === "all" ? "No submissions" : `No ${statusLabel(statusFilter).toLowerCase()} submissions`}
                       </TableCell>
                     </TableRow>
                   ) : (
-                    submissions.map((s) => (
+                    filteredSubmissions.map((s) => (
                       <TableRow key={s.id}>
                         <TableCell>
-                          <Badge variant="outline">{s.status}</Badge>
+                          <Badge variant={statusBadgeVariant(s.status)}>{statusLabel(s.status)}</Badge>
                         </TableCell>
                         <TableCell className="text-sm">
                           <div className="font-medium">{studentLabel(s)}</div>
@@ -201,8 +265,12 @@ export default function AdminProjectReviewsPage() {
                         <TableCell className="text-sm">{s.lesson?.title || s.lesson_id}</TableCell>
                         <TableCell className="max-w-[420px] truncate">{urlPreview(s)}</TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm" onClick={() => openReview(s.id)}>
-                            Review
+                          <Button
+                            size="sm"
+                            variant={s.status !== "pending_review" ? "outline" : "default"}
+                            onClick={() => openReview(s.id)}
+                          >
+                            {s.status !== "pending_review" ? "Re-review" : "Review"}
                           </Button>
                         </TableCell>
                       </TableRow>

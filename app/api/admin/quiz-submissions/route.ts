@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const status = (searchParams.get("status") || "pending_review").trim();
+    const status = (searchParams.get("status") || "all").trim();
     const limit = Math.min(parseInt(searchParams.get("limit") || "200", 10) || 200, 1000);
 
     const admin = createAdminClient();
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       .order("created_at", { ascending: false })
       .limit(limit);
 
-    if (status) {
+    if (status && status !== "all") {
       query = query.eq("status", status);
     }
 

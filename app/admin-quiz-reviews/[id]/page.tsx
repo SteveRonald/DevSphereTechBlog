@@ -250,7 +250,9 @@ export default function AdminQuizReviewDetailPage() {
             <CardHeader>
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-base">Submission</CardTitle>
-                <Badge variant="outline">{submission.status}</Badge>
+                <Badge variant={submission.status === "graded" ? "default" : "destructive"}>
+                  {submission.status === "graded" ? "Graded" : "Pending Review"}
+                </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
@@ -338,7 +340,7 @@ export default function AdminQuizReviewDetailPage() {
                   Back
                 </Button>
                 <Button onClick={() => void saveAndFinalize()} disabled={saving}>
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Finalize Review"}
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : submission?.status === "graded" ? "Update Review" : "Finalize Review"}
                 </Button>
               </div>
             </div>

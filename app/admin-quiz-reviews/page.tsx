@@ -33,6 +33,8 @@ type Submission = {
   created_at: string;
 };
 
+type StatusFilter = "all" | "pending_review" | "graded";
+
 export default function AdminQuizReviewsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -43,6 +45,7 @@ export default function AdminQuizReviewsPage() {
 
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   useEffect(() => setMounted(true), []);
 
@@ -98,7 +101,7 @@ export default function AdminQuizReviewsPage() {
         data: { session },
       } = await supabase.auth.getSession();
 
-      const response = await fetch("/api/admin/quiz-submissions?status=pending_review", {
+      const response = await fetch("/api/admin/quiz-submissions?status=all", {
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
         },
@@ -148,6 +151,30 @@ export default function AdminQuizReviewsPage() {
     return name;
   };
 
+  const filteredSubmissions = useMemo(() => {
+    if (statusFilter === "all") return submissions;
+    return submissions.filter((s) => s.status === statusFilter);
+  }, [submissions, statusFilter]);
+
+  const pendingCount = useMemo(() => submissions.filter((s) => s.status === "pending_review").length, [submissions]);
+  const gradedCount = useMemo(() => submissions.filter((s) => s.status === "graded").length, [submissions]);
+
+  const statusBadgeVariant = (status: string) => {
+    switch (status) {
+      case "pending_review": return "destructive" as const;
+      case "graded": return "default" as const;
+      default: return "outline" as const;
+    }
+  };
+
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case "pending_review": return "Pending Review";
+      case "graded": return "Graded";
+      default: return status;
+    }
+  };
+
   return (
     <AdminShell
       title="Quiz Reviews"
@@ -166,11 +193,39 @@ export default function AdminQuizReviewsPage() {
       ) : (
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between gap-4">
-              <CardTitle>Pending Reviews</CardTitle>
-              <Button variant="outline" size="sm" onClick={() => void loadSubmissions()} disabled={loadingSubmissions}>
-                {loadingSubmissions ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}
-              </Button>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <CardTitle>Quiz Submissions</CardTitle>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 rounded-lg border border-border p-1">
+                  <Button
+                    variant={statusFilter === "all" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setStatusFilter("all")}
+                  >
+                    All ({submissions.length})
+                  </Button>
+                  <Button
+                    variant={statusFilter === "pending_review" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setStatusFilter("pending_review")}
+                  >
+                    Pending ({pendingCount})
+                  </Button>
+                  <Button
+                    variant={statusFilter === "graded" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setStatusFilter("graded")}
+                  >
+                    Graded ({gradedCount})
+                  </Button>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => void loadSubmissions()} disabled={loadingSubmissions}>
+                  {loadingSubmissions ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -190,17 +245,17 @@ export default function AdminQuizReviewsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {submissions.length === 0 ? (
+                  {filteredSubmissions.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center text-muted-foreground">
-                        No pending submissions
+                        {statusFilter === "all" ? "No submissions" : `No ${statusLabel(statusFilter).toLowerCase()} submissions`}
                       </TableCell>
                     </TableRow>
                   ) : (
-                    submissions.map((s) => (
+                    filteredSubmissions.map((s) => (
                       <TableRow key={s.id}>
                         <TableCell>
-                          <Badge variant="outline">{s.status}</Badge>
+                          <Badge variant={statusBadgeVariant(s.status)}>{statusLabel(s.status)}</Badge>
                         </TableCell>
                         <TableCell className="text-sm">
                           <div className="font-medium">{studentLabel(s)}</div>
@@ -211,8 +266,8 @@ export default function AdminQuizReviewsPage() {
                           {freeTextPreview(s.answers)}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm" onClick={() => openReview(s.id)}>
-                            Review
+                          <Button size="sm" variant={s.status === "graded" ? "outline" : "default"} onClick={() => openReview(s.id)}>
+                            {s.status === "graded" ? "Re-review" : "Review"}
                           </Button>
                         </TableCell>
                       </TableRow>

@@ -206,7 +206,9 @@ export default function AdminProjectReviewDetailPage() {
             <CardHeader>
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-base">Submission</CardTitle>
-                <Badge variant="outline">{submission.status}</Badge>
+                <Badge variant={submission.status === "pending_review" ? "destructive" : submission.status === "approved" ? "default" : "secondary"}>
+                  {submission.status === "pending_review" ? "Pending Review" : submission.status === "approved" ? "Approved" : "Rejected"}
+                </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
@@ -264,10 +266,10 @@ export default function AdminProjectReviewDetailPage() {
                   Back
                 </Button>
                 <Button variant="outline" onClick={() => void setDecision("rejected")} disabled={saving}>
-                  Reject
+                  {submission.status === "rejected" ? "Re-reject" : "Reject"}
                 </Button>
                 <Button onClick={() => void setDecision("approved")} disabled={saving}>
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Approve"}
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : submission.status === "approved" ? "Re-approve" : "Approve"}
                 </Button>
               </div>
             </CardContent>
