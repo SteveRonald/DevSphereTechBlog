@@ -469,15 +469,25 @@ export default function FreeCoursesPage() {
 
         {/* Search and Filters */}
         <div className="mb-8 sm:mb-10 flex flex-col sm:flex-row gap-4 sm:gap-6">
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-0 sm:min-w-[280px]">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
-              type="search"
+              type="text"
               placeholder="Search courses..."
-              className="pl-12 h-12 sm:h-14 text-base font-google-sans border-2 border-border/50 hover:border-primary/30 focus:border-primary transition-colors duration-300"
+              className="pl-12 pr-10 h-12 sm:h-14 text-base text-foreground font-google-sans border-2 border-border/50 hover:border-primary/30 focus:border-primary transition-colors duration-300"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
           </div>
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-full sm:w-[200px] h-12 sm:h-14 text-base font-google-sans border-2 border-border/50 hover:border-primary/30 focus:border-primary transition-colors duration-300">

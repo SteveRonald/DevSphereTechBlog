@@ -228,8 +228,10 @@ export default async function BlogPostPage({
                 src={imageUrl} 
                 alt={post.main_image_alt || post.title} 
                 width={1200}
-                height={600}
-                className="w-full h-[400px] md:h-[500px] object-cover"
+                height={630}
+                className="w-full h-auto max-h-[520px] object-contain bg-muted/50"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1152px"
+                priority
               />
             </div>
           </div>

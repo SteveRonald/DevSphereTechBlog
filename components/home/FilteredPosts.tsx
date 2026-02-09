@@ -13,23 +13,38 @@ interface Category {
 interface FilteredPostsProps {
   posts: Post[];
   categories: Category[];
+  searchQuery?: string;
 }
 
-export function FilteredPosts({ posts, categories }: FilteredPostsProps) {
+export function FilteredPosts({ posts, categories, searchQuery = "" }: FilteredPostsProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const filteredPosts = useMemo(() => {
-    if (!activeCategory) {
-      return posts;
+    let result = posts;
+
+    // Filter by category
+    if (activeCategory) {
+      result = result.filter((post) => {
+        if (!post.blog_categories) return false;
+        if (Array.isArray(post.blog_categories)) {
+          return post.blog_categories.some((cat) => cat.slug === activeCategory);
+        }
+        return post.blog_categories.slug === activeCategory;
+      });
     }
-    return posts.filter((post) => {
-      if (!post.blog_categories) return false;
-      if (Array.isArray(post.blog_categories)) {
-        return post.blog_categories.some((cat) => cat.slug === activeCategory);
-      }
-      return post.blog_categories.slug === activeCategory;
-    });
-  }, [posts, activeCategory]);
+
+    // Filter by search query
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((post) => {
+        const title = post.title?.toLowerCase() || "";
+        const excerpt = post.excerpt?.toLowerCase() || "";
+        return title.includes(q) || excerpt.includes(q);
+      });
+    }
+
+    return result;
+  }, [posts, activeCategory, searchQuery]);
 
   return (
     <>
@@ -46,7 +61,7 @@ export function FilteredPosts({ posts, categories }: FilteredPostsProps) {
         </div>
       ) : (
         <div className="text-center py-12 text-muted-foreground">
-          <p>No posts found in this category.</p>
+          <p>{searchQuery ? `No posts found for "${searchQuery}".` : "No posts found in this category."}</p>
         </div>
       )}
     </>

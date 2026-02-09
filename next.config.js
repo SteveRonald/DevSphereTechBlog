@@ -29,6 +29,19 @@ const nextConfig = {
     }
     return config;
   },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "index, follow",
+          },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       // Redirect old post URLs to new blog URLs

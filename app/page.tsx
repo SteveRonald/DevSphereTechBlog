@@ -7,12 +7,11 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PageLoading } from "@/components/ui/loading";
 import Link from "next/link";
-import { FilteredPosts } from "@/components/home/FilteredPosts";
 import { Testimonials } from "@/components/home/Testimonials";
 import { WhyChooseUs } from "@/components/home/WhyChooseUs";
 import { createServerClient } from "@/lib/supabase-server";
 import { CourseGridWithEnrollment } from "@/components/courses/CourseGridWithEnrollment";
-import { PageSearch } from "@/components/search/PageSearch";
+import { SearchableKnowledgeBase } from "@/components/home/SearchableKnowledgeBase";
 
 async function getFeaturedPosts(): Promise<Post[]> {
   try {
@@ -358,31 +357,15 @@ export default async function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10">
           {/* Main Feed */}
           <div className="lg:col-span-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight font-google-sans">From the Knowledge Base</h2>
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <PageSearch placeholder="Search articles..." searchPath="/blog" className="flex-1 sm:w-64" />
-                <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 whitespace-nowrap" asChild>
-                  <Link href="/blog">View all</Link>
-                </Button>
-              </div>
-            </div>
-            
             {latestPosts.length > 0 ? (
               <Suspense fallback={<PageLoading />}>
-                <FilteredPosts posts={latestPosts} categories={categories} />
+                <SearchableKnowledgeBase posts={latestPosts} categories={categories} />
               </Suspense>
             ) : (
               <div className="text-center py-12 sm:py-16 text-muted-foreground">
                 <p className="text-sm sm:text-base font-google-sans">No posts yet. Check back soon!</p>
               </div>
             )}
-
-            <div className="mt-8 sm:mt-10 flex justify-center">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto h-12 text-base font-google-sans font-medium border-2 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300" asChild>
-                <Link href="/blog">View All Posts</Link>
-              </Button>
-            </div>
           </div>
 
           {/* Sidebar */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
 
 declare global {
@@ -10,7 +10,8 @@ declare global {
 }
 
 export function ChatbaseWidget() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const hasIdentified = useRef(false);
 
   useEffect(() => {
     // Initialize chatbase queue
@@ -51,23 +52,35 @@ export function ChatbaseWidget() {
 
   // Identify user with Chatbase when signed in
   useEffect(() => {
-    if (user && window.chatbase) {
-      const identifyUser = async () => {
-        try {
-          const res = await fetch("/api/chatbase-token");
-          if (res.ok) {
-            const { token } = await res.json();
-            if (token) {
-              window.chatbase("identify", { token });
-            }
-          }
-        } catch (error) {
-          console.error("Error identifying user with Chatbase:", error);
-        }
-      };
-      identifyUser();
+    // Wait for auth to finish loading before making any API calls
+    if (loading) return;
+
+    // Reset identification flag on logout
+    if (!user) {
+      hasIdentified.current = false;
+      return;
     }
-  }, [user]);
+
+    // Only identify once per session
+    if (hasIdentified.current || !window.chatbase) return;
+
+    const identifyUser = async () => {
+      try {
+        const res = await fetch("/api/chatbase-token");
+        if (res.ok) {
+          const { token } = await res.json();
+          if (token) {
+            window.chatbase("identify", { token });
+            hasIdentified.current = true;
+          }
+        }
+        // Silently ignore 401 — expected when session is expired or user is not authenticated
+      } catch {
+        // Network errors are non-critical for chatbase identification
+      }
+    };
+    identifyUser();
+  }, [user, loading]);
 
   return null;
 }

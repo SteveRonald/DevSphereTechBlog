@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import Image from "next/image";
 import Link from "next/link";
+import { CodeBlock } from "@/components/ui/CodeBlock";
 
 interface RichMarkdownProps {
   content: string;
@@ -88,23 +89,16 @@ export function RichMarkdown({ content, className = "" }: RichMarkdownProps) {
           
           if (isInline) {
             return (
-              <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground" {...props}>
+              <code className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700" {...props}>
                 {children}
               </code>
             );
           }
           
           return (
-            <div className="relative rounded-lg overflow-hidden my-4 bg-slate-900 dark:bg-slate-950 border border-slate-700 dark:border-slate-800">
-              <div className="bg-slate-800 dark:bg-slate-900 px-4 py-2 text-xs text-slate-400 dark:text-slate-500 border-b border-slate-700 dark:border-slate-800">
-                {match[1]}
-              </div>
-              <pre className="p-4 overflow-x-auto">
-                <code className="text-sm font-mono text-slate-50 dark:text-slate-100" {...props}>
-                  {children}
-                </code>
-              </pre>
-            </div>
+            <CodeBlock language={match[1]}>
+              {String(children).replace(/\n$/, "")}
+            </CodeBlock>
           );
         },
 

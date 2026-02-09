@@ -1,9 +1,8 @@
 import { createServerClient } from "@/lib/supabase-server";
-import { PostCard, type Post } from "@/components/blog/PostCard";
+import { type Post } from "@/components/blog/PostCard";
 import { SidebarMinimal } from "@/components/blog/SidebarMinimal";
-import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
-import { PageSearch } from "@/components/search/PageSearch";
+import { SearchablePostList } from "@/components/blog/SearchablePostList";
 
 async function getReviews(): Promise<Post[]> {
   try {
@@ -63,34 +62,18 @@ export default async function ReviewsPage() {
             Honest, in-depth reviews of developer tools, frameworks, libraries, and services. 
             Get insights before you invest your time and money.
           </p>
-          <div className="mt-6 max-w-md">
-            <PageSearch placeholder="Search reviews by tool, framework, service..." searchPath="/reviews" />
-          </div>
         </div>
       </div>
 
       <div className="container max-w-7xl mx-auto px-4 md:px-6 py-8 sm:py-10 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           <div className="lg:col-span-8">
-            {posts.length > 0 ? (
-              <>
-                <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
-                  {posts.map((post) => (
-                    <PostCard key={post.id} post={post} />
-                  ))}
-                </div>
-                
-                <div className="mt-12 flex justify-center">
-                  <Button variant="outline" size="lg" className="h-12 px-7 text-base font-google-sans font-medium border-2 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300">Load More</Button>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-16 sm:py-20 text-muted-foreground">
-                <Star className="h-14 w-14 sm:h-16 sm:w-16 mx-auto mb-6 opacity-50" />
-                <p className="text-xl sm:text-2xl font-medium mb-3 font-google-sans">No reviews yet</p>
-                <p className="text-base sm:text-lg font-google-sans">Check back soon for new product reviews!</p>
-              </div>
-            )}
+            <SearchablePostList
+              posts={posts}
+              searchPlaceholder="Search reviews by tool, framework, service..."
+              emptyTitle="No reviews yet"
+              emptyMessage="Check back soon for new product reviews!"
+            />
           </div>
           
           <aside className="lg:col-span-4">
