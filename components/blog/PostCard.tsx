@@ -32,9 +32,10 @@ export interface Post {
 interface PostCardProps {
   post: Post;
   featured?: boolean;
+  hrefBase?: string;
 }
 
-export function PostCard({ post, featured = false }: PostCardProps) {
+export function PostCard({ post, featured = false, hrefBase = "/blog" }: PostCardProps) {
   const getImageUrl = () => {
     const fallback = "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070&auto=format&fit=crop";
     
@@ -65,7 +66,7 @@ export function PostCard({ post, featured = false }: PostCardProps) {
 
   if (featured) {
     return (
-      <Link href={`/blog/${post.slug}`}>
+      <Link href={`${hrefBase}/${post.slug}`}>
         <div className="group relative overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer h-full">
           <div className="grid md:grid-cols-5 gap-0 h-full">
             <div className="md:col-span-3 relative h-64 md:h-full overflow-hidden bg-muted/30">
@@ -105,7 +106,7 @@ export function PostCard({ post, featured = false }: PostCardProps) {
   }
 
   return (
-    <Link href={`/blog/${post.slug}`}>
+    <Link href={`${hrefBase}/${post.slug}`}>
       <Card className="group overflow-hidden border-border h-full flex flex-col cursor-pointer transition-all hover:shadow-md hover:-translate-y-1">
         <div className="relative aspect-video overflow-hidden bg-muted/30">
           <Image 

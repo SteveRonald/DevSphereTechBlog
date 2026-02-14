@@ -10,17 +10,31 @@ export function MaintenanceBanner() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch("/api/system-settings");
-        if (!res.ok) return;
+        const res = await fetch("/api/system-settings", { cache: "no-store" });
+        if (!res.ok) {
+          setVisible(false);
+          return;
+        }
         const data = await res.json();
-        if (data.maintenance_mode === true) {
+        const nextMode =
+          data?.maintenance_mode === true ||
+          data?.maintenance_mode === "true" ||
+          data?.maintenance_mode === 1 ||
+          data?.maintenance_mode === "1";
+        if (nextMode) {
           setVisible(true);
+          setClosing(false);
+        } else {
+          setVisible(false);
         }
       } catch {
-        // silently fail
+        setVisible(false);
       }
     };
     fetchSettings();
+    // Re-check every 60 seconds so admin toggle takes effect without full reload
+    const interval = setInterval(fetchSettings, 60_000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleDismiss = () => {

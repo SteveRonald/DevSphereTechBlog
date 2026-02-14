@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient, requireAdmin } from "@/lib/supabase-admin";
+import { getSystemSettingsRow } from "@/lib/system-settings";
 
 type SystemSettings = {
   site_name: string | null;
@@ -19,18 +20,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: gate.error }, { status: gate.status });
     }
 
-    const admin = createAdminClient();
-    const { data, error } = await admin
-      .from("system_settings")
-      .select("site_name,support_email,maintenance_mode,allow_new_signups,newsletter_enabled,course_notifications_enabled,course_update_notifications_enabled,featured_course_category")
-      .eq("id", 1)
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    return NextResponse.json({ settings: data });
+    const settings = await getSystemSettingsRow();
+    return NextResponse.json({ settings });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -64,9 +55,10 @@ export async function PUT(request: NextRequest) {
     const admin = createAdminClient();
     const { data, error } = await admin
       .from("system_settings")
-      .update({ ...patch, updated_at: new Date().toISOString() })
-      .eq("id", 1)
-      .select("site_name,support_email,maintenance_mode,allow_new_signups,newsletter_enabled,course_notifications_enabled,course_update_notifications_enabled,featured_course_category")
+      .upsert({ id: 1, ...patch, updated_at: new Date().toISOString() }, { onConflict: "id" })
+      .select(
+        "site_name,support_email,maintenance_mode,allow_new_signups,newsletter_enabled,course_notifications_enabled,course_update_notifications_enabled,featured_course_category"
+      )
       .single();
 
     if (error) {

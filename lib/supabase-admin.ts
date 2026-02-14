@@ -1,6 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
-import { createServerClient } from "@/lib/supabase-server";
 
 export function createAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -23,30 +22,52 @@ export function createAdminClient() {
 }
 
 export async function requireAdmin(request: NextRequest) {
-  const supabase = await createServerClient(request);
-
+  // 1. Try to get the access token from Authorization header
   const authHeader = request.headers.get("authorization");
-  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+  let token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
 
-  const {
-    data: { user },
-  } = token ? await supabase.auth.getUser(token) : await supabase.auth.getUser();
+  // 2. If no Authorization header, try to read the Supabase auth cookie
+  if (!token) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+    const projectRef = supabaseUrl.split("//")[1]?.split(".")[0] || "";
+    if (projectRef) {
+      const cookieName = `sb-${projectRef}-auth-token`;
+      const cookieHeader = request.headers.get("cookie") || "";
+      const match = cookieHeader.split(";").find((c) => c.trim().startsWith(`${cookieName}=`));
+      if (match) {
+        const raw = match.split("=").slice(1).join("=").trim();
+        try {
+          token = decodeURIComponent(raw);
+        } catch {
+          token = raw;
+        }
+      }
+    }
+  }
 
-  if (!user) {
+  if (!token) {
     return { ok: false as const, status: 401 as const, error: "Unauthorized" };
   }
 
-  const { data: profile, error: profileError } = await supabase
+  // 3. Verify the token and get the user using the admin client (service role)
+  const admin = createAdminClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await admin.auth.getUser(token);
+
+  if (userError || !user) {
+    return { ok: false as const, status: 401 as const, error: "Unauthorized" };
+  }
+
+  // 4. Check if the user is an admin
+  const { data: profile, error: profileError } = await admin
     .from("user_profiles")
     .select("is_admin")
     .eq("id", user.id)
     .single();
 
-  if (profileError) {
-    return { ok: false as const, status: 403 as const, error: "Forbidden" };
-  }
-
-  if (!profile?.is_admin) {
+  if (profileError || !profile?.is_admin) {
     return { ok: false as const, status: 403 as const, error: "Forbidden" };
   }
 

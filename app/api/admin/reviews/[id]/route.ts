@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase-server';
+import { createAdminClient, requireAdmin } from '@/lib/supabase-admin';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createServerClient(undefined);
+    const gate = await requireAdmin(request);
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status });
+    }
+
+    const supabase = createAdminClient();
     const { id } = await params;
 
     const { data, error } = await supabase
@@ -49,7 +54,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createServerClient(undefined);
+    const gate = await requireAdmin(request);
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status });
+    }
+
+    const supabase = createAdminClient();
     const { id } = await params;
     const body = await request.json();
 
@@ -106,8 +116,8 @@ export async function PUT(
       .eq('id', id)
       .single();
 
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
+    // Use the admin user from the gate check
+    const user = gate.user;
 
     // Auto-generate excerpt if not provided
     const finalExcerpt = excerpt || content.substring(0, 200) + '...';
@@ -190,7 +200,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createServerClient(undefined);
+    const gate = await requireAdmin(request);
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status });
+    }
+
+    const supabase = createAdminClient();
     const { id } = await params;
 
     const { error } = await supabase

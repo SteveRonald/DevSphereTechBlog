@@ -11,6 +11,7 @@ interface SearchablePostListProps {
   emptyIcon?: React.ReactNode;
   emptyTitle?: string;
   emptyMessage?: string;
+  hrefBase?: string;
 }
 
 export function SearchablePostList({
@@ -19,6 +20,7 @@ export function SearchablePostList({
   emptyIcon,
   emptyTitle = "No posts yet",
   emptyMessage = "Check back soon for new content!",
+  hrefBase = "/blog",
 }: SearchablePostListProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -59,7 +61,7 @@ export function SearchablePostList({
       {filteredPosts.length > 0 ? (
         <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
           {filteredPosts.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard key={post.id} post={post} hrefBase={hrefBase} />
           ))}
         </div>
       ) : searchQuery ? (

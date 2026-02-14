@@ -21,7 +21,7 @@ export function CodeBlock({ language, children, className = "" }: CodeBlockProps
   };
 
   return (
-    <div className={`relative group rounded-lg overflow-hidden my-4 border border-[#30363d] ${className}`}>
+    <div className={`not-prose relative group rounded-lg overflow-hidden my-4 border border-[#30363d] ${className}`}>
       {/* Header: language label + copy button */}
       <div className="flex items-center justify-between px-4 py-1.5 bg-[#161b22] border-b border-[#30363d]">
         <span className="text-xs font-medium text-[#8b949e]">{language}</span>

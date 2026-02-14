@@ -83,11 +83,11 @@ export function RichMarkdown({ content, className = "" }: RichMarkdownProps) {
         ),
 
         // Code blocks with proper dark/light mode support
-        code: ({ className, children, ...props }) => {
+        code: ({ inline, className, children, ...props }) => {
           const match = /language-(\w+)/.exec(className || "");
-          const isInline = !match;
-          
-          if (isInline) {
+          const language = match?.[1] || "text";
+
+          if (inline) {
             return (
               <code className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700" {...props}>
                 {children}
@@ -96,7 +96,7 @@ export function RichMarkdown({ content, className = "" }: RichMarkdownProps) {
           }
           
           return (
-            <CodeBlock language={match[1]}>
+            <CodeBlock language={language}>
               {String(children).replace(/\n$/, "")}
             </CodeBlock>
           );
